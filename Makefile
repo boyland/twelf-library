@@ -28,7 +28,8 @@ OPSRC = EQ.i GE.i LE.i LT.i NE.i RCMP.i RELN.i \
 MAP = map-head.elf map-base.elf
 MAP_MORE = map-leq.elf \
            map-join.elf map-join-leq.elf \
-           map-meet.elf map-meet-leq.elf map-meet-join.elf
+           map-meet.elf map-meet-leq.elf map-meet-join.elf \
+	  map-scale.elf map-scale-leq.elf map-scale-join.elf
 MAPSRC = ${MAP} ${MAP_MORE}
 
 SETSRC = set.cpp set-head.elf set-base.elf set-help.elf set-remove.elf \
