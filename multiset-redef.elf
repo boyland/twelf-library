@@ -1,0 +1,40 @@
+%%%% Redefinitions
+
+%{%
+  This file includes definitions of operations with
+  more appropriate names and/or arguments than the
+  ones created by map.
+%}%
+
+%abbrev multiset = map.
+%abbrev multiset/0 = map/0.
+%abbrev multiset/+ = map/+.
+
+
+%abbrev member = [S] [N] lookup S N C.
+
+%{%
+/*
+%abbrev not-member = fresh.
+
+%abbrev member? = domain?.
+%abbrev member?/in = domain?/in.
+%abbrev member?/out = domain?/out.
+*/
+%}%
+
+%%% Theorem renamings.
+
+%% using "member"
+
+%abbrev false-implies-member = false-implies-lookup.
+%abbrev fresh-member-implies-ne = fresh-lookup-not-equal.
+%abbrev in-implies-member = in-implies-lookup.
+
+%abbrev member-respects-eq = 
+    [L:member M N] [EM:eq M MP] [EN:nat`eq N NP] [LP:member MP NP] 
+    lookup-respects-eq L EM EN nat`eq/ LP.
+
+
+
+

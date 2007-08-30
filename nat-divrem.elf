@@ -1,0 +1,304 @@
+%%%%% nat-divrem.elf
+%%%%% Integer quotient/remainder division
+%%%%% This file is part of the nat.elf signature
+
+
+
+%%%% Definitions
+
+
+
+%%% Division with remainder
+
+
+divrem : nat -> nat -> nat -> nat -> type.
+
+
+divrem/z : divrem M N z M
+    <- gt N M.
+
+divrem/s : divrem M (s N-) (s Q) R
+    <- plus D (s N-) M
+    <- divrem D (s N-) Q R.
+
+
+
+
+%%%% Theorems
+
+
+%%% Theorems about divrem
+
+
+%theorem false-implies-divrem :
+	forall* {M} {N} {Q} {R}
+	forall {F:void}
+	exists {D:divrem M N Q R}
+	true.
+
+%worlds () (false-implies-divrem _ %{=>}% M/N=Q,R).
+%total {} (false-implies-divrem _ _).
+
+
+%theorem divrem-respects-eq :
+	forall* {M} {N} {Q} {R} {M'} {N'} {Q'} {R'}
+	forall {D:divrem M N Q R} 
+               {E1:eq M M'} {E2:eq N N'} {E3:eq Q Q'} {E4:eq R R'}
+	exists {D':divrem M' N' Q' R'}
+	true.
+
+- : divrem-respects-eq D eq/ eq/ eq/ eq/ D.
+
+%worlds () (divrem-respects-eq M/N=Q,R M=M' N=N' Q=Q' R=R' %{=>}% M'/N'=Q',R').
+%total {} (divrem-respects-eq _ _ _ _ _ _).
+
+
+%theorem divrem-total** :
+	forall {M} {N-1} {C} {CMP:compare M N-1 C}
+	exists {Q} {R} {D:divrem M (s N-1) Q R}
+	true.
+
+- : divrem-total** M N-1 equal CMP z M (divrem/z N>M)
+    <- equal-implies-eq CMP M=N-1
+    <- succ-implies-gt eq/ N>N-1
+    <- eq-symmetric M=N-1 N-1=M
+    <- gt-respects-eq N>N-1 eq/ N-1=M N>M.
+
+- : divrem-total** M N-1 less CMP z M (divrem/z N>M)
+    <- less-implies-lt CMP N-1>M
+    <- succ-implies-gt eq/ N>N-1
+    <- gt-transitive N>N-1 N-1>M N>M.
+
+- : divrem-total** M N-1 greater CMP (s Q) R (divrem/s D/N=Q,R D+N=M)
+    <- greater-implies-gt CMP M>N-1
+    <- gt-implies-plus M>N-1 D SD+N-1=M
+    <- plus-swap-succ SD+N-1=M D+N=M
+    <- plus-commutative D+N=M N+D=M
+    <- plus-implies-gt N+D=M eq/ M>D
+    <- meta-gt M D M>D
+    <- compare-total* D N-1 C' CMP'
+    <- divrem-total** D N-1 C' CMP' Q R D/N=Q,R.
+
+%worlds () (divrem-total** M N-1 C MCN %{=>}% Q R M/N=Q,R).
+%total (M) (divrem-total** M _ _ _ _ _ _).
+
+
+%theorem divrem-total* :
+	forall {M} {N-}
+	exists {Q} {R} {D:divrem M (s N-) Q R}
+	true.
+
+- : divrem-total* M N-1 Q R M/N=Q,R
+    <- compare-total* M N-1 C CMP
+    <- divrem-total** M N-1 C CMP Q R M/N=Q,R.
+
+%worlds () (divrem-total* M N-1 %{=>}% Q R M/N=Q,R).
+%total {} (divrem-total* _ _ _ _ _).
+
+
+%abbrev divrem-total = divrem-total* _ _ _ _.
+
+
+%theorem divrem-deterministic :
+	forall* {M} {N} {Q} {R} {M'} {N'} {Q'} {R'}
+	forall {D:divrem M N Q R} {D':divrem M' N' Q' R'}
+	       {E1:eq M M'} {E2:eq N N'}
+	exists {E3:eq Q Q'} {E4:eq R R'}
+	true.
+
+- : divrem-deterministic (divrem/z _) (divrem/z _) eq/ eq/ eq/ eq/.
+
+- : divrem-deterministic (divrem/s D/N=Q,R D+N=M) (divrem/s D'/N=Q',R' D'+N=M)
+                         eq/ eq/ SQ=SQ' R=R'
+    <- plus-right-cancels D+N=M D'+N=M eq/ eq/ D=D'
+    <- divrem-deterministic D/N=Q,R  D'/N=Q',R' D=D' eq/ Q=Q' R=R'
+    <- succ-deterministic Q=Q' SQ=SQ'.
+
+%% contradiction cases:
+
+- : divrem-deterministic (divrem/z N>M) (divrem/s _ D+N=M) eq/ eq/ Q=Q' R=R'
+    <- plus-commutative D+N=M N+D=M
+    <- plus-gt-contradiction N+D=M N>M F
+    <- false-implies-eq F Q=Q'
+    <- false-implies-eq F R=R'.
+
+- : divrem-deterministic (divrem/s _ D+N=M) (divrem/z N>M) eq/ eq/ Q=Q' R=R'
+    <- plus-commutative D+N=M N+D=M
+    <- plus-gt-contradiction N+D=M N>M F
+    <- false-implies-eq F Q=Q'
+    <- false-implies-eq F R=R'.
+
+%worlds () (divrem-deterministic M/N=Q,R M'/N'=Q'/R' M=M' N=N' %{=>}% Q=Q' R=R').
+%total (D) (divrem-deterministic D _ _ _ _ _).
+
+
+%theorem divrem-implies-positive :
+	forall* {M} {N} {Q} {R}
+	forall {D:divrem M N Q R}
+	exists {N-1} {E:eq N (s N-1)}
+	true.
+
+- : divrem-implies-positive (divrem/z N>M) N-1 N=sN-1
+    <- gt-implies-positive N>M N-1 N=sN-1.
+
+- : divrem-implies-positive (divrem/s _ _) _ eq/.
+
+%worlds () (divrem-implies-positive M/N=Q,R %{=>}% N-1 N=sN-1).
+%total {} (divrem-implies-positive _ _ _).
+
+
+%theorem divrem-implies-gt :
+	forall* {M} {N} {Q} {R}
+	forall {D:divrem M N Q R}
+	exists {G:gt N R}
+	true.
+
+- : divrem-implies-gt (divrem/z N>M) N>M.
+
+- : divrem-implies-gt (divrem/s D/N=Q,R _) N>R
+    <- divrem-implies-gt D/N=Q,R N>R.
+
+%worlds () (divrem-implies-gt M/N=Q,R %{=>}% N>R).
+%total D (divrem-implies-gt D _).
+
+
+%theorem divrem-can-be-inverted :
+	forall* {M} {N} {Q} {R}
+	forall {D:divrem M N Q R}
+	exists {X} {T:times Q N X} {P:plus X R M}
+	true.
+
+- : divrem-can-be-inverted (divrem/z _) z times/z plus/z.
+
+- : divrem-can-be-inverted (divrem/s D/N=Q,R D+N=M) 
+                           X (times/s Q*N=Y Y+N=X) X+R=M
+    <- divrem-can-be-inverted D/N=Q,R Y Q*N=Y Y+R=D
+    <- plus-commutative Y+R=D R+Y=D
+    <- plus-associative R+Y=D D+N=M X Y+N=X R+X=M
+    <- plus-commutative R+X=M X+R=M.
+
+%worlds () (divrem-can-be-inverted M/N=Q,R %{=>}% X Q*N=X X+R=M).
+%total (D) (divrem-can-be-inverted D _ _ _).
+
+
+%theorem div-can-be-inverted :
+	forall* {M} {N} {Q}
+	forall {D:divrem M N Q z}
+	exists {T:times Q N M}
+	true.
+
+- : div-can-be-inverted (divrem/z _) times/z.
+
+- : div-can-be-inverted (divrem/s D/N=Q,z D+N=M) 
+                        (times/s Q*N=D D+N=M)
+    <- div-can-be-inverted D/N=Q,z Q*N=D.
+
+%worlds () (div-can-be-inverted _ _).
+%total (D) (div-can-be-inverted D _).
+
+
+%theorem divrem-can-be-constructed :
+	forall* {M} {N} {Q} {R} {X}
+	forall {T:times Q N X} {P:plus X R M} {G:gt N R}
+        exists {D:divrem M N Q R}
+	true.
+
+- : divrem-can-be-constructed (times/z) (plus/z) N>R (divrem/z N>R).
+
+- : divrem-can-be-constructed (times/s Q*N=Y Y+N=X) X+R=M N>R
+                              (divrem/s Z/N=Q,R Z+N=M)
+    <- plus-commutative Y+N=X N+Y=X
+    <- plus-associative N+Y=X X+R=M Z Y+R=Z N+Z=M
+    <- plus-commutative N+Z=M Z+N=M
+    <- divrem-can-be-constructed Q*N=Y Y+R=Z N>R Z/N=Q,R.
+
+- : divrem-can-be-constructed _ _ ZERO>R D
+    <- gt-contradiction ZERO>R F
+    <- false-implies-divrem F D.
+
+%worlds () (divrem-can-be-constructed Q*N=X X+R=M N>R %{=>}% M/N=Q,R).
+%total (T) (divrem-can-be-constructed T _ _ _).
+
+
+%theorem div-can-be-constructed :
+	forall* {M} {N} {Q}
+	forall {T:times Q (s N) M}
+        exists {D:divrem M (s N) Q z}
+	true.
+
+- : div-can-be-constructed (times/z) (divrem/z N+1>0)
+    <- succ-implies-gt-zero _ N+1>0.
+
+- : div-can-be-constructed (times/s Q*sN=D D+sN=M)
+                           (divrem/s D/sN=Q,z D+sN=M)
+    <- div-can-be-constructed Q*sN=D D/sN=Q,z.
+
+%worlds () (div-can-be-constructed _ _).
+%total (T) (div-can-be-constructed T _).
+
+
+%theorem remainder-implies-gt-quotient :
+	forall* {M} {N} {Q} {R}
+	forall {D:divrem M N Q (s R)}
+	exists {G:gt M Q}
+	true.
+
+- : remainder-implies-gt-quotient (divrem/z _) R+1>0
+    <- succ-implies-gt-zero _ R+1>0.
+
+- : remainder-implies-gt-quotient (divrem/s D/N=Q,sR D+N=M) M>sQ
+    <- remainder-implies-gt-quotient D/N=Q,sR D>Q
+    <- gt-implies-ge-succ D>Q D>=sQ
+    <- plus-commutative D+N=M N+D=M
+    <- plus-implies-gt N+D=M eq/ M>D
+    <- gt-transitive-ge M>D D>=sQ M>sQ.
+
+%worlds () (remainder-implies-gt-quotient _ _).
+%total (D) (remainder-implies-gt-quotient D _).
+
+
+%theorem quotient-of-nonzero-is-smaller :
+	forall* {M} {N} {Q} {R} {M-}
+	forall {DR:divrem M (s (s N)) Q R} {EN:eq M (s M-)}
+	exists {G:gt M Q}
+	true.
+
+- : quotient-of-nonzero-is-smaller _ eq/ M>0
+    <- succ-implies-gt-zero _ M>0.
+
+- : quotient-of-nonzero-is-smaller M/N=Q,R eq/ M>Q
+    <- divrem-can-be-inverted M/N=Q,R X Q*N=X X+R=M
+    <- times-right-identity _ Q*1=Q
+    <- succ-implies-gt-zero _ N->0
+    <- succ-preserves-gt N->0 N>1
+    <- times-left-preserves-gt N>1 Q*N=X Q*1=Q X>Q
+    <- plus-commutative X+R=M R+X=M
+    <- plus-implies-ge R+X=M M>=X
+    <- ge-transitive-gt M>=X X>Q M>Q.
+
+%worlds () (quotient-of-nonzero-is-smaller _ _ _).
+%total { } (quotient-of-nonzero-is-smaller _ _ _).
+
+
+%theorem quotient-is-no-greater :
+	forall* {M} {N} {Q} {R}
+	forall {DR:divrem M N Q R}
+	exists {GE:ge M Q}
+	true.
+
+- : quotient-is-no-greater M/N=Q,R M>=Q
+    <- divrem-can-be-inverted M/N=Q,R X Q*N=X X+R=M
+    <- divrem-implies-positive M/N=Q,R NN N=NN+1
+    <- eq-symmetric N=NN+1 NN+1=N
+    <- succ-implies-gt-zero NN NN+1>0
+    <- gt-respects-eq NN+1>0 NN+1=N eq/ N>0
+    <- gt-implies-ge-succ N>0 N>=1
+    <- times-right-identity _ Q*1=Q
+    <- times-left-preserves-ge* N>=1 Q*N=X Q*1=Q X>=Q
+    <- plus-commutative X+R=M R+X=M
+    <- plus-implies-ge R+X=M M>=X
+    <- ge-transitive M>=X X>=Q M>=Q.
+
+%worlds () (quotient-is-no-greater _ _).
+%total { } (quotient-is-no-greater _ _).
+

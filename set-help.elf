@@ -1,0 +1,338 @@
+%%%%% set-help.elf
+%%%%% Theorems needed to help 'set' use 'map.'
+%%%%% This file is part of the set.elf signature
+
+
+
+%%%% Theorems
+
+
+%{%
+   What follows is a series of utterly trivial theorems
+   about the unit type and trivial operations on it.
+   These theorems are needed to satisfy the map "functor".
+   All of these definitions are indented one space,
+   which signifies to the pre-module module-system
+   that they are internal and should not be exported.
+%}%
+
+
+ unit`eq : unit -> unit -> type.
+
+ unit`eq/ : unit`eq unit/ unit/.
+
+
+ unit`ne : unit -> unit -> type. % uninhabited
+
+
+ unit`eq? : unit -> unit -> bool -> type.
+
+ unit`eq?/yes : unit`eq? U U true.
+
+ unit`eq?/no : unit`ne U1 U2 -> unit`eq? U1 U2 false.
+
+
+ %theorem unit`false-implies-eq :
+	forall* {U1} {U2}
+	forall {F:void}
+	exists {E:unit`eq U1 U2}
+	true.
+
+ %worlds () (unit`false-implies-eq _ _).
+ %total { } (unit`false-implies-eq _ _).
+
+
+ %theorem unit`eq-reflexive :
+	forall {U}
+	exists {E:unit`eq U U}
+	true.
+
+ - : unit`eq-reflexive unit/ unit`eq/.
+
+ %worlds () (unit`eq-reflexive _ _).
+ %total { } (unit`eq-reflexive _ _).
+
+
+ %theorem unit`eq-symmetric :
+	forall* {U1} {U2}
+	forall {E1:unit`eq U1 U2}
+	exists {E2:unit`eq U2 U1}
+	true.
+ 
+ - : unit`eq-symmetric unit`eq/ unit`eq/.
+
+ %worlds () (unit`eq-symmetric _ _).
+ %total { } (unit`eq-symmetric _ _).
+
+
+ %theorem unit`eq-transitive :
+	forall* {U1} {U2} {U3}
+	forall {E12:unit`eq U1 U2} {E23:unit`eq U2 U3}
+	exists {E13:unit`eq U1 U3}
+        true.
+
+ - : unit`eq-transitive unit`eq/ unit`eq/ unit`eq/.
+
+ %worlds () (unit`eq-transitive _ _ _).
+ %total { } (unit`eq-transitive _ _ _).
+
+
+ %theorem unit`false-implies-ne :
+        forall* {X1} {X2}
+        forall {F:void}
+        exists {G:unit`ne X1 X2}
+        true.
+
+ %worlds () (unit`false-implies-ne _ _).
+ %total { } (unit`false-implies-ne _ _).
+
+
+ %theorem unit`ne-respects-eq :
+        forall* {X1} {X2} {Y1} {Y2}
+        forall {D1:unit`ne X1 X2} {E1:unit`eq X1 Y1} {E2:unit`eq X2 Y2}
+        exists {D2:unit`ne Y1 Y2}
+        true.
+
+ %worlds () (unit`ne-respects-eq _ _ _ _).
+ %total { } (unit`ne-respects-eq _ _ _ _).
+
+
+ %theorem unit`ne-anti-reflexive :
+        forall* {X}
+        forall {R:unit`ne X X}
+        exists {F:void}
+        true.
+
+ %worlds () (unit`ne-anti-reflexive _ _).
+ %total { } (unit`ne-anti-reflexive _ _).
+
+
+ %theorem unit`ne-symmetric :
+        forall* {X} {Y}
+        forall {R1:unit`ne X Y}
+        exists {R2:unit`ne Y X}
+        true.
+
+ %worlds () (unit`ne-symmetric _ _).
+ %total { } (unit`ne-symmetric _ _).
+
+
+ %theorem unit`eq-ne-implies-false :
+        forall* {X} {Y}
+        forall {D1:unit`eq X Y} {D2:unit`ne X Y}
+        exists {F:void}
+        true.
+
+ %worlds () (unit`eq-ne-implies-false _ _ _).
+ %total { } (unit`eq-ne-implies-false _ _ _).
+
+
+ %theorem unit`eq?-total* :
+        forall {M} {N}
+        exists {B} {T:unit`eq? M N B}
+        true.
+
+ %abbrev unit`eq?-total = unit`eq?-total* _ _ _.
+
+ - : unit`eq?-total unit`eq?/yes.
+
+ %worlds () (unit`eq?-total* _ _ _ _).
+ %total { } (unit`eq?-total* _ _ _ _).
+
+
+
+ %abbrev unit`leq = unit`eq.
+ %abbrev unit`false-implies-leq = unit`false-implies-eq.
+ %abbrev unit`leq-reflexive = unit`eq-reflexive.
+ %abbrev unit`leq-transitive = unit`eq-transitive.
+
+
+ %theorem unit`leq-anti-symmetric :
+	forall* {U1} {U2}
+	forall {L12:unit`leq U1 U2} {L21:unit`leq U2 U1}
+	exists {E:unit`eq U1 U2}
+	true.
+
+ - : unit`leq-anti-symmetric E _ E.
+
+ %worlds () (unit`leq-anti-symmetric _ _ _).
+ %total { } (unit`leq-anti-symmetric _ _ _).
+
+
+ unit`join : unit -> unit -> unit -> type.
+
+ unit`join/ : unit`join unit/ unit/ unit/.
+
+
+ %theorem unit`false-implies-join :
+	forall* {U1} {U2} {U3}
+	forall {F:void}
+	exists {J:unit`join U1 U2 U3}
+	true.
+
+ %worlds () (unit`false-implies-join _ _).
+ %total { } (unit`false-implies-join _ _).
+
+
+ %theorem unit`join-deterministic :
+	forall* {U1} {U2} {U3} {V1} {V2} {V3}
+	forall {J:unit`join U1 U2 U3} {K:unit`join V1 V2 V3}
+	       {E1:unit`eq U1 V1} {E2:unit`eq U2 V2}
+        exists {E3:unit`eq U3 V3}
+	true.
+
+ - : unit`join-deterministic unit`join/ unit`join/ unit`eq/ unit`eq/ unit`eq/.
+
+ %worlds () (unit`join-deterministic _ _ _ _ _).
+ %total { } (unit`join-deterministic _ _ _ _ _).
+
+
+ %theorem unit`join-total* :
+	forall {U1} {U2}
+	exists {U3} {J:unit`join U1 U2 U3}
+	true.
+
+ - : unit`join-total* _ _ _ unit`join/.
+
+ %worlds () (unit`join-total* _ _ _ _).
+ %total { } (unit`join-total* _ _ _ _).
+
+
+ %theorem unit`join-commutative :
+	forall* {U1} {U2} {U3}
+	forall {J:unit`join U1 U2 U3}
+	exists {K:unit`join U2 U1 U3}
+	true.
+
+ - : unit`join-commutative _ unit`join/.
+
+ %worlds () (unit`join-commutative _ _).
+ %total { } (unit`join-commutative _ _).
+
+
+ %theorem unit`join-associative :
+	forall* {U1} {U2} {U3} {U4} {U7}
+	forall {J12:unit`join U1 U2 U3}
+               {J34:unit`join U3 U4 U7}
+	exists {U6} {J24:unit`join U2 U4 U6}
+               {J16:unit`join U1 U6 U7}
+	true.
+
+ - : unit`join-associative _ _ unit/ unit`join/ unit`join/.
+
+ %worlds () (unit`join-associative _ _ _ _ _).
+ %total { } (unit`join-associative _ _ _ _ _).
+
+
+ %theorem unit`join-associative* :
+	forall* {U1} {U2} {U3} {U4} {U6} {U7}
+	forall {J12:unit`join U1 U2 U3}
+               {J34:unit`join U3 U4 U7}
+	       {J24:unit`join U2 U4 U6}
+        exists {J16:unit`join U1 U6 U7}
+	true.
+
+ - : unit`join-associative* _ _ _ unit`join/.
+
+ %worlds () (unit`join-associative* _ _ _ _).
+ %total { } (unit`join-associative* _ _ _ _).
+
+ %theorem unit`join-left-preserves-leq* :
+	forall* {U1} {U2} {U3} {U4} {U5}
+        forall {L24:unit`leq U2 U4} 
+	       {J12:unit`join U1 U2 U3} {J14:unit`join U1 U4 U5}
+        exists {L35:unit`leq U3 U5}
+	true.
+
+ - : unit`join-left-preserves-leq* _ _ _ unit`eq/.
+
+ %worlds () (unit`join-left-preserves-leq* _ _ _ _).
+ %total { } (unit`join-left-preserves-leq* _ _ _ _).
+
+ %theorem unit`join-preserves-leq :
+	forall* {U1} {U2} {U3} {V1} {V2} {V3}
+	forall {L1:unit`leq U1 V1} {L2:unit`leq U2 V2}
+	       {JU:unit`join U1 U2 U3} {JV:unit`join V1 V2 V3}
+	exists {L3:unit`leq U3 V3}
+	true.
+
+ - : unit`join-preserves-leq _ _ _ _ unit`eq/.
+
+ %worlds () (unit`join-preserves-leq _ _ _ _ _).
+ %total { } (unit`join-preserves-leq _ _ _ _ _).
+
+
+ %theorem unit`join-implies-leq* :
+	forall* {U1} {U2} {U3}
+	forall {J:unit`join U1 U2 U3}
+	exists {L:unit`leq U1 U3}
+	true.
+
+ - : unit`join-implies-leq* _ unit`eq/.
+
+ %worlds () (unit`join-implies-leq* _ _).
+ %total { } (unit`join-implies-leq* _ _).
+
+
+ %theorem unit`join-implies-leq :
+	forall* {U1} {U2} {U3}
+	forall {J:unit`join U1 U2 U3}
+	exists {L:unit`leq U1 U3} {L2:unit`leq U2 U3}
+	true.
+
+ - : unit`join-implies-leq _ unit`eq/ unit`eq/.
+
+ %worlds () (unit`join-implies-leq _ _ _).
+ %total { } (unit`join-implies-leq _ _ _).
+
+
+ %theorem unit`join-is-lub :
+	forall* {U1} {U2} {U3} {U4}
+	forall {J:unit`join U1 U2 U3}
+	       {L1:unit`leq U1 U4} {L2:unit`leq U2 U4}
+	exists {L3:unit`leq U3 U4}
+	true.
+
+ - : unit`join-is-lub _ _ _ unit`eq/.
+
+ %worlds () (unit`join-is-lub _ _ _ _).
+ %total { } (unit`join-is-lub _ _ _ _).
+
+ 
+ %abbrev unit`meet = unit`join.
+ %abbrev unit`false-implies-meet = unit`false-implies-join.
+ %abbrev unit`meet-deterministic = unit`join-deterministic.
+ %abbrev unit`meet-total* = unit`join-total*.
+ %abbrev unit`meet-commutative = unit`join-commutative.
+ %abbrev unit`meet-associative = unit`join-associative.
+ %abbrev unit`meet-associative* = unit`join-associative*.
+ %abbrev unit`meet-implies-leq* = unit`join-implies-leq*.
+ %abbrev unit`meet-left-preserves-leq* = unit`join-left-preserves-leq*.
+
+ %theorem unit`meet-is-glb :
+	forall* {U0} {U1} {U2} {U3}
+	forall {A:unit`meet U1 U2 U3}
+	       {L1:unit`leq U0 U1} {L2:unit`leq U0 U2}
+	exists {L3:unit`leq U0 U3}
+	true.
+
+ - : unit`meet-is-glb _ _ _ unit`eq/.
+
+ %worlds () (unit`meet-is-glb _ _ _ _).
+ %total { } (unit`meet-is-glb _ _ _ _).
+
+ %theorem unit`meet-right-distributes-over-join :
+	forall* {U1} {U2} {U3} {U4} {U7}
+	forall {J:unit`join U1 U2 U3} {A:unit`meet U3 U4 U7}
+        exists {U5} {U6} {M14:unit`meet U1 U4 U5} {M24:unit`meet U2 U4 U6}
+               {J56:unit`join U5 U6 U7}
+	true.
+
+ - : unit`meet-right-distributes-over-join _ _ unit/ unit/ unit`join/
+                                           unit`join/ unit`join/.
+
+ %worlds () (unit`meet-right-distributes-over-join _ _ _ _ _ _ _).
+ %total { } (unit`meet-right-distributes-over-join _ _ _ _ _ _ _).
+
+ %abbrev unit`join-right-distributes-over-meet = 
+         unit`meet-right-distributes-over-join.

@@ -1,0 +1,86 @@
+%%%%% rat-inv-comp.elf
+%%%%% Theorems about inverted operations and composed relations
+%%%%% This file is part of the rat.elf signature
+
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about sub
+
+%{%
+#define EQ equ
+#define GE gre
+#define GT grt
+#define NE neq
+
+#define OPN add
+#define IOPN sub
+#define OP(X,Y) X+Y
+#define IOP(X,Y) X-Y
+#define OP_CANCELS 1
+#define CMP(X,Y) X>=Y
+#define CMPN gre
+BEGIN_ELF
+#include "OPN-inv-preserves-CMPN.i"
+END_ELF
+#undef CMP
+#undef CMPN
+#define CMP(X,Y) X<>Y
+#define CMPN neq
+#define CMP_SYMMETRIC 1
+BEGIN_ELF
+#include "OPN-inv-preserves-CMPN.i"
+END_ELF
+#undef CMP_SYMMETRIC
+#undef CMP
+#undef CMPN
+#undef OP
+#undef OPN
+#undef OP_CANCELS
+#undef IOP
+#undef IOPN
+%}%
+
+
+%%% Theorems about div
+
+%{%
+#define OPN mul
+#define OP(X,Y) X*Y
+#define IOPN div
+#define IOP(X,Y) X/Y
+#define OP_CANCELS 1
+#define IOP_TOTAL 1
+BEGIN_ELF
+#include "OPN-preserves-GE.i"
+END_ELF
+#define CMP(X,Y) X>=Y
+#define CMPN gre
+BEGIN_ELF
+#include "OPN-inv-preserves-CMPN.i"
+END_ELF
+#undef CMP
+#undef CMPN
+#define CMP(X,Y) X<>Y
+#define CMPN neq
+#define CMP_SYMMETRIC 1
+BEGIN_ELF
+#include "OPN-inv-preserves-CMPN.i"
+END_ELF
+#undef CMP_SYMMETRIC
+#undef CMP
+#undef CMPN
+#undef OP
+#undef OPN
+#undef OP_CANCELS
+#undef IOP
+#undef IOPN
+#undef IOP_TOTAL
+%}%
+
+
+

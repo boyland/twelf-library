@@ -1,0 +1,2197 @@
+%%%% Definitions of Maps
+
+map : type.
+
+
+map/0 : map.
+
+map/+ : nat -> data -> map -> map.
+
+
+
+%%%% Relations on maps
+
+
+
+eq : map -> map -> type.
+
+
+eq/ : eq M M.
+
+
+%{%
+#ifdef DATA_NE
+%}%
+
+ne : map -> map -> type.
+
+
+ne/L : ne map/0 (map/+ _ _ _).
+
+ne/R : ne (map/+ _ _ _) map/0.
+
+ne/N : nat`ne N1 N2 -> ne (map/+ N1 _ _) (map/+ N2 _ _).
+
+ne/D : data`ne D1 D2 -> ne (map/+ _ D1 _) (map/+ _ D2 _).
+
+ne/+ : ne M1 M2 -> ne (map/+ _ _ M1) (map/+ _ _ M2).
+
+
+
+eq? : map -> map -> bool -> type.
+
+
+eq?/yes : eq? X X true.
+
+eq?/no : eq? X Y false
+    <- ne X Y.
+
+%{%
+#endif
+%}%
+
+
+lookup : map -> nat -> data -> type.
+
+
+lookup/= : lookup (map/+ N1 D _) N2 D
+    <- nat`eq N1 N2.
+
+lookup/> : lookup (map/+ N1 _ F) N2 D
+    <- plus (s N0) N1 N2
+    <- lookup F N0 D.
+
+
+fresh : map -> nat -> type.
+
+
+fresh/0 : fresh map/0 M.
+
+fresh/< : fresh (map/+ N _ F) M
+    <- gt N M.
+
+fresh/> : fresh (map/+ N _ F) M
+    <- plus (s M1) N M
+    <- fresh F M1.
+
+
+
+domain? : map -> nat -> bool -> type.
+
+
+domain?/in : domain? M N true
+    <- lookup M N _.
+
+domain?/out : domain? M N false
+    <- fresh M N.
+
+
+
+disjoint : map -> map -> type.
+
+
+disjoint/L : disjoint map/0 M.
+
+disjoint/R : disjoint M map/0.
+
+disjoint/< : disjoint (map/+ N1 D1 M1) (map/+ N2 D2 M2)
+    <- nat`plus (s N0) N1 N2
+    <- disjoint M1 (map/+ N0 D2 M2).
+
+disjoint/> : disjoint (map/+ N1 D1 M1) (map/+ N2 D2 M2)
+    <- nat`plus (s N3) N2 N1
+    <- disjoint (map/+ N3 D1 M1) M2.
+
+
+
+disjoint? : map -> map -> bool -> type.
+
+
+disjoint?/yes : disjoint M1 M2 -> disjoint? M1 M2 true.
+
+disjoint?/no :
+	lookup M1 N D1 ->
+	lookup M2 N D2 ->
+    disjoint? M1 M2 false.
+
+
+
+size : map -> nat -> type.
+
+
+size/0 : size map/0 z.
+
+size/+ : size (map/+ _ _ M) (s N)
+    <- size M N.
+
+
+
+%% useful for proving termination on map operations:
+
+bound : map -> nat -> type.
+
+
+bound/0 : bound map/0 z.
+
+bound/+ : bound (map/+ N1 D M) N3
+    <- bound M N2
+    <- plus (s N1) N2 N3.
+
+
+
+shift : nat -> map -> map -> type.
+
+
+shift/0 : shift _ map/0 map/0.
+
+shift/+ : shift N1 (map/+ N2 D M) (map/+ N3 D M)
+    <- plus (s N1) N2 N3.
+
+
+
+update : map -> nat -> data -> map -> type.
+
+
+update/0 : update map/0 N D (map/+ N D map/0).
+
+update/= : update (map/+ N1 _ F) N2 D (map/+ N2 D F)
+    <- nat`eq N1 N2.
+
+update/< : update (map/+ N1 D1 F) N2 D2 (map/+ N2 D2 (map/+ N3 D1 F))
+    <- plus (s N3) N2 N1.
+
+update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
+    <- plus (s N0) N1 N2
+    <- update F1 N0 D2 F2.
+
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about eq
+
+
+%theorem meta-eq :
+	forall {M} {N} {E:eq M N}
+	true.
+- : meta-eq M M eq/.
+%worlds () (meta-eq _ _ _).
+%total {} (meta-eq _ _ _).
+%reduces M = N (meta-eq M N _).
+
+%theorem false-implies-eq : 
+	forall* {M} {M'} forall {F:void} exists {E:eq M M'} true.
+%worlds () (false-implies-eq _ %{=>}% M=M').
+%total {} (false-implies-eq _ _).
+
+%theorem eq-reflexive : forall {M} exists {E:eq M M} true.
+- : eq-reflexive _ eq/.
+%worlds () (eq-reflexive M %{=>}% M=M).
+%total {} (eq-reflexive _ _).
+
+%theorem eq-symmetric :
+	forall* {M} {M'}
+	forall {E1:eq M M'}
+	exists {E2:eq M' M}
+	true.
+- : eq-symmetric eq/ eq/.
+%worlds () (eq-symmetric M=M' %{=>}% M'=M).
+%total {} (eq-symmetric _ _).
+
+%theorem eq-transitive:
+	forall* {M1} {M2} {M3}
+	forall {E12:eq M1 M2} {E23:eq M2 M3}
+	exists {E13:eq M1 M3}
+	true.
+- : eq-transitive eq/ eq/ eq/.
+%worlds () (eq-transitive M1=M2 M2=M3 %{=>}% M1=M3).
+%total {} (eq-transitive _ _ _).
+
+
+%theorem map/+-preserves-eq :
+	forall* {N} {NP} {D} {DP} {F} {FP}
+	forall {EN:nat`eq N NP} {ED:data`eq D DP} {EF:eq F FP}
+	exists {E:eq (map/+ N D F) (map/+ NP DP FP)}
+	true.
+- : map/+-preserves-eq nat`eq/ data`eq/ eq/ eq/.
+%worlds () (map/+-preserves-eq N=N' D=D' F=F' %{=>}% NDF=N'D'F').
+%total {} (map/+-preserves-eq _ _ _ _).
+
+
+%theorem map/+-preserves-eq-converse :
+	forall* {N} {NP} {D} {DP} {F} {FP}
+	forall {E:eq (map/+ N D F) (map/+ NP DP FP)}
+	exists {EN:nat`eq N NP} {ED:data`eq D DP} {EF:eq F FP}
+	true.
+
+- : map/+-preserves-eq-converse eq/ nat`eq/ data`eq/ eq/.
+
+%worlds () (map/+-preserves-eq-converse _ _ _ _).
+%total {} (map/+-preserves-eq-converse _ _ _ _).
+
+
+%theorem eq-no-occur :
+	forall*  {M} {N} {D}
+	forall {E:eq M (map/+ N D M)}
+	exists {F:void}
+	true.
+
+%worlds () (eq-no-occur _ _).
+%total {} (eq-no-occur _ _).
+
+
+%theorem eq-contradiction :
+	forall* {N} {D} {M}
+	forall {E:eq map/0 (map/+ N D M)}
+	exists {F:void}
+	true.
+
+%worlds () (eq-contradiction _ _).
+%total {} (eq-contradiction _ _).
+
+
+%{%
+#ifdef DATA_NE
+%}%
+
+%%% Theorems about ne
+
+
+%theorem false-implies-ne :
+	forall* {M1} {M2}
+	forall {F:void}
+	exists {N:ne M1 M2}
+	true.
+
+%worlds () (false-implies-ne _ _).
+%total { } (false-implies-ne _ _).
+
+
+%theorem ne-respects-eq :
+	forall* {M11} {M12} {M21} {M22}
+	forall {N1:ne M11 M12} {E1:eq M11 M21} {E2:eq M12 M22}
+	exists {N2:ne M21 M22}
+	true.
+
+- : ne-respects-eq N eq/ eq/ N.
+
+%worlds () (ne-respects-eq _ _ _ _).
+%total { } (ne-respects-eq _ _ _ _).
+
+
+%theorem ne-anti-reflexive :
+	forall* {M}
+	forall {N:ne M M}
+	exists {F:void}
+	true.
+
+- : ne-anti-reflexive (ne/N N) F
+    <- nat`ne-anti-reflexive N F.
+
+- : ne-anti-reflexive (ne/D N) F
+    <- data`ne-anti-reflexive N F.
+
+- : ne-anti-reflexive (ne/+ N) F
+    <- ne-anti-reflexive N F.
+
+%worlds () (ne-anti-reflexive _ _).
+%total (N) (ne-anti-reflexive N _).
+
+
+%theorem ne-symmetric :
+	forall* {M1} {M2}
+	forall {N1:ne M1 M2}
+	exists {N2:ne M2 M1}
+	true.
+
+- : ne-symmetric ne/L ne/R.
+
+- : ne-symmetric ne/R ne/L.
+
+- : ne-symmetric (ne/N N1) (ne/N N2)
+    <- nat`ne-symmetric N1 N2.
+
+- : ne-symmetric (ne/D N1) (ne/D N2)
+    <- data`ne-symmetric N1 N2.
+
+- : ne-symmetric (ne/+ N1) (ne/+ N2)
+    <- ne-symmetric N1 N2.
+
+%worlds () (ne-symmetric _ _).
+%total (N) (ne-symmetric N _).
+
+
+%theorem eq-ne-implies-false :
+        forall* {X} {Y}
+        forall {D1:eq X Y} {D2:ne X Y}
+        exists {F:void}
+        true.
+
+- : eq-ne-implies-false eq/ X<>X F
+    <- ne-anti-reflexive X<>X F.
+
+%worlds () (eq-ne-implies-false _ _ _).
+%total { } (eq-ne-implies-false _ _ _).
+
+
+%theorem eq?-total* :
+        forall {M} {N}
+        exists {B} {T:eq? M N B}
+        true.
+
+%abbrev eq?-total = eq?-total* _ _ _.
+
+%theorem eq?-total/+ :
+	forall* {N1} {D1} {N2} {D2} {M2} {EN} {ED} {EM}
+	forall {M1} 
+	       {EN?:nat`eq? N1 N2 EN}
+	       {ED?:data`eq? D1 D2 ED}
+	       {EM?:eq? M1 M2 EM}
+	exists {B}
+	       {E?:eq? (map/+ N1 D1 M1) (map/+ N2 D2 M2) B}
+	true.
+
+- : eq?-total eq?/yes.
+
+- : eq?-total (eq?/no ne/L).
+
+- : eq?-total (eq?/no ne/R).
+
+- : eq?-total E?
+    <- nat`eq?-total EN?
+    <- data`eq?-total ED?
+    <- eq?-total EM?
+    <- eq?-total/+ _ EN? ED? EM? _ E?.
+
+- : eq?-total/+ _ (nat`eq?/yes) (data`eq?/yes) (eq?/yes) _ eq?/yes.
+
+- : eq?-total/+ _ (nat`eq?/no N) _ _ _ (eq?/no (ne/N N)).
+
+- : eq?-total/+ _ _ (data`eq?/no N) _ _ (eq?/no (ne/D N)).
+
+- : eq?-total/+ _ _ _ (eq?/no N) _ (eq?/no (ne/+ N)).
+
+%worlds ()   (eq?-total* _ _ _ _) (eq?-total/+ _ _ _ _ _ _).
+%total (M W) (eq?-total* M _ _ _) (eq?-total/+ W _ _ _ _ _).
+
+%{%
+#endif
+%}%
+
+
+%%% Theorems about lookup
+
+
+%theorem false-implies-lookup : 
+	forall* {M} {N} {D}
+	forall {F:void}
+	exists {L:lookup M N D}
+	true.
+
+%worlds () (false-implies-lookup _ %{=>}% F^N=D).
+%total {} (false-implies-lookup _ _).
+
+%theorem lookup-respects-eq :
+	forall* {M} {N} {D} {MP} {NP} {DP}
+	forall {L:lookup M N D} {EM:eq M MP} {EN:nat`eq N NP} {ED:data`eq D DP}
+	exists {LP:lookup MP NP DP}
+	true.
+
+- : lookup-respects-eq L eq/ nat`eq/ data`eq/ L.
+
+%worlds () (lookup-respects-eq M^N=D M=M' N=N' D=D' %{=>}% M'^N'=D').
+%total {} (lookup-respects-eq _ _ _ _ _).
+
+%theorem lookup-deterministic :
+	forall* {M} {N} {D} {MP} {NP} {DP}
+	forall {L:lookup M N D} {LP:lookup MP NP DP}
+               {EM:eq M MP} {EN:nat`eq N NP}
+	exists {ED:data`eq D DP}
+	true.
+
+- : lookup-deterministic (lookup/= nat`eq/) (lookup/= nat`eq/) eq/ nat`eq/ data`eq/.
+
+- : lookup-deterministic (lookup/> F^N0=D   N0+1+N1=N2) 
+                         (lookup/> F^N0'=D' N0'+1+N1=N2) eq/ nat`eq/ D=D'
+    <- plus-right-cancels N0+1+N1=N2 N0'+1+N1=N2 nat`eq/ nat`eq/ N0+1=N0'+1
+    <- succ-cancels N0+1=N0'+1 N0=N0'
+    <- lookup-deterministic F^N0=D F^N0'=D' eq/ N0=N0' D=D'.
+
+%% contradiction cases
+- : lookup-deterministic (lookup/= nat`eq/) (lookup/> _ N0+1+N=N) 
+                         eq/ nat`eq/ D=D'
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N FALSE
+    <- data`false-implies-eq FALSE D=D'.
+
+- : lookup-deterministic (lookup/> _ N0+1+N=N) (lookup/= nat`eq/)
+                         eq/ nat`eq/ D=D'
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N FALSE
+    <- data`false-implies-eq FALSE D=D'.
+
+%worlds () (lookup-deterministic M^N=D M'^N'=D' M=M' N=N' %{=>}% D=D').
+%total (L) (lookup-deterministic L _ _ _ _).
+
+
+%% lookup is NOT total
+
+
+%theorem lookup-contradiction :
+	forall* {N} {D}
+	forall {L:lookup map/0 N D}
+	exists {F:void}
+	true.
+
+%worlds () (lookup-contradiction _ _).
+%total { } (lookup-contradiction _ _).
+
+%{%
+#ifdef DATA_NE
+%}%
+
+%theorem lookup-ne-implies-ne :
+	forall* {M1} {N1} {D1} {M2} {N2} {D2}
+	forall {L1:lookup M1 N1 D1}
+	       {L2:lookup M2 N2 D2}
+	       {EN:nat`eq N1 N2}
+	       {ND:data`ne D1 D2}
+	exists {NM:ne M1 M2}
+	true.
+
+%theorem lookup-ne-implies-ne/L :
+	forall* {M1} {N1} {D1} {M2} {N2} {D2} {B}
+	forall {L1:lookup M1 N1 D1}
+	       {L2:lookup M2 N2 D2}
+	       {EN:nat`eq N1 N2}
+	       {ND:data`ne D1 D2}
+	       {EM?:eq? M1 M2 B}
+	exists {NM:ne M1 M2}
+	true.
+
+- : lookup-ne-implies-ne L1 L2 EN ND NM
+    <- eq?-total EM?
+    <- lookup-ne-implies-ne/L L1 L2 EN ND EM? NM.
+
+- : lookup-ne-implies-ne/L L1 L2 _ _ (eq?/no NM) NM.
+
+- : lookup-ne-implies-ne/L L1 L2 nat`eq/ D1<>D2 eq?/yes NM
+    <- lookup-deterministic L1 L2 eq/ nat`eq/ D1=D2
+    <- data`eq-ne-implies-false D1=D2 D1<>D2 F
+    <- false-implies-ne F NM.
+
+%worlds () (lookup-ne-implies-ne/L _ _ _ _ _ _).
+%total { } (lookup-ne-implies-ne/L _ _ _ _ _ _).
+
+%worlds () (lookup-ne-implies-ne _ _ _ _ _).
+%total { } (lookup-ne-implies-ne _ _ _ _ _).
+
+%{%
+#endif
+%}%
+
+
+%%% Theorems about fresh
+
+
+%theorem false-implies-fresh : 
+	forall* {M} {N} forall {F:void} exists {D:fresh M N} true.
+%worlds () (false-implies-fresh _ %{=>}% N-not-in-domain-M).
+%total {} (false-implies-fresh _ _).
+
+%theorem fresh-respects-eq :
+	forall* {M} {N} {MP} {NP}
+	forall {D:fresh M N} {EM:eq M MP} {EN:nat`eq N NP}
+	exists {DP:fresh MP NP}
+	true.
+- : fresh-respects-eq D eq/ nat`eq/ D.
+%worlds () (fresh-respects-eq _ _ _ _).
+%total {} (fresh-respects-eq _ _ _ _).
+
+%% fresh is NOT deterministic
+
+%theorem fresh-total* :
+	forall {M}
+	exists {N} {F:fresh M N}
+	true.
+- : fresh-total* map/0 z fresh/0.
+- : fresh-total* (map/+ N1 _ M) N3 (fresh/> F N+1+N1=N3)
+    <- fresh-total* M N F
+    <- plus-total* (s N) N1 N3 N+1+N1=N3.
+%worlds () (fresh-total* M %{=>}% N N-not-in-domain-of-M).
+%total (M) (fresh-total* M _ _).
+
+%abbrev fresh-total = fresh-total* _ _.
+
+%theorem fresh-lookup-not-equal :
+	forall* {M} {N1} {N2} {D2}
+	forall {F:fresh M N1} {L:lookup M N2 D2}
+	exists {NE:nat`ne N1 N2}
+	true.
+- : fresh-lookup-not-equal (fresh/< N2>N1) (lookup/= nat`eq/) (nat`ne/< N2>N1).
+- : fresh-lookup-not-equal (fresh/< N1>N3) (lookup/> _ N0+1+N1=N2) 
+                           (nat`ne/< N2>N3)
+    <- plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- gt-transitive N2>N1 N1>N3 N2>N3.
+- : fresh-lookup-not-equal (fresh/> _ X+1+N2=N1) (lookup/= nat`eq/) (nat`ne/> N1>N2)
+    <- plus-implies-gt X+1+N2=N1 nat`eq/ N1>N2.
+- : fresh-lookup-not-equal (fresh/> F N4+1+N1=N3) (lookup/> L N0+1+N1=N2)
+                           N3<>N2
+    <- fresh-lookup-not-equal F L N4<>N0
+    <- succ-preserves-ne N4<>N0 N4+1<>N0+1
+    <- plus-right-preserves-ne* N4+1<>N0+1 N4+1+N1=N3 N0+1+N1=N2 N3<>N2.
+%worlds () (fresh-lookup-not-equal N1-not-in-domain-of-M M^N2=D %{=>}% N1<>N2).
+%total (F) (fresh-lookup-not-equal F _ _).
+
+
+%theorem fresh-contradiction :
+	forall* {M} {N} {D}
+	forall {F:fresh (map/+ N D M) N}
+        exists {V:void}
+	true.
+
+- : fresh-contradiction (fresh/< N>N) V
+    <- nat`gt-anti-reflexive N>N V.
+
+- : fresh-contradiction (fresh/> _ N0+1+N=N) V
+    <- nat`plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- nat`gt-anti-reflexive N>N V.
+
+%worlds () (fresh-contradiction _ _).
+%total {} (fresh-contradiction _ _).
+
+
+%theorem ne-implies-unit-map-fresh :
+	forall* {N1} {D} {N2}
+	forall {NE:nat`ne N1 N2}
+	exists {F:fresh (map/+ N1 D map/0) N2}
+	true.
+
+- : ne-implies-unit-map-fresh 
+     (nat`ne/< N1<N2) (fresh/> fresh/0 N0+1+N1=N2)
+    <- nat`gt-implies-plus N1<N2 N0 N0+1+N1=N2.
+
+- : ne-implies-unit-map-fresh
+     (nat`ne/> N1>N2) (fresh/< N1>N2).
+
+%worlds () (ne-implies-unit-map-fresh _ _).
+%total { } (ne-implies-unit-map-fresh _ _).
+
+
+%theorem plus-right-preserves-fresh* :
+	forall* {M} {N1} {D} {N2} {N} {N3} {N4}
+        forall {F:fresh (map/+ N1 D M) N2}
+               {P1:plus N1 N N3} {P2:plus N2 N N4}
+        exists {FP:fresh (map/+ N3 D M) N4}
+	true.
+
+- : plus-right-preserves-fresh* (fresh/< N2>N1) N1+N=N3 N2+N=N4 (fresh/< N4>N3)
+    <- nat`plus-right-preserves-gt* N2>N1 N1+N=N3 N2+N=N4 N4>N3.
+
+- : plus-right-preserves-fresh* (fresh/> F10 N0+1+N1=N2) N1+N=N3 N2+N=N4
+                                (fresh/> F10 N0+1+N3=N4)
+    <- nat`plus-associative* N0+1+N1=N2 N2+N=N4 N1+N=N3 N0+1+N3=N4.
+
+%worlds () (plus-right-preserves-fresh* _ _ _ _).
+%total {} (plus-right-preserves-fresh* _ _ _ _).
+
+%{%
+#ifdef DATA_NE
+%}%
+
+%theorem fresh-lookup-implies-ne :
+	forall* {M1} {N1} {M2} {N2} {D2}
+	forall {L1:fresh M1 N1}
+	       {L2:lookup M2 N2 D2}
+	       {EN:nat`eq N1 N2}
+	exists {NM:ne M1 M2}
+	true.
+
+%theorem fresh-lookup-implies-ne/L :
+	forall* {M1} {N1} {M2} {N2} {D2} {B}
+	forall {L1:fresh M1 N1}
+	       {L2:lookup M2 N2 D2}
+	       {EN:nat`eq N1 N2}
+	       {EM?:eq? M1 M2 B}
+	exists {NM:ne M1 M2}
+	true.
+
+- : fresh-lookup-implies-ne F1 L2 EN NM
+    <- eq?-total EM?
+    <- fresh-lookup-implies-ne/L F1 L2 EN EM? NM.
+
+- : fresh-lookup-implies-ne/L _ _ _ (eq?/no NM) NM.
+
+- : fresh-lookup-implies-ne/L F1 L2 nat`eq/ eq?/yes NM
+    <- fresh-lookup-not-equal F1 L2 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-ne F NM.
+
+%worlds () (fresh-lookup-implies-ne/L _ _ _ _ _).
+%total { } (fresh-lookup-implies-ne/L _ _ _ _ _).
+
+%worlds () (fresh-lookup-implies-ne _ _ _ _).
+%total { } (fresh-lookup-implies-ne _ _ _ _).
+
+%{%
+#endif
+%}%
+
+
+%%% Theorems about map/domain
+
+
+%theorem false-implies-domain? :
+	forall* {M} {N} {D}
+	forall {F:void}
+	exists {MD:domain? M N D}
+	true.
+
+%worlds () (false-implies-domain? _ _).
+%total {} (false-implies-domain? _ _).
+
+
+%theorem domain?-total* :
+	forall {M} {N}
+	exists {B} {MD:domain? M N B}
+	true.
+
+%% we need a lemma
+%theorem domain?-map/+-total :
+	forall {N1} {D1} {M1} {N2} {C} {CMP:nat`compare N1 N2 C}
+	exists {B} {MD:domain? (map/+ N1 D1 M1) N2 B}
+	true.
+
+%% and this lemma needs a lemma
+%theorem domain?-map/+-complete :
+	forall {N1} {D1} {M1} {N2} {N0} {P:plus (s N0) N1 N2}
+               {B} {MD1:domain? M1 N0 B}
+	exists {MD:domain? (map/+ N1 D1 M1) N2 B}
+	true.
+
+- : domain?-total* map/0 N false (domain?/out fresh/0).
+
+- : domain?-total* (map/+ N1 D1 M1) N2 B MD
+    <- nat`compare-total* N1 N2 C CMP
+    <- domain?-map/+-total N1 D1 M1 N2 C CMP B MD.
+
+- : domain?-map/+-total N1 D1 M1 N2 equal CMP true 
+                           (domain?/in (lookup/= N1=N2))
+    <- equal-implies-eq CMP N1=N2.
+
+- : domain?-map/+-total N1 D1 M1 N2 greater CMP false 
+                           (domain?/out (fresh/< N1>N2))
+    <- greater-implies-gt CMP N1>N2.
+
+- : domain?-map/+-total N1 D1 M1 N2 less CMP B MD
+    <- less-implies-lt CMP N2>N1
+    <- gt-implies-plus N2>N1 N0 N0+1+N1=N2
+    <- domain?-total* M1 N0 B MD1
+    <- domain?-map/+-complete N1 D1 M1 N2 N0 N0+1+N1=N2 B MD1 MD.
+
+- : domain?-map/+-complete N1 D1 M1 N2 N0 N0+1+N1=N2 true (domain?/in L1)
+                              (domain?/in (lookup/> L1 N0+1+N1=N2)).
+
+- : domain?-map/+-complete N1 D1 M1 N2 N0 N0+1+N1=N2 false (domain?/out F1)
+                              (domain?/out (fresh/> F1 N0+1+N1=N2)).
+
+%worlds () (domain?-map/+-complete _ _ _ _ _ _ _ _ _).
+%total {} (domain?-map/+-complete _ _ _ _ _ _ _ _ _).
+
+%worlds () (domain?-total* _ _ _ _)
+           (domain?-map/+-total _ _ _ _ _ _ _ _).
+%total (M M1) (domain?-total* M _ _ _) 
+              (domain?-map/+-total _ _ M1 _ _ _ _ _).
+
+%abbrev domain?-total = domain?-total* _ _ _.
+
+
+%theorem in-implies-lookup :
+	forall* {M} {N}
+	forall {MD:domain? M N true}
+	exists {D} {L:lookup M N D}
+	true.
+
+- : in-implies-lookup (domain?/in L) _ L.
+
+%worlds () (in-implies-lookup _ _ _).
+%total {} (in-implies-lookup _ _ _).
+
+
+%theorem out-implies-fresh :
+	forall* {M} {N}
+	forall {MD:domain? M N false}
+	exists {F:fresh M N}
+	true.
+
+- : out-implies-fresh (domain?/out F) F.
+
+%worlds () (out-implies-fresh _ _).
+%total {} (out-implies-fresh _ _).
+
+
+
+%%% Theorems about disjoint
+
+
+%theorem false-implies-disjoint :
+	forall* {M1} {M2}
+	forall {F:void}
+	exists {D:disjoint M1 M2}
+	true.
+
+%worlds () (false-implies-disjoint _ _).
+%total { } (false-implies-disjoint _ _).
+
+
+%theorem disjoint-respects-eq :
+	forall* {M1} {M2} {M1P} {M2P}
+	forall {A:disjoint M1 M2} {E1:eq M1 M1P} {E2:eq M2 M2P} 
+	exists {AP:disjoint M1P M2P}
+	true.
+
+- : disjoint-respects-eq A eq/ eq/ A.
+
+%worlds () (disjoint-respects-eq _ _ _ _).
+%total {} (disjoint-respects-eq _ _ _ _).
+%reduces A = AP (disjoint-respects-eq A _ _ AP).
+
+
+%theorem disjoint/=-contradiction :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2}
+	forall {A:disjoint (map/+ N1 D1 M1) (map/+ N2 D2 M2)}
+	       {G:nat`eq N1 N2}
+	exists {F:void}
+	true.
+
+- : disjoint/=-contradiction (disjoint/< _ N0+1+N=N) nat`eq/ F
+    <- nat`plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- nat`gt-anti-reflexive N>N F.
+
+- : disjoint/=-contradiction (disjoint/> _ N3+1+N=N) nat`eq/ F
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- nat`gt-anti-reflexive N>N F.
+
+%worlds () (disjoint/=-contradiction _ _ _).
+%total { } (disjoint/=-contradiction _ _ _).
+
+
+%theorem disjoint/<-inversion :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {N0}
+	forall {A:disjoint (map/+ N1 D1 M1) (map/+ N2 D2 M2)}
+               {P:plus (s N0) N1 N2} 	       
+	exists {AP:disjoint M1 (map/+ N0 D2 M2)}
+	true.
+
+- : disjoint/<-inversion (disjoint/< A P) P' A'
+    <- nat`plus-right-cancels P P' nat`eq/ nat`eq/ N0+1=N0'+1
+    <- succ-cancels N0+1=N0'+1 N0=N0P
+    <- map/+-preserves-eq N0=N0P data`eq/ eq/ M022=M022'
+    <- disjoint-respects-eq A eq/ M022=M022' A'.
+
+- : disjoint/<-inversion (disjoint/> A' N3+1+N2=N1) N0+1+N1=N2 A
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F M311=M1
+    <- false-implies-eq F M2=M022
+    <- disjoint-respects-eq A' M311=M1 M2=M022 A.
+
+%worlds () (disjoint/<-inversion _ _ _).
+%total {}  (disjoint/<-inversion _ _ _).
+%reduces AP < A (disjoint/<-inversion A _ AP).
+
+
+%theorem disjoint/>-inversion :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {N3}
+	forall {A:disjoint (map/+ N1 D1 M1) (map/+ N2 D2 M2)}
+	       {P:plus (s N3) N2 N1}
+	exists {AP:disjoint (map/+ N3 D1 M1) M2}
+	true.
+
+- : disjoint/>-inversion (disjoint/> A P) P' A'
+    <- nat`plus-right-cancels P P' nat`eq/ nat`eq/ N3+1=N3'+1
+    <- succ-cancels N3+1=N3'+1 N3=N3P
+    <- map/+-preserves-eq N3=N3P data`eq/ eq/ M311=M311'
+    <- disjoint-respects-eq A M311=M311' eq/ A'.
+
+- : disjoint/>-inversion (disjoint/< A' N0+1+N1=N2) N3+1+N2=N1 A
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F M1=M311
+    <- false-implies-eq F M022=M2
+    <- disjoint-respects-eq A' M1=M311 M022=M2 A.
+
+%worlds () (disjoint/>-inversion _ _ _).
+%total { } (disjoint/>-inversion _ _ _).
+%reduces AP < A (disjoint/>-inversion A _ AP).
+
+
+%theorem disjoint-anti-reflexive :
+	forall* {M}
+	forall {D:disjoint M M}
+	exists {E:eq map/0 M}
+	true.
+
+- : disjoint-anti-reflexive disjoint/L eq/.
+
+- : disjoint-anti-reflexive disjoint/R eq/.
+
+- : disjoint-anti-reflexive (A:disjoint (map/+ N D M) (map/+ N D M)) E
+    <- disjoint/=-contradiction A nat`eq/ F
+    <- false-implies-eq F E.
+
+%worlds () (disjoint-anti-reflexive _ _).
+%total { } (disjoint-anti-reflexive _ _).
+
+
+%theorem disjoint-symmetric :
+	forall* {M1} {M2}
+	forall {D:disjoint M1 M2} 
+	exists {D:disjoint M2 M1}
+	true.
+
+- : disjoint-symmetric disjoint/L disjoint/R.
+
+- : disjoint-symmetric disjoint/R disjoint/L.
+
+- : disjoint-symmetric (disjoint/< D P) (disjoint/> D' P)
+    <- disjoint-symmetric D D'.
+
+- : disjoint-symmetric (disjoint/> D P) (disjoint/< D' P)
+    <- disjoint-symmetric D D'.
+
+%worlds () (disjoint-symmetric _ _).
+%total (D) (disjoint-symmetric D _).
+
+
+%theorem disjoint-lookup-contradiction :
+	forall* {M1} {M2} {N} {D1} {D2}
+	forall {A:disjoint M1 M2}
+               {L1:lookup M1 N D1} {L2:lookup M2 N D2}
+	exists {F:void}
+	true.
+
+- : disjoint-lookup-contradiction disjoint/L L _ F
+    <- lookup-contradiction L F.
+
+- : disjoint-lookup-contradiction disjoint/R _ L F
+    <- lookup-contradiction L F.
+
+- : disjoint-lookup-contradiction (disjoint/< _ N0+1+N=N)
+                                  (lookup/= nat`eq/) (lookup/= nat`eq/) F
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F.
+
+- : disjoint-lookup-contradiction (disjoint/< _ N0+1+N1=N2)
+                                  (lookup/= nat`eq/) 
+                                  (lookup/> _ N3+1+N2=N1) F
+    <- plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- gt-anti-symmetric N2>N1 N1>N2 F.
+    
+- : disjoint-lookup-contradiction (disjoint/< D N0+1+N1=N2)
+                                  (lookup/> L1P N0P+1+N1=N2)
+                                  (lookup/= nat`eq/) F
+    <- plus-right-cancels N0P+1+N1=N2 N0+1+N1=N2 nat`eq/ nat`eq/ N0P+1=N0+1
+    <- succ-cancels N0P+1=N0+1 N0P=N0
+    <- lookup-respects-eq L1P eq/ N0P=N0 data`eq/ L1
+    <- disjoint-lookup-contradiction D L1 (lookup/= nat`eq/) F.
+
+- : disjoint-lookup-contradiction (disjoint/< D N0+1+N1=N2)
+                                  (lookup/> L1 N1P+1+N1=N) 
+                                  (lookup/> L2 N2P+1+N2=N) F
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-associative-converse N0+N1+1=N2 N2P+1+N2=N NX
+                                 N2P+1+N0=NX NX+N1+1=N
+    <- plus-swap-succ N1P+1+N1=N N1P+N1+1=N
+    <- plus-right-cancels NX+N1+1=N N1P+N1+1=N nat`eq/ nat`eq/ NX=N1P
+    <- plus-respects-eq N2P+1+N0=NX nat`eq/ nat`eq/ NX=N1P N2P+1+N0=N1P
+    <- disjoint-lookup-contradiction D L1 (lookup/> L2 N2P+1+N0=N1P) F.
+
+- : disjoint-lookup-contradiction (disjoint/> _ N3+1+N=N)
+                                  (lookup/= nat`eq/) (lookup/= nat`eq/) F
+    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F.
+
+- : disjoint-lookup-contradiction (disjoint/> _ N3+1+N2=N1)
+                                  (lookup/> _ N3+1+N1=N2)
+                                  (lookup/= nat`eq/) F
+    <- plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- plus-implies-gt N3+1+N1=N2 nat`eq/ N2>N1
+    <- gt-anti-symmetric N1>N2 N2>N1 F.
+    
+- : disjoint-lookup-contradiction (disjoint/> D N3+1+N2=N1)
+                                  (lookup/= nat`eq/)
+                                  (lookup/> L2P N3P+1+N2=N1) F
+    <- plus-right-cancels N3P+1+N2=N1 N3+1+N2=N1 nat`eq/ nat`eq/ N3P+1=N3+1
+    <- succ-cancels N3P+1=N3+1 N3P=N3
+    <- lookup-respects-eq L2P eq/ N3P=N3 data`eq/ L2
+    <- disjoint-lookup-contradiction D (lookup/= nat`eq/) L2 F.
+
+- : disjoint-lookup-contradiction (disjoint/> D N3+1+N2=N1)
+                                  (lookup/> L1 N1P+1+N1=N)
+                                  (lookup/> L2 N2P+1+N2=N) F 
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-associative-converse N3+N2+1=N1 N1P+1+N1=N NX
+                                 N1P+1+N3=NX NX+N2+1=N
+    <- plus-swap-succ N2P+1+N2=N N2P+N2+1=N
+    <- plus-right-cancels NX+N2+1=N N2P+N2+1=N nat`eq/ nat`eq/ NX=N2P
+    <- plus-respects-eq N1P+1+N3=NX nat`eq/ nat`eq/ NX=N2P N1P+1+N3=N2P
+    <- disjoint-lookup-contradiction D (lookup/> L1 N1P+1+N3=N2P) L2 F.
+
+%worlds () (disjoint-lookup-contradiction _ _ _ _).
+%total (D) (disjoint-lookup-contradiction D _ _ _).
+
+
+%theorem shift-left-preserves-disjoint :
+	forall* {N} {D} {M1} {M2} {SM1}
+	forall {A:disjoint M1 M2} {S1:shift N M1 SM1}
+        exists {SA:disjoint SM1 (map/+ N D M2)}
+        true.
+
+- : shift-left-preserves-disjoint _ shift/0 disjoint/L.
+
+- : shift-left-preserves-disjoint M111*M2 (shift/+ N+1+N1=N1P)
+                              (disjoint/> M111*M2 N1+1+N=N1P)
+    <- plus-swap-succ N+1+N1=N1P N+N1+1=N1P
+    <- plus-commutative N+N1+1=N1P N1+1+N=N1P.
+
+%worlds () (shift-left-preserves-disjoint _ _ _).
+%total { } (shift-left-preserves-disjoint _ _ _).
+
+
+%theorem shift-left-preserves-disjoint-converse :
+	forall* {N} {D} {M1} {M2} {SM1}
+	forall {SA:disjoint SM1 (map/+ N D M2)} {S1:shift N M1 SM1}
+        exists {A:disjoint M1 M2}
+	true.
+
+- : shift-left-preserves-disjoint-converse _ shift/0 disjoint/L.
+
+- : shift-left-preserves-disjoint-converse M111*M222 (shift/+ N2+1+N3=N1)
+                                           M311*M2
+    <- plus-swap-succ N2+1+N3=N1 N2+N3+1=N1
+    <- plus-commutative N2+N3+1=N1 N3+1+N2=N1
+    <- disjoint/>-inversion M111*M222 N3+1+N2=N1 M311*M2.
+
+%worlds () (shift-left-preserves-disjoint-converse _ _ _).
+%total { } (shift-left-preserves-disjoint-converse _ _ _).
+
+
+%theorem shift-right-preserves-disjoint :
+	forall* {N} {D} {M1} {M2} {SM2}
+	forall {A:disjoint M1 M2} {S2:shift N M2 SM2}
+        exists {SA:disjoint (map/+ N D M1) SM2}
+	true.
+
+- : shift-right-preserves-disjoint _ shift/0 disjoint/R.
+
+- : shift-right-preserves-disjoint M1*M222 (shift/+ N+1+N2=N2P)
+                               (disjoint/< M1*M222 N2+1+N=N2P)
+    <- plus-swap-succ N+1+N2=N2P N+N2+1=N2P
+    <- plus-commutative N+N2+1=N2P N2+1+N=N2P.
+
+%worlds () (shift-right-preserves-disjoint _ _ _).
+%total { } (shift-right-preserves-disjoint _ _ _).
+
+
+%theorem shift-right-preserves-disjoint-converse :
+	forall* {N} {D} {M1} {M2} {SM2}
+	forall {SA:disjoint (map/+ N D M1) SM2} {S2:shift N M2 SM2}
+        exists {A:disjoint M1 M2}
+	true.
+
+- : shift-right-preserves-disjoint-converse _ shift/0 disjoint/R.
+
+- : shift-right-preserves-disjoint-converse M111*M322 (shift/+ N1+1+N2=N3)
+                                            M1*M222
+    <- plus-swap-succ N1+1+N2=N3 N1+N2+1=N3
+    <- plus-commutative N1+N2+1=N3 N2+1+N1=N3
+    <- disjoint/<-inversion M111*M322 N2+1+N1=N3 M1*M222.
+
+%worlds () (shift-right-preserves-disjoint-converse _ _ _).
+%total { } (shift-right-preserves-disjoint-converse _ _ _).
+
+
+%theorem shift-preserves-disjoint :
+	forall* {N} {M1} {M2} {SM1} {SM2}
+	forall {A:disjoint M1 M2} 
+               {S1:shift N M1 SM1} {S2:shift N M2 SM2}
+	exists {SA:disjoint SM1 SM2}
+	true.
+
+- : shift-preserves-disjoint _ shift/0 _ disjoint/L.
+
+- : shift-preserves-disjoint _ _ shift/0 disjoint/R.
+
+- : shift-preserves-disjoint (disjoint/< M1*M022 N0+1+N1=N2)
+                             (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5)
+                             (disjoint/< M1*M022 N0+1+N4=N5)
+    <- plus-swap-succ N+1+N1=N4 N+N1+1=N4
+    <- plus-commutative N+N1+1=N4 N1+1+N=N4
+    <- plus-commutative N0+1+N1=N2 N1+N0+1=N2
+    <- plus-associative-converse* N1+N0+1=N2 N+1+N2=N5 N+1+N1=N4 N4+N0+1=N5
+    <- plus-commutative N4+N0+1=N5 N0+1+N4=N5.
+
+- : shift-preserves-disjoint (disjoint/> M311*M2 N3+1+N2=N1)
+                             (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5)
+                             (disjoint/> M311*M2 N3+1+N5=N4)
+    <- plus-swap-succ N+1+N2=N5 N+N2+1=N5
+    <- plus-commutative N+N2+1=N5 N2+1+N=N5
+    <- plus-commutative N3+1+N2=N1 N2+N3+1=N1
+    <- plus-associative-converse* N2+N3+1=N1 N+1+N1=N4 N+1+N2=N5 N5+N3+1=N4
+    <- plus-commutative N5+N3+1=N4 N3+1+N5=N4.
+
+%worlds () (shift-preserves-disjoint _ _ _ _).
+%total { } (shift-preserves-disjoint _ _ _ _).
+
+
+%theorem shift-preserves-disjoint-converse :
+	forall* {N} {M1} {M2} {SM1} {SM2}
+	forall {SA:disjoint SM1 SM2}
+               {S1:shift N M1 SM1} {S2:shift N M2 SM2} 
+	exists {A:disjoint M1 M2}
+	true.
+
+- : shift-preserves-disjoint-converse _ shift/0 _ disjoint/L.
+
+- : shift-preserves-disjoint-converse _ _ shift/0 disjoint/R.
+
+- : shift-preserves-disjoint-converse (disjoint/< M1*M055 N0+1+N4=N5)
+                                      (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5)
+				      (disjoint/< M1*M055 N0+1+N1=N2)
+    <- plus-commutative N+1+N1=N4 N1+N+1=N4
+    <- plus-swap-succ-converse N1+N+1=N4 N1+1+N=N4
+    <- plus-associative-converse N1+N+1=N4 N0+1+N4=N5 N2P N0+1+N1=N2P N2P+N+1=N5
+    <- plus-commutative N+1+N2=N5 N2+N+1=N5
+    <- plus-right-cancels N2P+N+1=N5 N2+N+1=N5 nat`eq/ nat`eq/ N2P=N2
+    <- plus-respects-eq N0+1+N1=N2P nat`eq/ nat`eq/ N2P=N2 N0+1+N1=N2.
+                                  
+- : shift-preserves-disjoint-converse (disjoint/> M611*M2 N6+1+N5=N4)
+                                      (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5)
+                                      (disjoint/> M611*M2 N6+1+N2=N1)
+    <- plus-commutative N+1+N2=N5 N2+N+1=N5
+    <- plus-swap-succ-converse N2+N+1=N5 N2+1+N=N5
+    <- plus-associative-converse N2+N+1=N5 N6+1+N5=N4 N1P N6+1+N2=N1P N1P+N+1=N4
+    <- plus-commutative N+1+N1=N4 N1+N+1=N4
+    <- plus-right-cancels N1P+N+1=N4 N1+N+1=N4 nat`eq/ nat`eq/ N1P=N1
+    <- plus-respects-eq N6+1+N2=N1P nat`eq/ nat`eq/ N1P=N1 N6+1+N2=N1.
+
+%worlds () (shift-preserves-disjoint-converse _ _ _ _).
+%total { } (shift-preserves-disjoint-converse _ _ _ _).
+
+
+
+%%% Theorems about size
+
+
+%theorem false-implies-size :
+	forall* {M} {N}
+	forall {F:void}
+	exists {SZ:size M N}
+	true.
+
+%worlds () (false-implies-size _ _).
+%total { } (false-implies-size _ _).
+
+
+%theorem size-total* :
+	forall {M} 
+	exists {N} {MX:size M N}
+	true.
+
+- : size-total* map/0 _ size/0.
+
+- : size-total* _ _ (size/+ SZ)
+    <- size-total* _ _ SZ.
+
+%worlds () (size-total* _ _ _).
+%total (M) (size-total* M _ _).
+
+
+%abbrev size-total = size-total* _ _.
+
+
+%theorem size-deterministic :
+	forall* {M1} {M2} {N1} {N2}
+	forall {SZ1:size M1 N1} {SZ2:size M2 N2} {EM:eq M1 M2}
+        exists {EN:nat`eq N1 N2}
+	true.
+
+- : size-deterministic size/0 size/0 eq/ nat`eq/.
+
+- : size-deterministic (size/+ N1=|M1|) (size/+ N2=|M2|) eq/ N1+1=N2+1
+    <- size-deterministic N1=|M1| N2=|M2| eq/ N1=N2
+    <- succ-deterministic N1=N2 N1+1=N2+1.
+
+%worlds () (size-deterministic _ _ _ _).
+%total (S) (size-deterministic S _ _ _).
+
+
+
+%%% Theorems about bound
+
+%theorem false-implies-bound :
+	forall* {M} {N}
+	forall {F:void}
+	exists {MX:bound M N}
+	true.
+
+%worlds () (false-implies-bound _ _).
+%total { } (false-implies-bound _ _).
+
+
+%theorem bound-total* :
+	forall {M} 
+	exists {N} {MX:bound M N}
+	true.
+
+- : bound-total* map/0 _ bound/0.
+
+- : bound-total* _ _ (bound/+ P MX)
+    <- bound-total* _ _ MX
+    <- plus-total P.
+
+%worlds () (bound-total* _ _ _).
+%total (M) (bound-total* M _ _).
+
+
+%abbrev bound-total = bound-total* _ _.
+
+
+
+%%% Theorems about shift
+
+%theorem false-implies-shift :
+	forall* {M} {N} {M'}
+	forall {F:void}
+	exists {S:shift N M M'}
+	true.
+%worlds () (false-implies-shift _ _).
+%total { } (false-implies-shift _ _).
+
+
+%theorem shift-respects-eq :
+	forall* {N} {M1} {M2} {N'} {M1'} {M2'}
+	forall {S:shift N M1 M2} 
+               {EN:nat`eq N N'} {E1:eq M1 M1'} {E2:eq M2 M2'}
+        exists {S':shift N' M1' M2'}
+	true.
+
+- : shift-respects-eq S nat`eq/ eq/ eq/ S.
+
+%worlds () (shift-respects-eq _ _ _ _ _).
+%total { } (shift-respects-eq _ _ _ _ _).
+
+
+%theorem shift-total* :
+	forall {N} {M1}
+	exists {M2} {S:shift N M1 M2}
+	true.
+
+- : shift-total* N map/0 map/0 shift/0.
+
+- : shift-total* N1 (map/+ N2 D M) (map/+ N3 D M) (shift/+ N1+1+N2=N3)
+    <- plus-total N1+1+N2=N3.
+
+%worlds () (shift-total* _ _ _ _).
+%total { } (shift-total* _ _ _ _).
+
+%abbrev shift-total = shift-total* _ _ _.
+
+
+%theorem shift-deterministic :
+	forall* {N} {M1} {M2} {N'} {M1'} {M2'}
+	forall {S:shift N M1 M2} {S':shift N' M1' M2'}
+	       {EN:nat`eq N N'} {EM1:eq M1 M1'}
+	exists {EM2:eq M2 M2'}
+	true.
+
+- : shift-deterministic shift/0 shift/0 nat`eq/ eq/ eq/.
+
+- : shift-deterministic (shift/+ N1+1+N2=N3) (shift/+ N1+1+N2=N3') nat`eq/ eq/ E
+    <- plus-deterministic N1+1+N2=N3 N1+1+N2=N3' nat`eq/ nat`eq/ N3=N3P
+    <- map/+-preserves-eq N3=N3P data`eq/ eq/ E.
+
+%worlds () (shift-deterministic _ _ _ _ _).
+%total { } (shift-deterministic _ _ _ _ _).
+
+
+%theorem shifts-add :
+	forall* {N1} {N2} {N3} {M0} {M1} {M3}
+	forall {S1:shift N1 M0 M1} {S2:shift N2 M1 M3} {P:plus (s N1) N2 N3}
+        exists {S3:shift N3 M0 M3}
+	true.
+
+- : shifts-add shift/0 shift/0 _ shift/0.
+
+- : shifts-add (shift/+ N1+1+N4=N5) (shift/+ N2+1+N5=N7) N1+1+N2=N3
+               (shift/+ N3+1+N4=N7)          
+    <- plus-total N3+1+N4=N7'
+    <- plus-swap-succ N3+1+N4=N7' N3+N4+1=N7'
+    <- plus-swap-succ N1+1+N2=N3 N1+N2+1=N3
+    <- plus-swap-succ N1+1+N4=N5 N1+N4+1=N5
+    <- plus-commutative N1+N2+1=N3 N2+1+N1=N3
+    <- plus-associative* N2+1+N1=N3 N3+N4+1=N7' N1+N4+1=N5 N2+1+N5=N7'
+    <- plus-deterministic N2+1+N5=N7' N2+1+N5=N7 nat`eq/ nat`eq/ N7'=N7
+    <- plus-respects-eq N3+1+N4=N7' nat`eq/ nat`eq/ N7'=N7 N3+1+N4=N7.
+
+%worlds () (shifts-add _ _ _ _).
+%total { } (shifts-add _ _ _ _).
+
+
+%theorem shifts-add-converse :
+	forall* {N1} {N2} {N3} {M0} {M3}
+	forall {S3:shift N3 M0 M3} {P:plus (s N1) N2 N3}
+	exists {M1} {S1:shift N1 M0 M1} {S2:shift N2 M1 M3}
+        true.
+
+- : shifts-add-converse S3 P M1 S1 S2
+    <- shift-total S1
+    <- shift-total S2'
+    <- shifts-add S1 S2' P S3'
+    <- shift-deterministic S3' S3 nat`eq/ eq/ M3'=M3
+    <- shift-respects-eq S2' nat`eq/ eq/ M3'=M3 S2.
+
+%worlds () (shifts-add-converse _ _ _ _ _).
+%total { } (shifts-add-converse _ _ _ _ _).
+
+
+%theorem shift-preserves-lookup :
+        forall* {M1} {N1} {D} {N0} {M2}
+	forall {L1:lookup M1 N1 D} {S:shift N0 M1 M2}
+        exists {N2} {P:plus (s N0) N1 N2} {L2:lookup M2 N2 D}
+	true.
+
+- : shift-preserves-lookup (lookup/= nat`eq/) (shift/+ N0+1+N1=N2) _
+                           N0+1+N1=N2 (lookup/= nat`eq/).
+
+- : shift-preserves-lookup (lookup/> L N3+1+N1=N4) (shift/+ N0+1+N1=N2) _
+                           N0+1+N4=N5 (lookup/> L N3+1+N2=N5)
+    <- plus-total N0+1+N4=N5
+    <- plus-commutative N3+1+N1=N4 N1+N3+1=N4
+    <- plus-associative-converse* N1+N3+1=N4 N0+1+N4=N5 N0+1+N1=N2 N2+N3+1=N5
+    <- plus-commutative N2+N3+1=N5 N3+1+N2=N5.
+
+%worlds () (shift-preserves-lookup _ _ _ _ _).
+%total { } (shift-preserves-lookup _ _ _ _ _).
+
+
+%theorem shift-preserves-lookup* :
+        forall* {M1} {N1} {D} {N0} {M2} {N2}
+	forall {L1:lookup M1 N1 D} {S:shift N0 M1 M2}
+               {P:plus (s N0) N1 N2} 
+        exists {L2:lookup M2 N2 D}
+	true.
+
+- : shift-preserves-lookup* L1 S P L2
+    <- shift-preserves-lookup L1 S _ P' L2'
+    <- plus-deterministic P' P nat`eq/ nat`eq/ N2'=N2
+    <- lookup-respects-eq L2' eq/ N2'=N2 data`eq/ L2.
+
+%worlds () (shift-preserves-lookup* _ _ _ _).
+%total { } (shift-preserves-lookup* _ _ _ _).
+
+
+%theorem shift-preserves-lookup-converse :
+        forall* {M1} {N0} {D} {N2} {M2}
+	forall {L2:lookup M2 N2 D} {S:shift N0 M1 M2}
+        exists {N1} {P:plus (s N0) N1 N2} {L1:lookup M1 N1 D}
+	true.
+
+- : shift-preserves-lookup-converse (lookup/= nat`eq/) (shift/+ N0+1+N1=N2) _
+                                    N0+1+N1=N2 (lookup/= nat`eq/).
+
+- : shift-preserves-lookup-converse (lookup/> L N3+1+N2=N5) (shift/+ N0+1+N1=N2)
+                                    _ N0+1+N4=N5 (lookup/> L N3+1+N1=N4)
+    <- plus-commutative N0+1+N1=N2 N1+N0+1=N2
+    <- plus-associative-converse N1+N0+1=N2 N3+1+N2=N5 N4 N3+1+N1=N4 N4+N0+1=N5
+    <- plus-commutative N4+N0+1=N5 N0+1+N4=N5.
+
+%worlds () (shift-preserves-lookup-converse _ _ _ _ _).
+%total { } (shift-preserves-lookup-converse _ _ _ _ _).
+
+
+%theorem shift-preserves-lookup-converse* :
+        forall* {M1} {N1} {D} {N2} {M2} {N0}
+	forall {L2:lookup M2 N2 D} {S:shift N0 M1 M2}
+               {P:plus (s N0) N1 N2} 
+        exists {L1:lookup M1 N1 D}
+	true.
+
+- : shift-preserves-lookup-converse* L2 S P L1
+    <- shift-preserves-lookup-converse L2 S _ P' L1'
+    <- plus-left-cancels P' P nat`eq/ nat`eq/ N1'=N1
+    <- lookup-respects-eq L1' eq/ N1'=N1 data`eq/ L1.
+
+%worlds () (shift-preserves-lookup-converse* _ _ _ _).
+%total { } (shift-preserves-lookup-converse* _ _ _ _).
+
+
+%theorem shift-preserves-update :
+	forall* {M1} {N1} {D} {M1'} {N0} {M2}
+	forall {U1:update M1 N1 D M1'}
+               {S:shift N0 M1 M2}
+        exists {N2} {M2'} 
+               {P:plus (s N0) N1 N2}
+               {SS:shift N0 M1' M2'}
+               {U2:update M2 N2 D M2'}
+	true.
+
+- : shift-preserves-update update/0 shift/0 _ _ P (shift/+ P) update/0
+    <- plus-total P.
+
+- : shift-preserves-update (update/= nat`eq/) (shift/+ P) _ _ P (shift/+ P)
+                           (update/= nat`eq/).
+
+- : shift-preserves-update (update/< N4+1+N1=N3) (shift/+ N0+1+N3=N5) _ _
+                           N0+1+N1=N2 (shift/+ N0+1+N1=N2) 
+                           (update/< N4+1+N2=N5)
+    <- plus-commutative N4+1+N1=N3 N1+N4+1=N3
+    <- plus-associative-converse N1+N4+1=N3 N0+1+N3=N5 _ N0+1+N1=N2 N2+N4+1=N5
+    <- plus-commutative N2+N4+1=N5 N4+1+N2=N5.
+
+- : shift-preserves-update (update/> U N4+1+N3=N1) (shift/+ N0+1+N3=N5) _ _
+                           N0+1+N1=N2 (shift/+ N0+1+N3=N5)
+                           (update/> U N4+1+N5=N2)
+   <- plus-total N0+1+N1=N2
+   <- plus-commutative N4+1+N3=N1 N3+N4+1=N1
+   <- plus-associative-converse* N3+N4+1=N1 N0+1+N1=N2 N0+1+N3=N5 N5+N4+1=N2
+   <- plus-commutative N5+N4+1=N2 N4+1+N5=N2.
+
+%worlds () (shift-preserves-update _ _ _ _ _ _ _).
+%total { } (shift-preserves-update _ _ _ _ _ _ _).
+
+
+%theorem shift-preserves-size :
+	forall* {M} {N1} {N2} {S2M}
+	forall {SZ:size M N1} {SH:shift N2 M S2M}
+	exists {SHSZ:size S2M N1}
+	true.
+
+- : shift-preserves-size size/0 shift/0 size/0.
+
+- : shift-preserves-size (size/+ SZ) (shift/+ _) (size/+ SZ).
+
+%worlds () (shift-preserves-size _ _ _).
+%total { } (shift-preserves-size _ _ _).
+
+
+
+%%% Theorems about disjoint?
+
+
+%theorem disjoint?-total* :
+	forall {M1} {M2}
+	exists {B} {D:disjoint? M1 M2 B}
+	true.
+
+- : disjoint?-total* _ _ _ (disjoint?/yes disjoint/L).
+
+- : disjoint?-total* _ _ _ (disjoint?/yes disjoint/R).
+
+%theorem disjoint?-total*/+ :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {C}
+	forall {S1} {S2} {SZ1:size M1 S1} {SZ2:size M2 S2} {CMP:nat`compare N1 N2 C}
+	exists {B} {D:disjoint? (map/+ N1 D1 M1) (map/+ N2 D2 M2) B}
+	true.
+
+%theorem disjoint?-total*/< :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {N0} {B1}
+	forall {P:plus (s N0) N1 N2}
+               {D?1:disjoint? M1 (map/+ N0 D2 M2) B1}
+	exists {B} {D:disjoint? (map/+ N1 D1 M1) (map/+ N2 D2 M2) B}
+	true.
+
+%theorem disjoint?-total*/> :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {N3} {B1}
+	forall {P:plus (s N3) N2 N1}
+               {D?1:disjoint? (map/+ N3 D1 M1) M2 B1}
+	exists {B} {D:disjoint? (map/+ N1 D1 M1) (map/+ N2 D2 M2) B}
+	true.
+
+- : disjoint?-total* _ _ _ D?
+    <- size-total SZ1
+    <- size-total SZ2
+    <- nat`compare-total CMP
+    <- disjoint?-total*/+ _ _ SZ1 SZ2 CMP _ D?.
+
+- : disjoint?-total*/+ _ _ _ _ (nat`compare/=) _ 
+                       (disjoint?/no (lookup/= nat`eq/) (lookup/= nat`eq/)).
+
+- : disjoint?-total*/+ _ _ _ _ (nat`compare/< N2>N1) _ D?
+    <- gt-implies-plus N2>N1 _ N0+1+N1=N2
+    <- disjoint?-total*/< N0+1+N1=N2 (disjoint?/yes disjoint/L) _ D?.
+
+- : disjoint?-total*/+ _ _ (size/+ SZ1) SZ2 (nat`compare/< N2>N1) _ D?
+    <- gt-implies-plus N2>N1 _ N0+1+N1=N2
+    <- nat`compare-total CMP
+    <- disjoint?-total*/+ _ _ SZ1 SZ2 CMP _ D?1
+    <- disjoint?-total*/< N0+1+N1=N2 D?1 _ D?.
+
+- : disjoint?-total*/< N0+1+N1=N2 (disjoint?/yes M1*M022) _
+                       (disjoint?/yes (disjoint/< M1*M022 N0+1+N1=N2)).
+
+- : disjoint?-total*/< N0+1+N1=N2 (disjoint?/no M1^N3=D1 M022^N3=D2) _
+                       (disjoint?/no (lookup/> M1^N3=D1 N3+1+N1=N4) M222^N4=D2)
+    <- plus-total N3+1+N1=N4
+    <- plus-swap-succ N3+1+N1=N4 N3+N1+1=N4
+    <- plus-commutative N3+N1+1=N4 N1+1+N3=N4
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
+    <- shift-preserves-lookup* M022^N3=D2 (shift/+ N1+1+N0=N2) N1+1+N3=N4
+                               M222^N4=D2.
+
+%worlds () (disjoint?-total*/< _ _ _ _).
+%total { } (disjoint?-total*/< _ _ _ _).
+
+- : disjoint?-total*/+ _ _ _ _ (nat`compare/> N1>N2) _ D?
+    <- gt-implies-plus N1>N2 _ N3+1+N2=N1
+    <- disjoint?-total*/> N3+1+N2=N1 (disjoint?/yes disjoint/R) _ D?.
+
+- : disjoint?-total*/+ _ _ SZ1 (size/+ SZ2) (nat`compare/> N1>N2) _ D?
+    <- gt-implies-plus N1>N2 _ N3+1+N2=N1
+    <- nat`compare-total CMP
+    <- disjoint?-total*/+ _ _ SZ1 SZ2 CMP _ D?1
+    <- disjoint?-total*/> N3+1+N2=N1 D?1 _ D?.
+
+- : disjoint?-total*/> P (disjoint?/yes D) _ (disjoint?/yes (disjoint/> D P)).
+
+- : disjoint?-total*/> N3+1+N2=N1 (disjoint?/no M311^N4=D1 M2^N4=D2) _
+                       (disjoint?/no M111^N5=D1 (lookup/> M2^N4=D2 N4+1+N2=N5))
+    <- plus-total N4+1+N2=N5
+    <- plus-swap-succ N4+1+N2=N5 N4+N2+1=N5
+    <- plus-commutative N4+N2+1=N5 N2+1+N4=N5
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
+    <- shift-preserves-lookup* M311^N4=D1 (shift/+ N2+1+N3=N1) N2+1+N4=N5
+                               M111^N5=D1.
+
+%worlds () (disjoint?-total*/> _ _ _ _).
+%total { } (disjoint?-total*/> _ _ _ _).
+
+%worlds () (disjoint?-total*/+ _ _ _ _ _ _ _).
+%total [S1 S2] (disjoint?-total*/+ S1 S2 _ _ _ _ _).
+
+%worlds () (disjoint?-total* _ _ _ _).
+%total { } (disjoint?-total* _ _ _ _).
+
+%abbrev disjoint?-total = disjoint?-total* _ _ _.
+
+
+
+%%% Theorems about update
+
+%theorem false-implies-update :
+	forall* {M} {N} {D} {M'} 
+	forall {F:void} 
+	exists {U:update M N D M'} 
+	true.
+%worlds () (false-implies-update _ %{=>}% M^N=D->M').
+%total {} (false-implies-update _ _).
+
+%theorem update-respects-eq :
+	forall* {M1} {N} {D} {M2} {M1P} {NP} {DP} {M2P}
+	forall {U:update M1 N D M2} {EM1:eq M1 M1P} 
+               {EN:nat`eq N NP} {ED:data`eq D DP} {EM2:eq M2 M2P}
+	exists {UP:update M1P NP DP M2P} 
+	true.
+- : update-respects-eq U eq/ nat`eq/ data`eq/ eq/ U.
+%worlds () (update-respects-eq M1^N=D->M2 M1=M1' N=N' D=D' M2=M2' 
+                        %{=>}% M1'^N'=D'->M2').
+%total {} (update-respects-eq _ _ _ _ _ _).
+%reduces U = U' (update-respects-eq U _ _ _ _ U').
+
+
+
+%%% technical lemmas to help prove reduction arguments
+
+
+update-eq : {M1} {N1} {D1} {M1'} {M2} {N2} {D2} {M2'}
+            update M1 N1 D1 M1' -> update M2 N2 D2 M2' -> type.
+update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
+
+
+%theorem false-implies-update-eq :
+	forall* {M1} {N1} {D1} {M1'} {M2} {N2} {D2} {M2'} {U} {U'}
+        forall {F:void}
+	exists {UE:update-eq M1 N1 D1 M1'  M2 N2 D2 M2' U U'}
+        true.
+
+%worlds () (false-implies-update-eq _ _).
+%total { } (false-implies-update-eq _ _).
+
+
+%theorem meta-update-eq :
+	forall* {M1} {N1} {D1} {M1'} {M2} {N2} {D2} {M2'}
+	forall {U} {U'} {UE:update-eq M1 N1 D1 M1'  M2 N2 D2 M2' U U'}
+        true.
+
+- : meta-update-eq U U (update-eq/).
+
+%worlds () (meta-update-eq _ _ _).
+%total { } (meta-update-eq _ _ _).
+%reduces U = U' (meta-update-eq U U' _).
+
+
+
+%%% inversion lemmas
+
+%theorem update/=-inversion :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2}
+	forall {U:update (map/+ N1 D1 M1) N2 D2 M2} {E:nat`eq N1 N2}
+        exists {EM:eq (map/+ N2 D2 M1) M2}
+	true.
+
+- : update/=-inversion (update/= nat`eq/) nat`eq/ eq/.
+
+- : update/=-inversion (update/< N3+1+N=N) nat`eq/ E
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- nat`gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : update/=-inversion (update/> U1022 N3+1+N=N) nat`eq/ E
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- nat`gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+%worlds () (update/=-inversion _ _ _).
+%total { } (update/=-inversion _ _ _).
+
+
+%theorem update/<-inversion:
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {N3}
+	forall {U:update (map/+ N1 D1 M1) N2 D2 M2} {P:plus (s N3) N2 N1}
+	exists {E:eq (map/+ N2 D2 (map/+ N3 D1 M1)) M2}
+	true.
+
+- : update/<-inversion (update/= nat`eq/) N3+1+N=N E
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- nat`gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : update/<-inversion (update/< N3+1+N2=N1) N3P+1+N2=N1 E
+    <- nat`plus-right-cancels N3P+1+N2=N1 N3+1+N2=N1 nat`eq/ nat`eq/ N3P+1=N3+1
+    <- nat`succ-cancels N3P+1=N3+1 N3P=N3
+    <- map/+-preserves-eq N3P=N3 data`eq/ eq/ M311P=M311
+    <- map/+-preserves-eq nat`eq/ data`eq/ M311P=M311 E.
+
+- : update/<-inversion (update/> _ N0+1+N1=N2) N3+1+N2=N1 E
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F E.
+
+%worlds () (update/<-inversion _ _ _).
+%total { } (update/<-inversion _ _ _).
+
+
+%theorem update/>-inversion :
+	forall* {N1} {D1} {M1} {N2} {D2} {M} {N0}
+	forall {U:update (map/+ N1 D1 M1) N2 D2 M} {P:plus (s N0) N1 N2}
+	exists {M2} {UP:update M1 N0 D2 M2} {E:eq (map/+ N1 D1 M2) M}
+	true.
+
+% a little more complex than might be expected
+% because we want to prove reduction
+- : update/>-inversion (update/= nat`eq/: update (map/+ N D1 M1) N D2 
+                                                 (map/+ N D2 M1))
+                       N0+1+N=N M1 U' E
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E
+    <- false-implies-update F U'
+    <- false-implies-update-eq F
+       (UE:update-eq (map/+ N D1 M1) N D2 (map/+ N D2 M1)
+                     (map/+ N D1 M1) N D2 (map/+ N D1 M1) _ _)
+    <- meta-update-eq (update/= nat`eq/) (update/> U' N0+1+N=N) UE.
+
+- : update/>-inversion (update/< N3+1+N2=N1: update (map/+ N1 D1 M1) _ _ _) 
+                       N0+1+N1=N2 M1 U' E
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-update F U'
+    <- false-implies-eq F E
+    <- false-implies-update-eq F
+       (UE:update-eq (map/+ N1 D1 M1) N2 D2 (map/+ N2 D2 (map/+ N3 D1 M1))
+                     (map/+ N1 D1 M1) N2 D2 (map/+ N1 D1 M1) _ _)
+    <- meta-update-eq (update/< N3+1+N2=N1) (update/> U' N0+1+N1=N2) UE.
+
+- : update/>-inversion (update/> U N0+1+N1=N2) N0P+1+N1=N2 _ UP eq/ 
+    <- nat`plus-right-cancels N0+1+N1=N2 N0P+1+N1=N2 nat`eq/ nat`eq/ N0+1=N0P+1
+    <- nat`succ-cancels N0+1=N0P+1 N0=N0P
+    <- update-respects-eq U eq/ N0=N0P data`eq/ eq/ UP.
+
+%worlds () (update/>-inversion _ _ _ _ _).
+%total { } (update/>-inversion _ _ _ _ _).
+%reduces U' < U (update/>-inversion U _ _ U' _).
+
+
+%theorem update-deterministic :
+	forall* {M1} {N1} {D1} {M1'} {M2} {N2} {D2} {M2'}
+	forall {U1:update M1 N1 D1 M1'} {U2:update M2 N2 D2 M2'}
+	       {EM:eq M1 M2} {EN:nat`eq N1 N2} {ED:data`eq D1 D2}
+	exists {EM':eq M1' M2'}
+	true.
+
+- : update-deterministic update/0 update/0 eq/ nat`eq/ data`eq/ eq/.
+
+- : update-deterministic (update/= nat`eq/) (update/= nat`eq/) eq/ nat`eq/ data`eq/ eq/.
+
+- : update-deterministic (update/< N3+1+N2=N1) (update/< N3'+1+N2=N1)
+                         eq/ nat`eq/ data`eq/ M1'=M2'
+    <- plus-right-cancels N3+1+N2=N1 N3'+1+N2=N1 nat`eq/ nat`eq/ SN3=SN3'
+    <- succ-cancels SN3=SN3' N3E
+    <- map/+-preserves-eq N3E data`eq/ eq/ MM1=MM2
+    <- map/+-preserves-eq nat`eq/ data`eq/ MM1=MM2 M1'=M2'.
+
+- : update-deterministic (update/> F1^N0=D2->F2 N0+1+N1=N2)
+                         (update/> F1^N0'=D2->F2' N0'+1+N1=N2)
+                         eq/ nat`eq/ data`eq/ M1'=M2'
+    <- plus-right-cancels N0+1+N1=N2 N0'+1+N1=N2 nat`eq/ nat`eq/ N0+1=N0'+1
+    <- succ-cancels N0+1=N0'+1 N0=N0'
+    <- update-deterministic F1^N0=D2->F2 F1^N0'=D2->F2' eq/ N0=N0' 
+                            data`eq/ F2=F2'
+    <- map/+-preserves-eq nat`eq/ data`eq/ F2=F2' M1'=M2'.
+
+%% contradiction cases:
+- : update-deterministic (update/= nat`eq/) (update/< N3+1+N=N) eq/ nat`eq/ data`eq/ E
+    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : update-deterministic (update/= nat`eq/) (update/> _ N0+1+N=N) eq/ nat`eq/ data`eq/ E
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : update-deterministic (update/< N3+1+N=N) (update/= nat`eq/) eq/ nat`eq/ data`eq/ E
+    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : update-deterministic (update/< N3+1+N2=N1) (update/> _ N0+1+N1=N2)
+                         eq/ nat`eq/ data`eq/ E
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F E.
+
+- : update-deterministic (update/> _ N0+1+N=N) (update/= nat`eq/) eq/ nat`eq/ data`eq/ E
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : update-deterministic (update/> _ N0+1+N1=N2) (update/< N3+1+N2=N1)
+                         eq/ nat`eq/ data`eq/ E
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F E.
+
+%worlds () (update-deterministic M1^N1=D1->M1' M2^N2=D2->M2' M1=M2 N1=N2 D1=D2
+                          %{=>}% M1'=M2').
+%total (U) (update-deterministic U _ _ _ _ _).
+
+%theorem update-total* :
+	forall {M} {N} {D}
+	exists {M'} {U:update M N D M'}
+	true.
+
+%% we need a mutually recursive lemma
+%theorem update-map/+-total :
+	forall {N1} {D1} {M1} {N2} {D2} {C} {CMP:nat`compare N1 N2 C}
+	exists {M2} {U:update (map/+ N1 D1 M1) N2 D2 M2}
+	true.
+
+- : update-total* map/0 N D (map/+ N D map/0) update/0.
+
+- : update-total* (map/+ N1 D1 M1) N2 D2 M2 U
+    <- nat`compare-total* N1 N2 C CMP
+    <- update-map/+-total N1 D1 M1 N2 D2 C CMP M2 U.
+
+- : update-map/+-total N1 D1 M1 N2 D2 equal CMP (map/+ N2 D2 M1) (update/= N1=N2)
+    <- equal-implies-eq CMP N1=N2.
+
+- : update-map/+-total N1 D1 M1 N2 D2 less CMP (map/+ N1 D1 M1')
+                       (update/> U1 N0+1+N1=N2)
+    <- less-implies-lt CMP N2>N1
+    <- gt-implies-plus N2>N1 N0 N0+1+N1=N2
+    <- update-total* M1 N0 D2 M1' U1.
+
+- : update-map/+-total N1 D1 M1 N2 D2 greater CMP (map/+ N2 D2 (map/+ N3 D1 M1))
+                       (update/< N3+1+N2=N1)
+    <- greater-implies-gt CMP N1>N2
+    <- gt-implies-plus N1>N2 N3 N3+1+N2=N1.
+
+%worlds () (update-total* M N D %{=>}% M' M^N=D->M')
+           (update-map/+-total _ _ _ _ _ _ _ _ _).
+%total (M1 M2) (update-total* M1 _ _ _ _) (update-map/+-total _ _ M2 _ _ _ _ _ _).
+
+%abbrev update-total = update-total* _ _ _ _.
+
+
+%theorem update-implies-lookup :
+	forall* {F} {N} {D} {F'}
+	forall {U:update F N D F'} 
+	exists {L:lookup F' N D}
+	true.
+
+- : update-implies-lookup update/0 (lookup/= nat`eq/).
+
+- : update-implies-lookup (update/= nat`eq/) (lookup/= nat`eq/).
+
+- : update-implies-lookup (update/< _) (lookup/= nat`eq/).
+
+- : update-implies-lookup (update/> F^N0=D2->F' N0+1+N1=N2)
+                          (lookup/> F'^N0=D2    N0+1+N1=N2)
+    <- update-implies-lookup F^N0=D2->F' F'^N0=D2.
+
+%worlds () (update-implies-lookup F^N=D->F' %{=>}% F'^N=D).
+%total (U) (update-implies-lookup U _).
+
+
+%theorem update-preserves-lookup :
+	forall* {F} {N1} {D1} {F'} {N2} {D2}
+	forall {L:lookup F N2 D2} {U:update F N1 D1 F'} {X:nat`ne N2 N1}
+        exists {L':lookup F' N2 D2}
+	true.
+
+%% update/0 is impossible
+
+- : update-preserves-lookup (lookup/= nat`eq/) (update/= nat`eq/) N<>N L'
+    <- nat`ne-anti-reflexive N<>N FALSE
+    <- false-implies-lookup FALSE L'.
+
+- : update-preserves-lookup (lookup/> L1 P1) (update/= nat`eq/) _ (lookup/> L1 P1).
+
+- : update-preserves-lookup (lookup/= nat`eq/) (update/< N3+1+N2=N1) _ 
+                            (lookup/> (lookup/= nat`eq/) N3+1+N2=N1).
+
+- : update-preserves-lookup (lookup/> L N0+1+N1=N2') (update/< N3+1+N2=N1) _
+			    (lookup/> (lookup/> L N0+1+N3=N4)
+			              N4+1+N2=N2')
+    <- plus-left-decrease N3+1+N2=N1 N1-1 N1=N1-1+1 N3+N2=N1-1
+    <- plus-right-increase N3+N2=N1-1 N3+N2+1=N1-1+1
+    <- nat`eq-symmetric N1=N1-1+1 N1-1+1=N1
+    <- plus-respects-eq N3+N2+1=N1-1+1 nat`eq/ nat`eq/ N1-1+1=N1 N3+N2+1=N1
+    <- plus-associative-converse N3+N2+1=N1 N0+1+N1=N2' N4 N0+1+N3=N4
+                                N4+N2+1=N2'
+    <- plus-swap-succ-converse N4+N2+1=N2' N4+1+N2=N2'.
+
+- : update-preserves-lookup (lookup/= nat`eq/) (update/> _ _) _ (lookup/= nat`eq/).
+
+- : update-preserves-lookup (lookup/> L N0+1+N1=N2) 
+                            ((update/> U N0'+1+N1=N2') 
+                             : update (map/+ N1 D1 M1) N2' D' 
+                                      (map/+ N1 D1 M1'))
+                            N2<>N2' 
+                            ((lookup/> L' N0+1+N1=N2) 
+                             : lookup (map/+ N1 D1 M1') N2 D)
+    <- plus-right-cancels-ne N0+1+N1=N2 N0'+1+N1=N2' nat`eq/ N2<>N2' N0+1<>N0'+1
+    <- succ-preserves-ne-converse N0+1<>N0'+1 N0<>N0'
+    <- update-preserves-lookup L U N0<>N0' L'.
+
+%worlds () (update-preserves-lookup F^N2=D2 F^N1=D1->F' N1<>N2 F'^N2=D2).
+%total (L) (update-preserves-lookup L _ _ _).
+
+
+%theorem update-preserves-lookup-converse :
+	forall* {F1} {N1} {D1} {F2} {N2} {D2}
+	forall {L2:lookup F2 N2 D2} {U:update F1 N1 D1 F2} {X:nat`ne N2 N1}
+        exists {L1:lookup F1 N2 D2}
+	true.
+
+- : update-preserves-lookup-converse (lookup/= nat`eq/) update/0 N<>N L1
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-lookup F L1.
+
+- : update-preserves-lookup-converse (lookup/= nat`eq/) (update/= nat`eq/) N<>N
+                                     L1
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-lookup F L1.
+
+- : update-preserves-lookup-converse (lookup/= nat`eq/) (update/< N3+1+N2=N1)
+                                     N<>N L1
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-lookup F L1.
+
+- : update-preserves-lookup-converse (lookup/= nat`eq/) (update/> _ _) _
+                                     (lookup/= nat`eq/).
+
+- : update-preserves-lookup-converse (lookup/> L1 P) (update/= nat`eq/) _
+                                     (lookup/> L1 P).
+
+- : update-preserves-lookup-converse (lookup/> (lookup/= nat`eq/) N3+1+N2=N4)
+                                     (update/< N3+1+N2=N1) _
+                                     (lookup/= N1=N4)
+    <- plus-deterministic N3+1+N2=N1 N3+1+N2=N4 nat`eq/ nat`eq/ N1=N4.
+
+- : update-preserves-lookup-converse (lookup/> (lookup/> L1 N6+1+N3=N5) 
+                                               N5+1+N2=N4)
+                                     (update/< N3+1+N2=N1) _
+                                     (lookup/> L1 N6+1+N1=N4)
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-swap-succ N5+1+N2=N4 N5+N2+1=N4
+    <- plus-associative* N6+1+N3=N5 N5+N2+1=N4 N3+N2+1=N1 N6+1+N1=N4.
+
+- : update-preserves-lookup-converse (lookup/> L2 N5+1+N1=N4)
+                                     (update/> U1 N0+1+N1=N2) N4<>N2
+                                     (lookup/> L1 N5+1+N1=N4)
+    <- plus-right-cancels-ne N5+1+N1=N4 N0+1+N1=N2 nat`eq/ N4<>N2 N5+1<>N0+1
+    <- succ-preserves-ne-converse N5+1<>N0+1 N5<>N0
+    <- update-preserves-lookup-converse L2 U1 N5<>N0 L1.
+
+%worlds () (update-preserves-lookup-converse _ _ _ _).
+%total (L) (update-preserves-lookup-converse L _ _ _).
+
+
+%theorem update-preserves-fresh :
+	forall* {M1} {N1} {N2} {D} {M2}
+	forall {F1:fresh M1 N1} {U:update M1 N2 D M2} {N:nat`ne N1 N2}
+	exists {F2:fresh M2 N1}
+	true.
+
+- : update-preserves-fresh fresh/0 update/0 (nat`ne/< N>M) (fresh/< N>M).
+
+- : update-preserves-fresh fresh/0 update/0 (nat`ne/> M>N) 
+                           (fresh/> fresh/0 M1+1+N=M)
+    <- gt-implies-plus M>N M1 M1+1+N=M.
+
+- : update-preserves-fresh (fresh/< N>M) (update/= nat`eq/) _ (fresh/< N>M).
+
+- : update-preserves-fresh (fresh/< N1>M) (update/< N3+1+N2=N1) (nat`ne/< N2>M)
+                           (fresh/< N2>M).
+
+- : update-preserves-fresh (fresh/< N1>M) (update/< N3+1+N2=N1) (nat`ne/> M>N2)
+                           (fresh/> (fresh/< N3>M1) M1+1+N2=M)
+    <- gt-implies-plus M>N2 M1 M1+1+N2=M
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-swap-succ M1+1+N2=M  M1+N2+1=M
+    <- plus-right-cancels-gt N3+N2+1=N1 M1+N2+1=M nat`eq/ N1>M N3>M1.
+
+- : update-preserves-fresh (fresh/< N1>M) (update/> _ _) _ (fresh/< N1>M).
+
+- : update-preserves-fresh (fresh/> F P) (update/= nat`eq/) _ (fresh/> F P).
+
+- : update-preserves-fresh (fresh/> F M1+1+N1=M) (update/< N3+1+N2=N1) _
+                           (fresh/> (fresh/> F M1+1+N3=MM) MM+1+N2=M)
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-associative-converse N3+N2+1=N1 M1+1+N1=M MM M1+1+N3=MM
+                                 MM+N2+1=M
+    <- plus-swap-succ-converse MM+N2+1=M MM+1+N2=M.
+
+- : update-preserves-fresh (fresh/> F M1+1+N1=M) (update/> U N0+1+N1=N2) M<>N2
+                           (fresh/> F' M1+1+N1=M)
+    <- plus-right-cancels-ne M1+1+N1=M N0+1+N1=N2 nat`eq/ M<>N2 M1+1<>N0+1
+    <- succ-preserves-ne-converse M1+1<>N0+1 M1<>N0
+    <- update-preserves-fresh F U M1<>N0 F'.
+
+%worlds () (update-preserves-fresh N1-fresh-M1 M1^N2=D->M2 N1<>N2 N1-fresh-M2).
+%total (F) (update-preserves-fresh F _ _ _).
+
+
+%theorem update-preserves-fresh-converse :
+	forall* {M1} {N1} {N2} {D} {M2}
+	forall {F1:fresh M2 N1} {U:update M1 N2 D M2} {N:nat`ne N1 N2}
+	exists {F2:fresh M1 N1}
+	true.
+
+%theorem update-preserves-fresh-converse-helper :
+	forall* {M1} {N1} {N2} {D} {M2} {B}
+	forall {F1:fresh M2 N1} {U:update M1 N2 D M2} {N:nat`ne N1 N2}
+               {D:domain? M1 N1 B}
+	exists {F2:fresh M1 N1}
+	true.
+
+- : update-preserves-fresh-converse-helper _ _ _ (domain?/out F) F.
+
+- : update-preserves-fresh-converse-helper F2 U N (domain?/in L1) F1
+    <- update-preserves-lookup L1 U N L2
+    <- fresh-lookup-not-equal F2 L2 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-fresh F F1.
+
+%worlds () (update-preserves-fresh-converse-helper _ _ _ _ _).
+%total { } (update-preserves-fresh-converse-helper _ _ _ _ _).
+
+- : update-preserves-fresh-converse F2 U N F1
+    <- domain?-total D
+    <- update-preserves-fresh-converse-helper F2 U N D F1.
+
+%worlds () (update-preserves-fresh-converse _ _ _ _).
+%total { } (update-preserves-fresh-converse _ _ _ _).
+
+
+%theorem update-preserves-membership :
+	forall* {M1} {N1} {B} {N2} {D} {M2}
+	forall {MD1:domain? M1 N1 B} {U:update M1 N2 D M2} {N:nat`ne N1 N2}
+	exists {MD2:domain? M2 N1 B}
+	true.
+
+- : update-preserves-membership (domain?/in L) U NE (domain?/in L')
+    <- update-preserves-lookup L U NE L'.
+
+- : update-preserves-membership (domain?/out F) U NE (domain?/out F')
+    <- update-preserves-fresh F U NE F'.
+
+%worlds () (update-preserves-membership _ _ _ _).
+%total {} (update-preserves-membership _ _ _ _).
+
+
+%theorem update-preserves-membership-converse :
+	forall* {M1} {N1} {B} {N2} {D} {M2}
+	forall {MD2:domain? M2 N1 B} {U:update M1 N2 D M2} {N:nat`ne N1 N2}
+	exists {MD1:domain? M1 N1 B}
+	true.
+
+- : update-preserves-membership-converse (domain?/in L2) U NE (domain?/in L1)
+    <- update-preserves-lookup-converse L2 U NE L1.
+
+- : update-preserves-membership-converse (domain?/out F2) U NE (domain?/out F1)
+    <- update-preserves-fresh-converse F2 U NE F1.
+
+%worlds () (update-preserves-membership-converse _ _ _ _).
+%total { } (update-preserves-membership-converse _ _ _ _).
+
+
+%theorem update-overwrites :
+	forall* {M1} {N1} {D1} {M2} {N2} {D2} {M3}
+	forall {U1:update M1 N1 D1 M2} {U2:update M2 N2 D2 M3}
+	       {E:nat`eq N1 N2}
+	exists {U12:update M1 N1 D2 M3}
+	true.
+
+- : update-overwrites (update/0) (update/= nat`eq/) nat`eq/ (update/0).
+
+- : update-overwrites (update/= nat`eq/) (update/= nat`eq/) nat`eq/ (update/= nat`eq/).
+
+- : update-overwrites (update/< P) (update/= nat`eq/) nat`eq/ (update/< P).
+
+- : update-overwrites (update/> U1 P) (update/> U2 P') nat`eq/ (update/> U3 P)
+    <- plus-right-cancels P P' nat`eq/ nat`eq/ N0+1=N0'+1
+    <- succ-cancels N0+1=N0'+1 N0=N0'
+    <- update-overwrites U1 U2 N0=N0' U3.
+
+%% contradiction cases
+- : update-overwrites (update/0) (update/< N3+1+N=N) nat`eq/ U
+    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-update F U.
+
+- : update-overwrites (update/0) (update/> _ N0+1+N=N) nat`eq/ U
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-update F U.
+
+- : update-overwrites (update/= nat`eq/) (update/< N3+1+N=N) nat`eq/ U
+    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-update F U.
+
+- : update-overwrites (update/= nat`eq/) (update/> _ N0+1+N=N) nat`eq/ U
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-update F U.
+
+- : update-overwrites (update/< _) (update/< N3+1+N=N) nat`eq/ U
+    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-update F U.
+
+- : update-overwrites (update/< _) (update/> _ N0+1+N=N) nat`eq/ U
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-update F U.
+
+- : update-overwrites (update/> _ N0+1+N=N) (update/= nat`eq/) nat`eq/ U
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-update F U.
+
+- : update-overwrites (update/> _ N0+1+N1=N2) (update/< N3+1+N2=N1) nat`eq/ U
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-update F U.
+
+%worlds () (update-overwrites M1^N1=D1->M2 M2^N2=D2->M3 N1=N2 
+                       %{=>}% M1^N1=D2->M3).
+%total (U) (update-overwrites U _ _ _).
+
+
+%theorem update-may-have-no-effect :
+	forall* {M1} {N} {D} {M2}
+	forall {L:lookup M1 N D} {U:update M1 N D M2}
+	exists {E:eq M1 M2}
+	true.
+
+- : update-may-have-no-effect (lookup/= nat`eq/) U E
+    <- update/=-inversion U nat`eq/ E.
+
+- : update-may-have-no-effect (lookup/> L1 N0+1+N1=N2) U E
+    <- update/>-inversion U N0+1+N1=N2 _ U1 M112=M2
+    <- update-may-have-no-effect L1 U1 M1=M2
+    <- map/+-preserves-eq nat`eq/ data`eq/ M1=M2 M111=M112
+    <- eq-transitive M111=M112 M112=M2 E.
+
+%worlds () (update-may-have-no-effect _ _ _).
+%total (L) (update-may-have-no-effect L _ _).
+
+
+%theorem update-idempotent :
+	forall* {M1} {N1} {D1} {M2} {N2} {D2} {M3}
+	forall {U1:update M1 N1 D1 M2} {U2:update M2 N2 D2 M3}
+	       {EN:nat`eq N1 N2} {ED:data`eq D1 D2}
+	exists {EM:eq M2 M3}
+	true.
+
+- : update-idempotent U1 U2 nat`eq/ data`eq/ M2=M3
+    <- update-overwrites U1 U2 nat`eq/ M1^N=D->M3
+    <- update-deterministic U1 M1^N=D->M3 eq/ nat`eq/ data`eq/ M2=M3.
+
+%worlds () (update-idempotent M1^N1=D1->M2 M2^N2=D2->M3 N1=N2 D1=D2
+                       %{=>}% M2=M3).
+%total {} (update-idempotent _ _ _ _ _).
+
+
+%theorem update-commutes :
+	forall* {M} {N1} {D1} {M1} {N2} {D2} {M12}
+	forall {U1:update M N1 D1 M1} {U12:update M1 N2 D2 M12}
+               {NE:nat`ne N1 N2}
+        exists {M2} {U2:update M N2 D2 M2} {U21:update M2 N1 D1 M12}
+	true.
+
+- : update-commutes update/0 (update/= nat`eq/) N<>N map/0 U2 U21
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-update F U2
+    <- false-implies-update F U21.
+
+- : update-commutes update/0 (update/< N'+1+N2=N1) _ _ update/0
+                    (update/> update/0 N'+1+N2=N1).
+
+- : update-commutes update/0 (update/> update/0 N'+1+N1=N2) _ _ update/0
+                    (update/< N'+1+N1=N2).
+
+- : update-commutes (update/= nat`eq/) (update/= nat`eq/) N<>N map/0 U2 U21
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-update F U2
+    <- false-implies-update F U21.
+
+- : update-commutes (update/= nat`eq/) (update/< N'+1+N2=N1) _ _ 
+                    (update/< N'+1+N2=N1) (update/> (update/= nat`eq/) N'+1+N2=N1).
+
+- : update-commutes (update/= nat`eq/) (update/> U N'+1+N1=N2) _ _ 
+                    (update/> U N'+1+N1=N2) (update/= nat`eq/).
+
+- : update-commutes (update/< _) (update/= nat`eq/) N<>N map/0 U2 U21
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-update F U2
+    <- false-implies-update F U21.
+
+- : update-commutes (update/< N1'+1+N1=N) (update/< N2'+1+N2=N1) _ _ 
+                    (update/< N2''+1+N2=N) 
+                    (update/> (update/< N1'+1+N2'=N2'') N2'+1+N2=N1)
+    <- plus-swap-succ N2'+1+N2=N1 N2'+N2+1=N1
+    <- plus-associative-converse N2'+N2+1=N1 N1'+1+N1=N 
+                                 N2'' N1'+1+N2'=N2'' N2''+N2+1=N
+    <- plus-swap-succ-converse N2''+N2+1=N N2''+1+N2=N.
+
+- : update-commutes ((update/< N11+1+N1=N):update (map/+ N D M) _ _ _)
+                  (update/> (update/= nat`eq/) N11+1+N1=N2) _
+                    (map/+ N2 D2 M)
+                    (update/= N=N2)
+                    ((update/< N11+1+N1=N2):update _ N1 D1 _)
+    <- plus-deterministic N11+1+N1=N N11+1+N1=N2 nat`eq/ nat`eq/ N=N2.
+
+- : update-commutes (update/< N11+1+N1=N) 
+                    (update/> (update/< N2''+1+N2'=N11) N2'+1+N1=N2) _ _
+                    (update/< N2''+1+N2=N) (update/< N2'+1+N1=N2)
+    <- plus-swap-succ N11+1+N1=N N11+N1+1=N
+    <- plus-swap-succ N2'+1+N1=N2 N2'+N1+1=N2
+    <- plus-associative* N2''+1+N2'=N11 N11+N1+1=N N2'+N1+1=N2
+                         N2''+1+N2=N.
+
+- : update-commutes (update/< N11+1+N1=N) 
+                    (update/> (update/> U N2''+1+N11=N2') N2'+1+N1=N2) _ _
+                    (update/> U N2''+1+N=N2) (update/< N11+1+N1=N)
+    <- plus-swap-succ N11+1+N1=N N11+N1+1=N
+    <- plus-swap-succ N2'+1+N1=N2 N2'+N1+1=N2
+    <- plus-associative* N2''+1+N11=N2' N2'+N1+1=N2 N11+N1+1=N N2''+1+N=N2.
+
+- : update-commutes (update/> U N11+1+N=N1) (update/= nat`eq/) _ _
+                    (update/= nat`eq/) (update/> U N11+1+N=N1).
+
+- : update-commutes (update/> U N11+1+N=N1) (update/< N2'+1+N2=N) _ _
+                    (update/< N2'+1+N2=N)
+		    (update/> (update/> U N11+1+N2'=N11') N11'+1+N2=N1)
+    <- plus-swap-succ N2'+1+N2=N N2'+N2+1=N
+    <- plus-associative-converse N2'+N2+1=N N11+1+N=N1 
+                                 N11' N11+1+N2'=N11' N11'+N2+1=N1
+    <- plus-swap-succ-converse N11'+N2+1=N1 N11'+1+N2=N1.
+
+- : update-commutes (update/> U1 N11+1+N=N1) (update/> U12 N2'+1+N=N2) N1<>N2
+                    (map/+ N D M2) 
+     		    (update/> U2 N2'+1+N=N2) (update/> U21 N11+1+N=N1)
+    <- plus-right-cancels-ne N11+1+N=N1 N2'+1+N=N2 nat`eq/ N1<>N2 N11+1<>N2'+1
+    <- succ-preserves-ne-converse N11+1<>N2'+1 N11<>N2'
+    <- update-commutes U1 U12 N11<>N2' M2 U2 U21.
+
+%worlds () (update-commutes M^N1=D1->M1 M1^D2=N2->M12 N1<>N2
+                     %{=>}% M2 M^N2=D2->M2 M2^N1=D1->M12).
+%total (U1) (update-commutes U1 _ _ _ _ _).
+
+
+%theorem update-commutes* :
+	forall* {M} {N1} {D1} {M1} {N2} {D2} {M12} {M2}
+	forall {U1:update M N1 D1 M1} {U12:update M1 N2 D2 M12}
+               {NE:nat`ne N1 N2} {U2:update M N2 D2 M2} 
+        exists {U21:update M2 N1 D1 M12}
+	true.
+
+- : update-commutes* M^N1=D1->M1 M1^D2=N2->M12 N1<>N2 M^N2=D2->M2 M2^N1=D1->M12
+    <- update-commutes M^N1=D1->M1 M1^D2=N2->M12 N1<>N2 
+                       M2' M^N2=D2->M2' M2'^N1=D1->M12
+    <- update-deterministic M^N2=D2->M2' M^N2=D2->M2 eq/ nat`eq/ 
+                            data`eq/ M2'=M2
+    <- update-respects-eq M2'^N1=D1->M12 M2'=M2 nat`eq/ 
+                            data`eq/ eq/ M2^N1=D1->M12.
+
+%worlds () (update-commutes* M^N1=D1->M1 M1^D2=N2->M12 N1<>N2 M^N2=D2->M2
+                      %{=>}% M2^N1=D1->M12).
+%total {} (update-commutes* _ _ _ _ _). 
+
+
+%% The following theorem is needed if you want to iteratively
+%% do something with a set.  It says that you can take out an element 
+%% and (using the update-preserves-X-converse theorems) get a smaller set
+%% that differs only for this element:
+
+%theorem can-remove :
+        forall* {M} {S} {N} {D}
+	forall {SZ:size M S} {L:lookup M N D}
+	exists {M-} {S-} {SZ-:size M- S-} {E:nat`eq (s S-) S}
+               {U:update M- N D M} {F:fresh M- N}
+	true.
+
+- : can-remove (size/+ _) (lookup/= _) _ _ size/0 nat`eq/ update/0 fresh/0.
+
+- : can-remove (size/+ (size/+ SZ)) (lookup/= nat`eq/) _ _ (size/+ SZ) nat`eq/
+               (update/< N3+1+N2=N1) (fresh/< N1>N2)
+    <- plus-total N3+1+N2=N1
+    <- plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2.
+
+- : can-remove (size/+ SZ) (lookup/> LK N0+1+N1=N2) _ _
+               (size/+ SZ2) E
+               (update/> U2 N0+1+N1=N2) (fresh/> F2 N0+1+N1=N2)
+    <- can-remove SZ LK M- S- SZ2 E2 U2 F2
+    <- succ-deterministic E2 E.
+
+%worlds () (can-remove _ _ _ _ _ _ _ _).
+%total (L) (can-remove _ L _ _ _ _ _ _).

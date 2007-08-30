@@ -1,0 +1,74 @@
+%%%%% nat-less.elf
+%%%%% Inverse relations for natural numbers
+%%%%% This file is part of the nat.elf signature
+
+%{%
+#define TYPE nat
+#define EQ eq
+#define GE ge
+#define GT gt
+#define LT lt
+#define LE le
+
+BEGIN_ELF
+#include "LT.i"
+END_ELF
+
+#define OP_TOTAL 1
+#define OP_CANCELS 1
+#define OP_COMMUTATIVE 1
+
+#define CMP(X,Y) X>Y
+#define CMPN gt
+#define RCMP(X,Y) X<Y
+#define RCMPN lt
+
+#define OPN plus
+#define OP(X,Y) X+Y
+
+BEGIN_ELF
+#include "OPN-preserves-RCMPN.i"
+END_ELF
+
+#undef OP
+#undef OPN
+#undef CMP
+#undef CMPN
+#undef RCMP
+#undef RCMPN
+
+BEGIN_ELF
+#include "LE.i"
+END_ELF
+
+#define CMP(X,Y) X>=Y
+#define CMPN ge
+#define RCMP(X,Y) X<=Y
+#define RCMPN le
+
+#define OPN plus
+#define OP(X,Y) X+Y
+BEGIN_ELF
+#include "OPN-preserves-RCMPN.i"
+END_ELF
+#undef OP
+#undef OPN
+#undef OP_CANCELS
+
+#undef CMP
+#undef CMPN
+#define CMP(X,Y) X>=Y
+#define CMPN ge
+
+#define OPN times
+#define OP(X,Y) X*Y
+BEGIN_ELF
+#include "OPN-preserves-RCMPN.i"
+END_ELF
+#undef OP
+#undef OPN
+%}%
+
+
+
+

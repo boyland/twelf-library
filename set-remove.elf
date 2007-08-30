@@ -1,0 +1,355 @@
+%%%%% set-remove.elf
+%%%%% Set subtraction.
+%%%%% This file is part of the set.elf signature
+
+
+%%%% Definitions
+
+
+%%% removal
+
+remove : set -> set -> set -> type.
+
+remove/L : remove set/0 _ set/0.
+
+remove/R : remove S set/0 S.
+
+remove/= : remove (set/+ N1 S1) (set/+ N2 S2) S1S3
+    <- nat`eq N1 N2
+    <- remove S1 S2 S3
+    <- shift N1 S3 S1S3.
+
+remove/< : remove (set/+ N1 S1) (set/+ N2 S2) (set/+ N1 S3)
+    <- plus (s N0) N1 N2
+    <- remove S1 (set/+ N0 S2) S3.
+
+remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
+    <- plus (s N3) N2 N1
+    <- remove (set/+ N3 S1) S2 S3
+    <- shift N2 S3 S2S3.
+
+
+
+%%%% Theorems
+
+
+%%% Theorems about remove
+
+
+%theorem false-implies-remove :
+	forall* {S1} {S2} {S3}
+	forall {F:void}
+	exists {D:remove S1 S2 S3}
+	true.
+
+%worlds () (false-implies-remove _ %{=>}% S1-S2=S3).
+%total {} (false-implies-remove _ _).
+
+
+%theorem remove-respects-eq :
+	forall* {S1} {S2} {S3} {T1} {T2} {T3}
+	forall {DS:remove S1 S2 S3}
+               {E1:eq S1 T1} {E2:eq S2 T2} {E3:eq S3 T3}
+	exists {DT:remove T1 T2 T3}
+	true.
+
+- : remove-respects-eq R eq/ eq/ eq/ R.
+
+%worlds () (remove-respects-eq S1-S2=S3 S1=T1 S2=T2 S3=T3 %{=>}% T1-T2=T3).
+%total {} (remove-respects-eq _ _ _ _ _).
+%reduces R = R' (remove-respects-eq R _ _ _ R').
+
+%theorem remove/=-inversion :
+	forall* {N1} {S1} {N2} {S2} {S}
+	forall {R:remove (set/+ N1 S1) (set/+ N2 S2) S}
+               {E:nat`eq N1 N2}
+        exists {S3} {R':remove S1 S2 S3} {SH:shift N1 S3 S}
+	true.
+
+- : remove/=-inversion (remove/= S3<<N1=S S1-S2=S3 nat`eq/) nat`eq/
+                       _ S1-S2=S3 S3<<N1=S.
+
+- : remove/=-inversion (remove/< S1-S02=S3 N0+1+N=N) nat`eq/ _ R SH
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F S02=S2
+    <- remove-respects-eq S1-S02=S3 eq/ S02=S2 eq/ R
+    <- false-implies-shift F SH.
+
+- : remove/=-inversion (remove/> S3<<N=S S31-S2=S3 N3+1+N=N) nat`eq/ _ R S3<<N=S
+    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F S31=S1
+    <- remove-respects-eq S31-S2=S3 S31=S1 eq/ eq/ R.
+
+%worlds () (remove/=-inversion _ _ _ _ _).
+%total { } (remove/=-inversion _ _ _ _ _).
+%reduces R < R' (remove/=-inversion R' _ _ R _).
+
+
+%theorem remove/<-inversion :
+	forall* {N1} {S1} {N2} {S2} {S} {N0}
+	forall {R:remove (set/+ N1 S1) (set/+ N2 S2) S}
+               {P:plus (s N0) N1 N2}
+        exists {S3} {R':remove S1 (set/+ N0 S2) S3} {E:eq (set/+ N1 S3) S}
+	true.
+
+- : remove/<-inversion (remove/< S1-S0'2=S3 N0'+1+N1=N2) N0+1+N1=N2 
+                       _ S1-S02=S3 eq/
+    <- plus-right-cancels N0'+1+N1=N2 N0+1+N1=N2 nat`eq/ nat`eq/ N0'+1=N0+1
+    <- succ-cancels N0'+1=N0+1 N0'=N0
+    <- set/+-preserves-eq N0'=N0 eq/ S0'2=S02
+    <- remove-respects-eq S1-S0'2=S3 eq/ S0'2=S02 eq/ S1-S02=S3.
+
+- : remove/<-inversion (remove/= _ S1-S2=S3 nat`eq/) N0+1+N=N _ S1-S02=S3 S13=S
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F S2=S02
+    <- remove-respects-eq S1-S2=S3 eq/ S2=S02 eq/ S1-S02=S3 
+    <- false-implies-eq F S13=S.
+
+- : remove/<-inversion (remove/> _ S31-S2=S3 N3+1+N2=N1) N0+1+N1=N2 _ S1-S02=S3
+                       S13=S
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F S31=S1
+    <- false-implies-eq F S2=S02
+    <- remove-respects-eq S31-S2=S3 S31=S1 S2=S02 eq/ S1-S02=S3
+    <- false-implies-eq F S13=S.
+
+%worlds () (remove/<-inversion _ _ _ _ _).
+%total { } (remove/<-inversion _ _ _ _ _).
+%reduces R < R' (remove/<-inversion R' _ _ R _).
+
+
+%theorem remove/>-inversion :
+	forall* {N1} {S1} {N2} {S2} {S} {N3}
+	forall {R:remove (set/+ N1 S1) (set/+ N2 S2) S}
+               {P:plus (s N3) N2 N1}
+        exists {S3} {R':remove (set/+ N3 S1) S2 S3} {SH:shift N2 S3 S}
+	true.
+
+- : remove/>-inversion (remove/> S3<<N2=S2S3 S3'1-S2=S3 N3'+1+N2=N1)
+                       N3+1+N2=N1 _ S31-S2=S3 S3<<N2=S2S3
+    <- plus-right-cancels N3'+1+N2=N1 N3+1+N2=N1 nat`eq/ nat`eq/ N3'+1=N3+1
+    <- succ-cancels N3'+1=N3+1 N3'=N3
+    <- set/+-preserves-eq N3'=N3 eq/ S3'1=S31
+    <- remove-respects-eq S3'1-S2=S3 S3'1=S31 eq/ eq/ S31-S2=S3.
+
+- : remove/>-inversion (remove/= _ S1-S2=S3 nat`eq/) N3+1+N=N _ R SH
+    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F S1=S31
+    <- remove-respects-eq S1-S2=S3 S1=S31 eq/ eq/ R
+    <- false-implies-shift F SH.
+
+- : remove/>-inversion (remove/< S1-S02=S3 N0+1+N1=N2) N3+1+N2=N1 _ R SH
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F S1=S31
+    <- false-implies-eq F S02=S2
+    <- remove-respects-eq S1-S02=S3 S1=S31 S02=S2 eq/ R
+    <- false-implies-shift F SH.
+
+%worlds () (remove/>-inversion _ _ _ _ _).
+%total { } (remove/>-inversion _ _ _ _ _).
+%reduces R < R' (remove/>-inversion R' _ _ R _).
+
+
+%theorem remove-total* :
+	forall {S1} {S2}
+	exists {S3} {R:remove S1 S2 S3}
+	true.
+
+%theorem remove-set/+-total :
+        forall* {N1} {N2} {C}
+	forall {CMP:nat`compare N1 N2 C} 
+               {S1} {S2}
+        exists {S3} {R:remove (set/+ N1 S1) (set/+ N2 S2) S3}
+	true.
+
+- : remove-total* set/0 _ _ remove/L.
+
+- : remove-total* _ set/0 _ remove/R.
+
+- : remove-total* (set/+ N1 S1) (set/+ N2 S2) S3 R
+    <- nat`compare-total CMP
+    <- remove-set/+-total CMP S1 S2 S3 R.
+
+- : remove-set/+-total (nat`compare/=) S1 S2 _ 
+                       (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/)
+    <- remove-total* S1 S2 _ S1-S2=S3 
+    <- shift-total S3<<N1=S1S3.
+
+- : remove-set/+-total (nat`compare/< N2>N1) set/0 S2 _
+                       (remove/< remove/L N0+1+N1=N2)
+    <- gt-implies-plus N2>N1 _ N0+1+N1=N2.
+
+- : remove-set/+-total (nat`compare/< N2>N1) (set/+ N4 S4) S2 _
+                       (remove/< S44-S02=S3 N0+1+N1=N2)
+    <- gt-implies-plus N2>N1 _ N0+1+N1=N2
+    <- nat`compare-total CMP
+    <- remove-set/+-total CMP S4 S2 _ S44-S02=S3.
+
+- : remove-set/+-total (nat`compare/> N1>N2) S1 set/0 _
+                       (remove/> S3<<N2=S2S3 remove/R N3+1+N2=N1)
+    <- gt-implies-plus N1>N2 _ N3+1+N2=N1
+    <- shift-total S3<<N2=S2S3.
+
+- : remove-set/+-total (nat`compare/> N1>N2) S1 (set/+ N4 S4) _
+                       (remove/> S3<<N2=S2S3 S31-S44=S3 N3+1+N2=N1)
+    <- gt-implies-plus N1>N2 _ N3+1+N2=N1
+    <- nat`compare-total CMP
+    <- remove-set/+-total CMP S1 S4 _ S31-S44=S3
+    <- shift-total S3<<N2=S2S3.
+
+%worlds () (remove-total* _ _ _ _) (remove-set/+-total _ _ _ _ _).
+%total {(S1 S1') (S2 S2')} (remove-total* S1 S2 _ _) 
+                           (remove-set/+-total _ S1' S2' _ _).
+
+
+%abbrev remove-total = remove-total* _ _ _.
+
+
+%theorem remove-deterministic :
+	forall* {S1} {S2} {S3} {T1} {T2} {T3}
+	forall {RS:remove S1 S2 S3} {RT:remove T1 T2 T3}
+	       {E1:eq S1 T1} {E2:eq S2 T2}
+	exists {E3:eq S3 T3}
+	true.
+
+- : remove-deterministic remove/L remove/L eq/ eq/ eq/.
+
+- : remove-deterministic remove/L remove/R eq/ eq/ eq/.
+
+- : remove-deterministic remove/R remove/L eq/ eq/ eq/.
+
+- : remove-deterministic remove/R remove/R eq/ eq/ eq/.
+
+- : remove-deterministic (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/) R eq/ eq/ 
+                         S1S3=T
+    <- remove/=-inversion R nat`eq/ _ S1-S2=S3' S3'<<N1=T
+    <- remove-deterministic S1-S2=S3 S1-S2=S3' eq/ eq/ S3=S3'
+    <- shift-deterministic S3<<N1=S1S3 S3'<<N1=T nat`eq/ S3=S3' S1S3=T.
+
+- : remove-deterministic (remove/< S1-S02=S3 N0+1+N1=N2) R eq/ eq/ S13=T
+    <- remove/<-inversion R N0+1+N1=N2 _ S1-S02=S3' S13'=T
+    <- remove-deterministic S1-S02=S3 S1-S02=S3' eq/ eq/ S3=S3'
+    <- set/+-preserves-eq nat`eq/ S3=S3' S13=S13'
+    <- eq-transitive S13=S13' S13'=T S13=T.
+
+- : remove-deterministic (remove/> S3<<N2=S2S3 S31-S2=S3 N3+1+N2=N1) R eq/ eq/
+                         S2S3=T
+    <- remove/>-inversion R N3+1+N2=N1 _ S31-S2=S3' S3'<<N2=T
+    <- remove-deterministic S31-S2=S3 S31-S2=S3' eq/ eq/ S3=S3'
+    <- shift-deterministic S3<<N2=S2S3 S3'<<N2=T nat`eq/ S3=S3' S2S3=T.
+
+%worlds () (remove-deterministic _ _ _ _ _).
+%total (R) (remove-deterministic R _ _ _ _).
+
+
+
+%theorem remove-implies-leq :
+	forall* {S1} {S2} {S3}
+	forall {D:remove S1 S2 S3}
+	exists {L:leq S3 S1}
+	true.
+
+- : remove-implies-leq remove/L leq/0.
+
+- : remove-implies-leq remove/R S<=S
+    <- leq-reflexive _ S<=S.
+
+- : remove-implies-leq (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/) S1S3<=S1
+    <- remove-implies-leq S1-S2=S3 S3<=S1
+    <- shift-left-preserves-leq* S3<=S1 S3<<N1=S1S3 S1S3<=S1.
+
+- : remove-implies-leq (remove/< S1-S02=S3 _) S13<=S11
+    <- remove-implies-leq S1-S02=S3 S3<=S1
+    <- set/+-preserves-leq nat`eq/ S3<=S1 S13<=S11.
+
+- : remove-implies-leq (remove/> S3<<N2=S2S3 S31-S2=S3 N3+1+N2=N1) S2S3<=S11
+    <- remove-implies-leq S31-S2=S3 S3<=S31
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
+    <- shift-preserves-leq* S3<=S31 S3<<N2=S2S3 (shift/+ N2+1+N3=N1) S2S3<=S11.
+
+%worlds () (remove-implies-leq _ _).
+%total (R) (remove-implies-leq R _).
+
+
+%theorem remove-implies-leq-union :
+	forall* {S1} {S2} {S3} {S4}
+	forall {D:remove S1 S2 S3} {U:union S2 S3 S4}
+	exists {L:leq S1 S4}
+	true.
+
+- : remove-implies-leq-union remove/L _ leq/0.
+
+- : remove-implies-leq-union remove/R union/L S<=S
+    <- leq-reflexive _ S<=S.
+
+- : remove-implies-leq-union remove/R union/R leq/0.
+
+- : remove-implies-leq-union (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/)
+                             S12+S1S3=S S11<=S
+    <- shift-right-preserves-union-converse S12+S1S3=S S3<<N1=S1S3 _
+                                            S2+S3=S4 S14=S
+    <- remove-implies-leq-union S1-S2=S3 S2+S3=S4 S1<=S4
+    <- set/+-preserves-leq nat`eq/ S1<=S4 S11<=S14
+    <- leq-respects-eq S11<=S14 eq/ S14=S S11<=S.
+
+- : remove-implies-leq-union (remove/< S1-S02=S3 N0+1+N1=N2) S22+S13=S S11<=S
+    <- union/>-inversion S22+S13=S N0+1+N1=N2 _ S02+S3=S4 S=S14
+    <- eq-symmetric S=S14 S14=S
+    <- remove-implies-leq-union S1-S02=S3 S02+S3=S4 S1<=S4
+    <- set/+-preserves-leq nat`eq/ S1<=S4 S11<=S14
+    <- leq-respects-eq S11<=S14 eq/ S14=S S11<=S.
+
+- : remove-implies-leq-union (remove/> S3<<S2=S2S3 S31-S2=S3 N3+1+N2=N1)
+			     S22+S2S3=S S11<=S
+    <- shift-right-preserves-union-converse S22+S2S3=S S3<<S2=S2S3 
+                                            S4 S2+S3=S4 S24=S
+    <- remove-implies-leq-union S31-S2=S3 S2+S3=S4 S31<=S4
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
+    <- shift-left-preserves-leq* S31<=S4 (shift/+ N2+1+N3=N1) S11<=S24
+    <- leq-respects-eq S11<=S24 eq/ S24=S S11<=S.
+
+%worlds () (remove-implies-leq-union _ _ _).
+%total (R) (remove-implies-leq-union R _ _).
+
+
+%theorem remove-implies-empty-intersection :
+	forall* {S1} {S2} {S3}
+	forall {D:remove S1 S2 S3}
+	exists {I:intersection S2 S3 set/0}
+	true.
+
+- : remove-implies-empty-intersection remove/L intersection/R.
+
+- : remove-implies-empty-intersection remove/R intersection/L.
+
+- : remove-implies-empty-intersection (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/)
+                                      S22*S1S3=0
+    <- remove-implies-empty-intersection S1-S2=S3 S2*S3=0
+    <- shift-right-preserves-intersection S2*S3=0 S3<<N1=S1S3 shift/0 S22*S1S3=0.
+
+- : remove-implies-empty-intersection (remove/< S1-S02=S3 N0+1+N1=N2) S22*S13=0
+    <- remove-implies-empty-intersection S1-S02=S3 S02*S3=0
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
+    <- shift-left-preserves-intersection S02*S3=0 (shift/+ N1+1+N0=N2) shift/0
+                                         S22*S13=0.
+
+- : remove-implies-empty-intersection (remove/> S3<<N2=S2S3 S31-S2=S3 N3+1+N2=N1)
+                                      S22*S2S3=0
+    <- remove-implies-empty-intersection S31-S2=S3 S2*S3=0
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
+    <- shift-right-preserves-intersection S2*S3=0 S3<<N2=S2S3 shift/0 S22*S2S3=0.
+
+%worlds () (remove-implies-empty-intersection _ _).
+%total (R) (remove-implies-empty-intersection R _).

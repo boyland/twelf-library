@@ -1,0 +1,55 @@
+%%%%%% Proposed Twelf Standard Library
+%%%%%% John Boyland
+%%%%%% You may freely use, modify and distribute this file without restrictions.
+
+%{%
+This file includes some simple types that should
+be standardized.  Here's my proposal.
+%}%
+
+
+
+
+%%%% Structure
+
+
+
+%%% The uninhabited type
+
+
+void : type.
+
+
+%freeze void.
+
+
+
+
+%%% The uninteresting type
+
+
+unit : type.
+
+
+unit/ : unit.
+
+
+%freeze unit.
+
+
+
+%%% The three-way comparison type
+
+
+comp : type.
+
+
+less    : comp.
+
+greater : comp.
+
+equal   : comp.
+
+
+%freeze comp.
+

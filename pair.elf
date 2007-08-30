@@ -1,0 +1,205 @@
+%%%%% pair.elf
+%%%%% a pseudo-functor
+%%%%% John Boyland
+
+%{%
+We require the following definitions:
+  data1 : equality type.
+  data2 : equality type.
+The result is an equality type too.
+%}%
+
+
+
+
+%%%% Definitions
+
+
+
+pair : type.
+
+pair/ : data1 -> data2 -> pair.
+
+
+eq : pair -> pair -> type.
+
+eq/ : eq P P.
+
+%{%
+#ifdef DATA_NE
+%}%
+
+ne : pair -> pair -> type.
+
+ne/1 : ne (pair/ X1 Y1) (pair/ X2 Y2)
+    <- data1`ne X1 X2.
+
+ne/2 : ne (pair/ X1 Y1) (pair/ X2 Y2)
+    <- data2`ne Y1 Y2.
+
+
+eq? : pair -> pair -> bool -> type.
+
+eq?/yes : eq? P P true.
+
+eq?/no : eq? P1 P2 false
+    <- ne P1 P2.
+
+%{%
+#endif /* DATA_NE */
+%}%
+
+
+%%%% Theorems
+
+
+
+%%% theorems about eq
+
+%{%
+#define EQ eq
+BEGIN_ELF
+#include "EQ.i"
+END_ELF
+#undef EQ
+%}%
+
+%theorem pair-eq-implies-eq :
+	forall* {D1a} {D1b} {D2a} {D2b}
+        forall {E:eq (pair/ D1a D2a) (pair/ D1b D2b)}
+	exists {E1:data1`eq D1a D1b}
+               {E2:data2`eq D2a D2b}
+	true.
+
+- : pair-eq-implies-eq eq/ data1`eq/ data2`eq/.
+
+%worlds () (pair-eq-implies-eq _ _ _).
+%total { } (pair-eq-implies-eq _ _ _).
+
+
+%theorem pair-preserves-eq :
+	forall* {D1a} {D1b} {D2a} {D2b}
+	forall {E1:data1`eq D1a D1b}
+               {E2:data2`eq D2a D2b}
+        exists {E:eq (pair/ D1a D2a) (pair/ D1b D2b)}
+	true.
+
+- : pair-preserves-eq data1`eq/ data2`eq/ eq/.
+
+%worlds () (pair-preserves-eq _ _ _).
+%total { } (pair-preserves-eq _ _ _).
+
+%{%
+#ifdef DATA_NE
+%}%
+
+%%% theorems about ne
+
+
+%theorem false-implies-ne :
+	forall* {X1} {X2}
+	forall {F:void}
+	exists {G:ne X1 X2}
+	true.
+
+%worlds () (false-implies-ne _ _).
+%total { } (false-implies-ne _ _).
+
+
+%theorem ne-respects-eq :
+	forall* {X1} {X2} {Y1} {Y2}
+	forall {D1:ne X1 X2} {E1:eq X1 Y1} {E2:eq X2 Y2}
+	exists {D2:ne Y1 Y2}
+	true.
+
+- : ne-respects-eq X1<>X2 eq/ eq/ X1<>X2.
+
+%worlds () (ne-respects-eq _ _ _ _).
+%total { } (ne-respects-eq _ _ _ _).
+
+
+%theorem ne-anti-reflexive :
+	forall* {P}
+	forall {R:ne P P}
+	exists {F:void}
+	true.
+
+- : ne-anti-reflexive (ne/1 X<>X) F
+    <- data1`ne-anti-reflexive X<>X F.
+
+- : ne-anti-reflexive (ne/2 Y<>Y) F
+    <- data2`ne-anti-reflexive Y<>Y F.
+
+%worlds () (ne-anti-reflexive _ _).
+%total { } (ne-anti-reflexive _ _).
+
+
+%theorem ne-symmetric :
+	forall* {P1} {P2}
+	forall {R1:ne P1 P2}
+	exists {R2:ne P2 P1}
+	true.
+
+- : ne-symmetric (ne/1 X1<>X2) (ne/1 X2<>X1)
+    <- data1`ne-symmetric X1<>X2 X2<>X1.
+
+- : ne-symmetric (ne/2 Y1<>Y2) (ne/2 Y2<>Y1)
+    <- data2`ne-symmetric Y1<>Y2 Y2<>Y1.
+
+
+%worlds () (ne-symmetric _ _).
+%total { } (ne-symmetric _ _).
+
+
+%theorem eq-ne-implies-false :
+	forall* {P1} {P2}
+	forall {D1:eq P1 P2} {D2:ne P1 P2}
+	exists {F:void}
+	true.
+
+- : eq-ne-implies-false eq/ X<>X F
+    <- ne-anti-reflexive X<>X F.
+
+%worlds () (eq-ne-implies-false _ _ _).
+%total { } (eq-ne-implies-false _ _ _).
+
+
+
+%%% theorems about eq?
+
+
+%theorem eq?-total* :
+	forall {P1} {P2}
+	exists {B} {T:eq? P1 P2 B}
+	true.
+
+%theorem eq?-total*/L :
+	forall* {X1} {Y1} {X2} {Y2} {B1} {B2}
+	forall {T1:data1`eq? X1 Y1 B1} {T2:data2`eq? X2 Y2 B2}
+	exists {B} {T:eq? (pair/ X1 X2) (pair/ Y1 Y2) B}
+	true.
+
+- : eq?-total*/L (data1`eq?/yes) (data2`eq?/yes) _ (eq?/yes).
+
+- : eq?-total*/L (data1`eq?/no X1<>Y1) _ _ (eq?/no (ne/1 X1<>Y1)).
+
+- : eq?-total*/L _ (data2`eq?/no X2<>Y2) _ (eq?/no (ne/2 X2<>Y2)).
+
+%worlds () (eq?-total*/L _ _ _ _).
+%total { } (eq?-total*/L _ _ _ _).
+
+- : eq?-total* _ _ _ T
+    <- data1`eq?-total E?1
+    <- data2`eq?-total E?2
+    <- eq?-total*/L E?1 E?2 _ T.
+
+%worlds () (eq?-total* _ _ _ _).
+%total { } (eq?-total* _ _ _ _).
+
+
+%abbrev eq?-total = eq?-total* _ _ _.
+
+
+%{%
+#endif
+%}%

@@ -1,0 +1,48 @@
+%%%%% nat-inv-comp.elf
+%%%%% Theorems about minus and composed relations
+%%%%% This file is part of the nat.elf signature
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about minus
+
+%{%
+#define EQ eq
+#define GE ge
+#define GT gt
+#define NE ne
+
+#define OPN plus
+#define IOPN minus
+#define OP(X,Y) X+Y
+#define IOP(X,Y) X-Y
+#define OP_CANCELS 1
+#define CMP(X,Y) X>=Y
+#define CMPN ge
+BEGIN_ELF
+#include "OPN-inv-preserves-CMPN.i"
+END_ELF
+#undef CMP
+#undef CMPN
+#define CMP(X,Y) X<>Y
+#define CMPN ne
+#define CMP_SYMMETRIC 1
+BEGIN_ELF
+#include "OPN-inv-preserves-CMPN.i"
+END_ELF
+#undef CMP_SYMMETRIC
+#undef CMP
+#undef CMPN
+#undef OP
+#undef OP_CANCELS
+#undef OPN
+#undef IOP
+#undef IOPN
+%}%
+
+
+
+

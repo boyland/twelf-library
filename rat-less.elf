@@ -1,0 +1,87 @@
+%%%%% rat-less.elf
+%%%%% Inverse relations for rational numbers
+%%%%% This file is part of the rat.elf signature
+
+%{%
+#define TYPE rat
+#define EQ equ
+#define GE gre
+#define GT grt
+#define LT lst
+#define LE lse
+
+BEGIN_ELF
+#include "LT.i"
+END_ELF
+
+#define OP_TOTAL 1
+#define OP_CANCELS 1
+#define OP_COMMUTATIVE 1
+
+#define CMP(X,Y) X>Y
+#define CMPN grt
+#define RCMP(X,Y) X<Y
+#define RCMPN lst
+
+#define OPN add
+#define OP(X,Y) X+Y
+BEGIN_ELF
+#include "OPN-preserves-RCMPN.i"
+END_ELF
+#undef OP
+#undef OPN
+
+#undef CMP
+#undef CMPN
+#define CMP(X,Y) X>Y
+#define CMPN grt
+
+#define OPN mul
+#define OP(X,Y) X*Y
+BEGIN_ELF
+#include "OPN-preserves-RCMPN.i"
+END_ELF
+#undef OP
+#undef OPN
+#undef CMP
+#undef CMPN
+#undef RCMP
+#undef RCMPN
+
+BEGIN_ELF
+#include "LE.i"
+END_ELF
+
+#define CMP(X,Y) X>=Y
+#define CMPN gre
+#define RCMP(X,Y) X<=Y
+#define RCMPN lse
+
+#define OPN add
+#define OP(X,Y) X+Y
+BEGIN_ELF
+#include "OPN-preserves-RCMPN.i"
+END_ELF
+#undef OP
+#undef OPN
+
+#undef CMP
+#undef CMPN
+#define CMP(X,Y) X>=Y
+#define CMPN gre
+
+#define OPN mul
+#define OP(X,Y) X*Y
+BEGIN_ELF
+#include "OPN-preserves-RCMPN.i"
+END_ELF
+#undef OP
+#undef OPN
+
+#undef OP_TOTAL
+#undef OP_CANCELS
+#undef OP_COMMUTATIVE
+%}%
+
+
+

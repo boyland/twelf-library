@@ -1,0 +1,336 @@
+%%%%% nat-comp.elf
+%%%%% Composed relations for natural numbers
+%%%%% This file is part of the nat.elf signature
+
+%{%
+#define TYPE nat
+#define EQ eq
+#define GE ge
+#define GT gt
+#define NE ne
+#define COMP compare
+BEGIN_ELF
+#include "GE.i"
+END_ELF
+%}%
+
+%theorem meta-ge :
+	forall {M} {N} {G:ge M N}
+        true.
+
+- : meta-ge _ _ (ge/= eq/).
+
+- : meta-ge _ _ (ge/> M>N) 
+    <- meta-gt _ _ M>N.
+
+%worlds () (meta-ge _ _ _).
+%total { } (meta-ge _ _ _).
+%reduces N <= M (meta-ge M N _).
+
+
+%theorem succ-preserves-ge :
+	forall* {M} {N}
+	forall {G:ge M N}
+	exists {G':ge (s M) (s N)}
+	true.
+
+- : succ-preserves-ge (ge/= eq/) (ge/= eq/).
+
+- : succ-preserves-ge (ge/> N>M) (ge/> N+1>M+1)
+    <- succ-preserves-gt N>M N+1>M+1.
+
+%worlds () (succ-preserves-ge M>=N %{=>}% M+1>=N+1).
+%total {} (succ-preserves-ge _ _).
+
+
+%theorem succ-preserves-ge-converse :
+	forall* {M} {N}
+	forall {G':ge (s M) (s N)}
+	exists {G:ge M N}
+	true.
+
+- : succ-preserves-ge-converse (ge/= eq/) (ge/= eq/).
+
+- : succ-preserves-ge-converse (ge/> N+1>M+1) (ge/> N>M)
+    <- succ-preserves-gt-converse N+1>M+1 N>M.
+
+%worlds () (succ-preserves-ge-converse M+1>=N+1 %{=>}% M>=N).
+%total {} (succ-preserves-ge-converse _ _).
+
+
+%theorem ge-succ-implies-gt :
+	forall* {N1} {N2}
+	forall {G:ge N1 (s N2)}
+        exists {G':gt N1 N2}
+	true.
+
+- : ge-succ-implies-gt (ge/= eq/) (gt/1).
+
+- : ge-succ-implies-gt (ge/> N1>sN2) N1>N2
+    <- gt-transitive N1>sN2 (gt/1) N1>N2.
+
+%worlds () (ge-succ-implies-gt _ _).
+%total { } (ge-succ-implies-gt _ _).
+
+
+%theorem ge-implies-succ-gt :
+	forall* {N1} {N2}
+	forall {G:ge N1 N2}
+	exists {G':gt (s N1) N2}
+	true.
+
+- : ge-implies-succ-gt N1>=N2 N1+1>N2
+    <- succ-preserves-ge N1>=N2 N1+1>=N2+1
+    <- ge-succ-implies-gt N1+1>=N2+1 N1+1>N2.
+
+%worlds () (ge-implies-succ-gt _ _).
+%total { } (ge-implies-succ-gt _ _).
+
+
+%theorem succ-gt-implies-ge :
+	forall* {N1} {N2}
+	forall {G:gt (s N1) N2}
+        exists {G':ge N1 N2}
+	true.
+
+- : succ-gt-implies-ge (gt/1) (ge/= eq/).
+
+- : succ-gt-implies-ge (gt/> N1>N2) (ge/> N1>N2).
+
+%worlds () (succ-gt-implies-ge _ _).
+%total { } (succ-gt-implies-ge _ _).
+
+
+%theorem gt-implies-ge-succ :
+	forall* {N1} {N2}
+        forall {G':gt N1 N2}
+	exists {G:ge N1 (s N2)}
+	true.
+
+- : gt-implies-ge-succ N1>N2 N1>=N2+1
+    <- succ-preserves-gt N1>N2 N1+1>N2+1
+    <- succ-gt-implies-ge N1+1>N2+1 N1>=N2+1.
+
+%worlds () (gt-implies-ge-succ _ _).
+%total { } (gt-implies-ge-succ _ _).
+
+
+%theorem ge-implies-plus:
+	forall* {N1} {N2}
+	forall {G:ge N2 N1}
+        exists {N0} {P:plus N0 N1 N2}
+        true.
+
+- : ge-implies-plus (ge/= eq/) z plus/z.
+
+- : ge-implies-plus (ge/> N2>N1) (s N0) P
+    <- gt-implies-plus N2>N1 N0 P.
+
+%worlds () (ge-implies-plus N2>=N1 %{=>}% N0 N0+N1=N2).
+%total { } (ge-implies-plus _ _ _).
+
+
+%theorem plus-implies-ge:
+	forall* {N0} {N1} {N2}
+	forall {P:plus N0 N1 N2}
+	exists {G:ge N2 N1}
+	true.
+
+- : plus-implies-ge plus/z (ge/= eq/).
+
+- : plus-implies-ge P (ge/> N2>N1)
+    <- plus-implies-gt P eq/ N2>N1.
+
+%worlds () (plus-implies-ge N0+N1=N2 %{=>}% N2>=N1).
+%total { } (plus-implies-ge _ _).
+
+
+%theorem ge-zero-always :
+	forall {N}
+	exists {G:ge N z}
+	true.
+
+- : ge-zero-always _ N>=0
+    <- plus-right-identity _ N+0=N
+    <- plus-implies-ge N+0=N N>=0.
+	
+%worlds () (ge-zero-always _ _).
+%total { } (ge-zero-always _ _).
+
+
+%theorem nonzero-times-implies-ge :
+	forall* {N0} {N1} {N2}
+	forall {P:times (s N0) N1 N2}
+	exists {G:ge N2 N1}
+	true.
+
+- : nonzero-times-implies-ge (times/s _ X+N1=N2) N2>=N1
+    <- plus-implies-ge X+N1=N2 N2>=N1.
+
+%worlds () (nonzero-times-implies-ge N0*N1=N2 %{=>}% N2>=N1).
+%total { } (nonzero-times-implies-ge _ _).
+
+
+%theorem times-nonzero-implies-ge :
+	forall* {N0} {N1} {N2}
+	forall {P:times N0 (s N1) N2}
+	exists {G:ge N2 N0}
+	true.
+
+- : times-nonzero-implies-ge A*B=C C>=A
+    <- times-commutative A*B=C B*A=C
+    <- nonzero-times-implies-ge B*A=C C>=A.
+
+%worlds () (times-nonzero-implies-ge _ _).
+%total { } (times-nonzero-implies-ge _ _).
+
+
+%theorem non-trivial-times-implies-much-gt* :
+	forall* {N1} {N2} {N3}
+	forall {D:times (s (s N1)) (s (s N2)) N3}
+        exists {G:gt N3 (s (s (s N1)))}
+	true.
+
+- : non-trivial-times-implies-much-gt* 
+     (times/s (times/s N1*ssN2=P1 P1+ssN2=P2) P2+ssN2=N3) N3>sssN1
+    <- times-nonzero-implies-ge N1*ssN2=P1 P1>=N1
+    <- succ-preserves-ge P1>=N1 SP1>=sN1
+    <- plus-swap-succ-converse P1+ssN2=P2 SP1+sN2=P2
+    <- plus-commutative SP1+sN2=P2 SN2+sP1=P2
+    <- plus-implies-gt SN2+sP1=P2 eq/ P2>sP1
+    <- gt-transitive-ge P2>sP1 SP1>=sN1 P2>sN1
+    <- succ-preserves-gt P2>sN1 SP2>ssN1
+    <- gt-implies-ge-succ SP2>ssN1 SP2>=sssN1
+    <- plus-commutative P2+ssN2=N3 SSN2+P2=N3
+    <- plus-swap-succ SSN2+P2=N3 SN2+sP2=N3
+    <- plus-implies-gt SN2+sP2=N3 eq/ N3>sP2
+    <- gt-transitive-ge N3>sP2 SP2>=sssN1 N3>sssN1.
+
+%worlds () (non-trivial-times-implies-much-gt* _ _).
+%total { } (non-trivial-times-implies-much-gt* _ _).
+
+
+%theorem non-trivial-times-implies-much-gt :
+	forall* {N1} {N2} {N3}
+	forall {D:times (s (s N1)) (s (s N2)) N3}
+        exists {G1:gt N3 (s (s (s N1)))} {G2:gt N3 (s (s (s N2)))}
+	true.
+
+- : non-trivial-times-implies-much-gt T G1 G2
+    <- non-trivial-times-implies-much-gt* T G1
+    <- times-commutative T Tc
+    <- non-trivial-times-implies-much-gt* Tc G2.
+
+%worlds () (non-trivial-times-implies-much-gt _ _ _).
+%total { } (non-trivial-times-implies-much-gt _ _ _).
+
+%{%
+#define OP_TOTAL 1
+#define OP_CANCELS 1
+#define OP_COMMUTATIVE 1
+#define OPN plus
+#define OP(X,Y) X+Y
+BEGIN_ELF
+#include "OPN-preserves-GE.i"
+END_ELF
+#undef OP
+#undef OPN
+#undef OP_COMMUTATIVE
+#undef OP_CANCELS
+#undef OP_TOTAL
+%}%
+
+% Times preserves ge only because multiplying with zero yields equality.
+%theorem times-left-preserves-ge* :
+	forall* {X1} {X2} {X3} {X4} {X5}
+        forall {G:ge X2 X4}
+               {OP1:times X1 X2 X3} {OP2:times X1 X4 X5}
+        exists {G2:ge X3 X5}
+	true.
+
+- : times-left-preserves-ge* _ times/z times/z (ge/= eq/).
+
+- : times-left-preserves-ge* (ge/= eq/) X1*X2=X3 X1*X2=X5 (ge/= X3=X5)
+    <- times-deterministic X1*X2=X3 X1*X2=X5 eq/ eq/ X3=X5.
+
+- : times-left-preserves-ge* (ge/> X2>X4) X1*X2=X3 X1*X4=X5 (ge/> X3>X5)
+    <- times-left-preserves-gt X2>X4 X1*X2=X3 X1*X4=X5 X3>X5.
+
+%worlds () (times-left-preserves-ge* X2>=X4 X1*X2=X3 X1*X4=X5 %{=>}% X3>=X5).
+%total {} (times-left-preserves-ge* _ _ _ _).
+
+%{%
+#define OPN times
+#define OP(X,Y) X*Y
+#define CMPN GE
+#define CMP(X,Y) X>=Y
+#define OP_COMMUTATIVE 1
+#define OP_TOTAL 1
+BEGIN_ELF
+#include "OPN-preserves-CMPN.i"
+END_ELF
+#undef OP_TOTAL
+#undef OP_COMMUTATIVE
+#undef OP
+#undef OPN
+#undef CMP
+#undef CMPN
+%}%
+
+%{%
+BEGIN_ELF
+#include "NE.i"
+END_ELF
+%}%
+
+%theorem succ-preserves-ne :
+	forall* {M} {N}
+	forall {D:ne M N}
+	exists {D':ne (s M) (s N)}
+	true.
+
+- : succ-preserves-ne (ne/< N>M) (ne/< N+1>M+1)
+    <- succ-preserves-gt N>M N+1>M+1.
+
+- : succ-preserves-ne (ne/> N>M) (ne/> N+1>M+1)
+    <- succ-preserves-gt N>M N+1>M+1.
+
+%worlds () (succ-preserves-ne M<>N %{=>}% M+1<>N+1).
+%total {} (succ-preserves-ne _ _).
+
+
+%theorem succ-preserves-ne-converse :
+	forall* {M} {N}
+	forall {D':ne (s M) (s N)}
+	exists {D:ne M N}
+	true.
+
+- : succ-preserves-ne-converse (ne/< N+1>M+1) (ne/< N>M)
+    <- succ-preserves-gt-converse N+1>M+1 N>M.
+
+- : succ-preserves-ne-converse (ne/> N+1>M+1) (ne/> N>M)
+    <- succ-preserves-gt-converse N+1>M+1 N>M.
+
+%worlds () (succ-preserves-ne-converse M+1<>N+1 %{=>}% M<>N).
+%total {} (succ-preserves-ne-converse _ _).
+
+%{%
+#define OP_CANCELS 1
+#define OP_TOTAL 1
+#define OP_COMMUTATIVE 1
+#define OPN plus
+#define OP(X,Y) X+Y
+BEGIN_ELF
+#include "OPN-preserves-NE.i"
+END_ELF
+#undef OP
+#undef OPN
+#undef OP_CANCELS
+#undef OP_TOTAL
+#undef OP_COMMUTATIVE
+%}%
+
+/* times doesn't preserve ne */
+
+
+

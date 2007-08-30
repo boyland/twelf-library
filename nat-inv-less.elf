@@ -1,0 +1,48 @@
+%%%%% nat-inv-less.elf
+%%%%% Theorems about minus and inverted relations
+%%%%% This file is part of the nat.elf signature
+
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about minus
+
+%{%
+#define EQ eq
+#define GE ge
+#define GT gt
+#define NE ne
+
+#define OPN plus
+#define IOPN minus
+#define OP(X,Y) X+Y
+#define IOP(X,Y) X-Y
+#define OP_CANCELS 1
+#define CMP(X,Y) X<Y
+#define CMPN lt
+BEGIN_ELF
+#include "OPN-inv-preserves-CMPN.i"
+END_ELF
+#undef CMP
+#undef CMPN
+#define CMP(X,Y) X<=Y
+#define CMPN le
+BEGIN_ELF
+#include "OPN-inv-preserves-CMPN.i"
+END_ELF
+#undef CMP
+#undef CMPN
+#undef OP
+#undef OPN
+#undef OP_CANCELS
+#undef IOP
+#undef IOPN
+%}%
+
+
+
+

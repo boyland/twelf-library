@@ -1,0 +1,294 @@
+%%%%% Enumerating the rationals
+%%%%% John Boyland
+%%%%% Part of the rat.elf signature
+
+
+
+%%%% Definitions
+
+
+rat2nat : rat -> nat -> type.
+
+
+%abbrev nat2rat = [N] [R] rat2nat R N.
+
+
+rat2nat/whole : times N (s (s z)) TWON -> rat2nat (whole N) TWON.
+
+rat2nat/frac : 
+        plus TWON (s z) TWON+1 ->
+	times N (s (s z)) TWON ->
+	pair2nat (natpair/ N1 N2) N ->
+	rat2nat R N2 -> 
+    rat2nat (frac N1 R) TWON+1. 
+
+
+
+
+%%%% Theorems 
+
+
+%theorem false-implies-rat2nat :
+	forall* {R} {N}
+	forall {F:void}
+	exists {R2N:rat2nat R N}
+	true.
+
+%worlds () (false-implies-rat2nat _ _).
+%total { } (false-implies-rat2nat _ _).
+
+
+%abbrev false-implies-nat2rat = false-implies-rat2nat.
+
+
+%theorem rat2nat-respects-eq :
+	forall* {R1} {N1} {R2} {N2}
+	forall {D1:rat2nat R1 N1} {ER:equ R1 R2} {EN:nat`eq N1 N2}
+	exists {D2:rat2nat R2 N2}
+	true.
+
+- : rat2nat-respects-eq R2N equ/ nat`eq/ R2N.
+
+%worlds () (rat2nat-respects-eq _ _ _ _).
+%total { } (rat2nat-respects-eq _ _ _ _).
+%reduces D1 = D2 (rat2nat-respects-eq D1 _ _ D2).
+
+%abbrev nat2rat-respects-eq :
+	  (nat2rat N1 R1) -> (nat`eq N1 N2) -> (equ R1 R2) -> (nat2rat N2 R2)
+        -> type
+	= [D1] [EN] [ER] [D2] rat2nat-respects-eq D1 ER EN D2.
+
+
+%theorem rat2nat-total* :
+	forall {R:rat}
+	exists {N:nat} {R2N:rat2nat R N}
+	true.
+
+- : rat2nat-total* _ _ (rat2nat/whole T)
+    <- times-total T.
+
+- : rat2nat-total* _ _ (rat2nat/frac P T P2N R2N)
+    <- rat2nat-total* _ _ R2N
+    <- pair2nat-total P2N
+    <- times-total T
+    <- plus-total P.
+
+%worlds () (rat2nat-total* _ _ _).
+%total (R) (rat2nat-total* R _ _).
+
+
+%abbrev rat2nat-total = rat2nat-total* _ _.
+
+
+%theorem nat2rat-total* :
+	forall {N:nat}
+	exists {R:rat} {N2R:nat2rat N R}
+	true.
+
+%theorem nat2rat-total*/L :
+	forall* {Q} {R}
+	forall {N:nat} {D:divrem N (s (s z)) Q R}
+	exists {S:rat} {N2R:nat2rat N S}
+	true.
+
+- : nat2rat-total*/L M (D:divrem M _ N z) (whole N) (rat2nat/whole N*2=M)
+    <- div-can-be-inverted D N*2=M.
+
+- : nat2rat-total*/L M (D:divrem M _ N (s z)) (frac N1 R) 
+                     (rat2nat/frac TWON+1=M N*2=2N P2N R2N)
+    <- divrem-can-be-inverted D TWON N*2=2N TWON+1=M
+    <- times-commutative N*2=2N (times/s (times/s times/z plus/z)
+                                         N+N=2N)
+    <- plus-implies-ge N+N=2N TWON>=N
+    <- plus-commutative TWON+1=M ONE+2N=M
+    <- plus-implies-gt ONE+2N=M nat`eq/ M>2N
+    <- gt-transitive-ge M>2N TWON>=N M>N
+    <- meta-gt _ _ M>N
+    <- nat2pair-total (P2N:nat2pair N (natpair/ N1 N2))
+    <- nat2pair-implies-ge P2N _ N>=N2
+    <- meta-ge _ _ N>=N2
+    <- divrem-total D2
+    <- nat2rat-total*/L _ D2 _ R2N.
+
+- : nat2rat-total*/L M (D:divrem _ _ _ (s (s X))) (whole z) R2N
+    <- divrem-implies-gt D TWO>SSX
+    <- succ-preserves-gt-converse TWO>SSX ONE>SX
+    <- succ-preserves-gt-converse ONE>SX ZERO>X
+    <- gt-contradiction ZERO>X F
+    <- false-implies-nat2rat F R2N.
+
+%worlds () (nat2rat-total*/L _ _ _ _).
+%total (N) (nat2rat-total*/L N _ _ _).
+
+- : nat2rat-total* M R N2R
+    <- divrem-total D
+    <- nat2rat-total*/L M D R N2R.
+
+%worlds () (nat2rat-total* _ _ _).
+%total { } (nat2rat-total* _ _ _).
+
+
+%abbrev nat2rat-total = nat2rat-total* _ _.
+
+
+%theorem rat2nat-deterministic :
+	forall* {R1} {R2} {N1} {N2}
+	forall {D1:rat2nat R1 N1} {D2:rat2nat R2 N2}
+	       {ER:equ R1 R2}
+	exists {EN:nat`eq N1 N2}
+	true.
+
+- : rat2nat-deterministic 
+     (rat2nat/whole N*2=2N) (rat2nat/whole N*2=2N') equ/ TWON=2N'
+    <- times-deterministic N*2=2N N*2=2N' nat`eq/ nat`eq/ TWON=2N'.     
+
+- : rat2nat-deterministic
+     (rat2nat/frac TWON+1=TWON1 N*2=2N P2N R2N)
+     (rat2nat/frac TWON'+1=TWON1' N'*2=2N' P2N' R2N') equ/ TWON1=TWON1'
+    <- rat2nat-deterministic R2N R2N' equ/ N2=N2'
+    <- natpair`pair-preserves-eq nat`eq/ N2=N2' N1,N2=N1,N2'
+    <- pair2nat-deterministic P2N P2N' N1,N2=N1,N2' N=N'
+    <- times-deterministic N*2=2N N'*2=2N' N=N' nat`eq/ TWON=2N'
+    <- plus-deterministic 
+       TWON+1=TWON1 TWON'+1=TWON1' TWON=2N' nat`eq/ TWON1=TWON1'. 
+
+%worlds () (rat2nat-deterministic _ _ _ _).
+%total (R) (rat2nat-deterministic R _ _ _).
+
+
+
+%theorem nat2rat-deterministic :
+	forall* {R1} {R2} {N1} {N2}
+	forall {D1:nat2rat N1 R1} {D2:nat2rat N2 R2} {EN:nat`eq N1 N2}
+	exists {ER:equ R1 R2}
+	true.
+
+- : nat2rat-deterministic 
+     (rat2nat/whole N*2=2N) (rat2nat/whole N'*2=2N) nat`eq/ WN=WN'
+    <- times-right-cancels N*2=2N N'*2=2N nat`eq/ nat`eq/ N=N'
+    <- whole-preserves-eq N=N' WN=WN'.
+
+- : nat2rat-deterministic 
+     (rat2nat/whole N*2=X) (rat2nat/frac TWON+1=X N'*2=2N _ _) nat`eq/ R=R'
+    <- div-can-be-constructed N*2=X X/2=N,0
+    <- divrem-can-be-constructed N'*2=2N TWON+1=X (gt/1) X/2=N',1
+    <- divrem-deterministic X/2=N,0 X/2=N',1 nat`eq/ nat`eq/ N=N' ZERO=ONE
+    <- nat`eq-contradiction ZERO=ONE F
+    <- false-implies-equ F R=R'.
+
+- : nat2rat-deterministic 
+     (rat2nat/frac TWON+1=X N'*2=2N _ _) (rat2nat/whole N*2=X) nat`eq/ R'=R
+    <- div-can-be-constructed N*2=X X/2=N,0
+    <- divrem-can-be-constructed N'*2=2N TWON+1=X (gt/1) X/2=N',1
+    <- divrem-deterministic X/2=N,0 X/2=N',1 nat`eq/ nat`eq/ N=N' ZERO=ONE
+    <- nat`eq-contradiction ZERO=ONE F
+    <- false-implies-equ F R'=R.
+
+- : nat2rat-deterministic 
+     (rat2nat/frac TWON+1=Z  N*2=2N   P2N  R2N) 
+     (rat2nat/frac TWON'+1=Z N'*2=2N' P2N' R2N') nat`eq/ NR=NR'
+    <- divrem-can-be-constructed N*2=2N TWON+1=Z (gt/1) Z/2=N,1
+    <- divrem-can-be-constructed N'*2=2N' TWON'+1=Z (gt/1) Z/2=N',1
+    <- divrem-deterministic Z/2=N,1 Z/2=N',1 nat`eq/ nat`eq/ N=N' _
+    <- nat2pair-deterministic P2N P2N' N=N' N1,N2=N1',N2'
+    <- natpair`pair-eq-implies-eq N1,N2=N1',N2' N1=N1' N2=N2'
+    <- nat2rat-deterministic R2N R2N' N2=N2' R=R'
+    <- frac-preserves-equ N1=N1' R=R' NR=NR'.
+
+%worlds () (nat2rat-deterministic _ _ _ _).
+%total (D) (nat2rat-deterministic D _ _ _).
+
+
+%theorem rat2nat-preserves-ne* :
+	forall* {R1} {R2} {N1} {N2}
+	forall {RNE: neq R1 R2} {T1:rat2nat R1 N1} {T2:rat2nat R2 N2}
+	exists {NE: nat`ne N1 N2}
+	true.
+
+%theorem rat2nat-preserves-ne*/L :
+	forall* {R1} {R2} {N1} {N2} {B}
+	forall {RNE: neq R1 R2} {T1:rat2nat R1 N1} {T2:rat2nat R2 N2}
+               {NT: nat`eq? N1 N2 B}
+	exists {NE: nat`ne N1 N2}
+	true.
+
+- : rat2nat-preserves-ne* R1<>R2 R1->N1 R2->N2 N1<>N2
+    <- nat`eq?-total EQ?
+    <- rat2nat-preserves-ne*/L R1<>R2 R1->N1 R2->N2 EQ? N1<>N2.
+
+- : rat2nat-preserves-ne*/L _ _ _ (nat`eq?/no N1<>N2) N1<>N2.
+
+- : rat2nat-preserves-ne*/L R1<>R2 R1->N R2->N (nat`eq?/yes) N<>N
+    <- nat2rat-deterministic R1->N R2->N nat`eq/ R1=R2
+    <- equ-neq-implies-false R1=R2 R1<>R2 F
+    <- nat`false-implies-ne F N<>N.
+
+%worlds () (rat2nat-preserves-ne*/L _ _ _ _ _).
+%total { } (rat2nat-preserves-ne*/L _ _ _ _ _).
+
+%worlds () (rat2nat-preserves-ne* _ _ _ _).
+%total { } (rat2nat-preserves-ne* _ _ _ _).
+
+
+%theorem rat2nat-preserves-ne :
+	forall* {R1} {R2}
+	forall {RNE: neq R1 R2} 
+        exists {N1} {N2} {T1:rat2nat R1 N1} {T2:rat2nat R2 N2}
+	       {NE: nat`ne N1 N2}
+	true.
+
+- : rat2nat-preserves-ne R1<>R2 N1 N2 T1 T2 N1<>N2
+   <- rat2nat-total T1
+   <- rat2nat-total T2
+   <- rat2nat-preserves-ne* R1<>R2 T1 T2 N1<>N2.
+
+%worlds () (rat2nat-preserves-ne _ _ _ _ _ _).
+%total { } (rat2nat-preserves-ne _ _ _ _ _ _).
+
+
+%theorem nat2rat-preserves-ne* :
+	forall* {R1} {R2} {N1} {N2}
+	forall {NE: nat`ne N1 N2} {T1:nat2rat N1 R1} {T2:nat2rat N2 R2}
+	exists {RNE: neq R1 R2}
+	true.
+
+%theorem nat2rat-preserves-ne*/L :
+	forall* {R1} {R2} {N1} {N2} {B}
+	forall {NE: nat`ne N1 N2} {T1:nat2rat N1 R1} {T2:nat2rat N2 R2}
+               {RT: equ? R1 R2 B}
+	exists {RNE: neq R1 R2}
+	true.
+
+- : nat2rat-preserves-ne* N1<>N2 N1->R1 N2->R2 R1<>R2
+    <- equ?-total ER?
+    <- nat2rat-preserves-ne*/L N1<>N2 N1->R1 N2->R2 ER? R1<>R2.
+
+- : nat2rat-preserves-ne*/L _ _ _ (equ?/no R1<>R2) R1<>R2.
+
+- : nat2rat-preserves-ne*/L N1<>N2 N1->R N2->R (equ?/yes) R<>R
+    <- rat2nat-deterministic N1->R N2->R eq/ N1=N2
+    <- nat`eq-ne-implies-false N1=N2 N1<>N2 F
+    <- false-implies-neq F R<>R.
+
+%worlds () (nat2rat-preserves-ne*/L _ _ _ _ _).
+%total { } (nat2rat-preserves-ne*/L _ _ _ _ _).
+
+%worlds () (nat2rat-preserves-ne* _ _ _ _).
+%total { } (nat2rat-preserves-ne* _ _ _ _).
+
+
+%theorem nat2rat-preserves-ne :
+	forall* {N1} {N2}
+	forall {NNE: nat`ne N1 N2} 
+        exists {R1} {R2} {T1:nat2rat N1 R1} {T2:nat2rat N2 R2}
+	       {RE: neq R1 R2}
+	true.
+
+- : nat2rat-preserves-ne N1<>N2 R1 R2 T1 T2 R1<>R2
+   <- nat2rat-total T1
+   <- nat2rat-total T2
+   <- nat2rat-preserves-ne* N1<>N2 T1 T2 R1<>R2.
+
+%worlds () (nat2rat-preserves-ne _ _ _ _ _ _).
+%total { } (nat2rat-preserves-ne _ _ _ _ _ _).
+

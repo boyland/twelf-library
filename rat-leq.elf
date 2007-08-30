@@ -1,0 +1,123 @@
+%%%%% rat-leq.elf
+%%%%% Part of rat.elf
+%%%%% John Boyland
+
+%{%
+Retrofit rat to use leq/nle/leq?
+
+Makes it easier to use functors based on leq.
+%}%
+
+
+
+%%%% Renamings
+
+
+
+%abbrev leq = lse.
+
+
+%abbrev false-implies-leq = false-implies-lse.
+
+%abbrev leq-respects-eq = lse-respects-equ.
+
+%abbrev leq-reflexive = lse-reflexive.
+
+%abbrev leq-anti-symmetric = lse-anti-symmetric.
+
+%abbrev leq-transitive = lse-transitive.
+
+
+
+%abbrev nle = grt.
+
+
+%abbrev false-implies-nle = false-implies-grt.
+
+%abbrev nle-respects-eq = grt-respects-equ.
+
+%abbrev nle-anti-reflexive = grt-anti-reflexive.
+
+
+
+
+%%%% Definitions
+
+
+
+leq? : rat -> rat -> bool -> type.
+
+
+leq?/yes : leq Q1 Q2 -> leq? Q1 Q2 true.
+
+leq?/no : nle Q1 Q2 -> leq? Q1 Q2 false.
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about leq/nle
+
+
+%theorem nle-implies-ne :
+	forall* {Q1} {Q2}
+	forall {G:grt Q1 Q2}
+	exists {N:neq Q1 Q2}
+	true.
+	
+- : nle-implies-ne Q1>Q2 (neq/> Q1>Q2).
+
+%worlds () (nle-implies-ne _ _).
+%total { } (nle-implies-ne _ _).
+
+
+%theorem leq-nle-contradiction :
+	forall* {Q1} {Q2}
+	forall {L:lse Q1 Q2}
+	       {G:grt Q1 Q2}
+	exists {F:void}
+	true.
+
+- : leq-nle-contradiction Q2>=Q1 Q1>Q2 F
+    <- gre-transitive-grt Q2>=Q1 Q1>Q2 Q2>Q2
+    <- grt-anti-reflexive Q2>Q2 F.
+
+%worlds () (leq-nle-contradiction _ _ _).
+%total { } (leq-nle-contradiction _ _ _).
+
+
+
+%%% Theorems about leq?
+
+
+%theorem leq?-total* :
+	forall {Q1} {Q2}
+	exists {B} {L:leq? Q1 Q2 B}
+	true.
+
+%abbrev leq?-total = leq?-total* _ _ _.
+
+%theorem leq?-total** :
+	forall* {Q1} {Q2} {C}
+	forall {CMP:cmp Q1 Q2 C}
+	exists {B} {L?:leq? Q1 Q2 B}
+	true.
+
+- : leq?-total L?
+    <- cmp-total CMP
+    <- leq?-total** CMP _ L?.
+
+- : leq?-total** (cmp/< Q1<Q2) _ (leq?/yes (gre/> Q1<Q2)).
+
+- : leq?-total** (cmp/=) _ (leq?/yes (gre/= equ/)).
+
+- : leq?-total** (cmp/> Q1>Q2) _ (leq?/no Q1>Q2).
+
+%worlds () (leq?-total** _ _ _).
+%total { } (leq?-total** _ _ _).
+
+%worlds () (leq?-total* _ _ _ _).
+%total { } (leq?-total* _ _ _ _).
+

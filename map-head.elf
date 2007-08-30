@@ -1,0 +1,41 @@
+%%%%%% Partial Maps
+%%%%%% John Boyland
+%%%%%% You may freely use, modify and distribute this file without restrictions.
+
+%%%%% This file requires the "nat.elf" signature (base and comp only).
+
+%{%
+ This signature implements maps from natural numbers to an arbitrary
+ data type.  The representation is "adequate" in that every partial
+ maps has a unique representation.  In other words, equality of the terms
+ is the same as semantic equality.
+%}%
+
+%{% 
+ This signature is incomplete.  It requires the following declarations:
+
+ data : type.
+ eqdata : data -> data -> type.
+ eqdata/ : eqdata D D.
+ %theorem false-implies-eqdata : 
+	forall* {D} {D'} forall {F:void} exists {E:eqdata D D'} true.
+ %worlds () (false-implies-eqdata _ %{=>}% D=D').
+ %total {} (false-implies-eqdata _ _).
+
+ E.g.
+ %abbrev data = nat.
+ %abbrev eqdata = eq.
+ %abbrev eqdata/ = eq/.
+ %abbrev false-implies-eqdata = false-implies-eq.
+
+ This file is intended to be copied and modified to apply to specific
+ data types.  If/when Twelf gets a module system, this signature
+ should be rewritten as a functor.
+%}%
+
+%{%
+ This file follows the same theorem naming convention as nat.elf (q.v.)
+%}%
+
+
+

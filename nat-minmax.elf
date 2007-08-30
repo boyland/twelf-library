@@ -1,0 +1,13 @@
+%{%
+#define data nat
+#define GT gt
+#define LT lt
+#define GE ge
+#define LE le
+#define EQ eq
+#define COMP compare
+BEGIN_ELF
+#include "minmax.elf"
+END_ELF
+%}%
+

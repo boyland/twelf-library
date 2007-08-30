@@ -1,0 +1,689 @@
+%%%%% minmax.elf
+%%%%% Minimum and Maximum functor
+%%%%% John Boyland
+
+%{%
+ Minimum and maximum defined given anti-reflexive GT total order.
+ We assume COMP three-way comparison.
+ We assume that GE is defined from GT and EQ.
+%}%
+
+
+
+%%%% Definitions
+
+
+min : data -> data -> data -> type.
+
+
+min/= : min X X X.
+
+min/> : GT X1 X2 -> min X1 X2 X2.
+
+min/< : GT X2 X1 -> min X1 X2 X1.
+
+
+
+max : data -> data -> data -> type.
+
+
+max/= : max X X X.
+
+max/> : GT X1 X2 -> max X1 X2 X1.
+
+max/< : GT X2 X1 -> max X1 X2 X2.
+
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about min
+
+
+%theorem false-implies-min :
+	forall* {X1} {X2} {X3}
+	forall {F:void}
+	exists {M:min X1 X2 X3}
+	true.
+
+%worlds () (false-implies-min _ _).
+%total { } (false-implies-min _ _).
+
+
+%theorem min-respects-eq :
+	forall* {X1} {X2} {X3}
+		{Y1} {Y2} {Y3}
+	forall {MX:min X1 X2 X3}
+	       {E1:eq X1 Y1} {E2:eq X2 Y2} {E3:eq X3 Y3}
+	exists {MY:min Y1 Y2 Y3}
+	true.
+
+- : min-respects-eq M eq/ eq/ eq/ M.
+
+%worlds () (min-respects-eq _ _ _ _ _).
+%total { } (min-respects-eq _ _ _ _ _).
+
+
+%theorem min-total** :
+	forall* {X1} {X2} {C}
+	forall {D:COMP X1 X2 C}
+	exists {X3} {M:min X1 X2 X3}
+	true.
+
+- : min-total** COMP/= _ min/=.
+
+- : min-total** (COMP/> X1>X2) _ (min/> X1>X2).
+
+- : min-total** (COMP/< X2>X1) _ (min/< X2>X1).
+
+%worlds () (min-total** _ _ _).
+%total { } (min-total** _ _ _).
+
+
+%theorem min-total* :
+	forall {X1} {X2}
+	exists {X3} {M:min X1 X2 X3}
+	true.
+
+- : min-total* X1 X2 X3 M
+    <- COMP-total D
+    <- min-total** D X3 M.
+
+%worlds () (min-total* _ _ _ _).
+%total { } (min-total* _ _ _ _).
+
+
+%abbrev min-total = min-total* _ _ _.
+
+
+%theorem min-deterministic :
+	forall* {X1} {X2} {X3}
+		{Y1} {Y2} {Y3}
+	forall {MX:min X1 X2 X3}
+	       {MY:min Y1 Y2 Y3}
+	       {E1:eq X1 Y1} {E2:eq X2 Y2}
+	exists {E3:eq X3 Y3}
+	true.
+
+- : min-deterministic (min/=) (min/=) eq/ eq/ eq/.
+
+- : min-deterministic (min/=) (min/> X>X) eq/ eq/ eq/.
+
+- : min-deterministic (min/=) (min/< X>X) eq/ eq/ eq/.
+
+- : min-deterministic (min/> X>X) (min/=) eq/ eq/ eq/.
+
+- : min-deterministic (min/> X>Y) (min/> X>YP) eq/ eq/ eq/.
+
+- : min-deterministic (min/> X>Y) (min/< Y>X) eq/ eq/ E
+    <- GT-anti-symmetric X>Y Y>X F
+    <- false-implies-eq F E.
+
+- : min-deterministic (min/< X>X) (min/=) eq/ eq/ eq/.
+
+- : min-deterministic (min/< X>Y) (min/> Y>X) eq/ eq/ E
+    <- GT-anti-symmetric X>Y Y>X F
+    <- false-implies-eq F E.
+
+- : min-deterministic (min/< X>Y) (min/< X>YP) eq/ eq/ eq/.
+
+%worlds () (min-deterministic _ _ _ _ _).
+%total { } (min-deterministic _ _ _ _ _).
+
+
+%theorem min-commutative :
+	forall* {X1} {X2} {X3}
+	forall {M:min X1 X2 X3}
+	exists {Mc:min X2 X1 X3}
+	true.
+
+- : min-commutative min/= min/=.
+
+- : min-commutative (min/> X>Y) (min/< X>Y).
+
+- : min-commutative (min/< X>Y) (min/> X>Y).
+
+%worlds () (min-commutative _ _).
+%total { } (min-commutative _ _).
+
+
+%theorem GE-implies-min :
+	forall* {X1} {X2}
+	forall {G:GE X1 X2}
+	exists {M:min X1 X2 X2}
+	true.
+
+- : GE-implies-min (GE/> X1>X2) (min/> X1>X2).
+
+- : GE-implies-min (GE/= eq/) (min/=).
+
+%worlds () (GE-implies-min _ _).
+%total { } (GE-implies-min _ _).
+
+
+%theorem LE-implies-min :
+	forall* {X1} {X2}
+	forall {G:LE X1 X2}
+	exists {M:min X1 X2 X1}
+	true.
+
+- : LE-implies-min X2>=X1 M
+    <- GE-implies-min X2>=X1 Mc
+    <- min-commutative Mc M.
+
+%worlds () (LE-implies-min _ _).
+%total { } (LE-implies-min _ _).
+
+
+%theorem min-implies-GE :
+	forall* {X1} {X2} {X3}
+	forall {M:min X1 X2 X3}
+	exists {G1:GE X1 X3} {G2:GE X2 X3}
+	true.
+
+- : min-implies-GE min/= (GE/= eq/) (GE/= eq/).
+
+- : min-implies-GE (min/> X1>X2) (GE/> X1>X2) (GE/= eq/).
+
+- : min-implies-GE (min/< X2>X1) (GE/= eq/) (GE/> X2>X1).
+
+%worlds () (min-implies-GE _ _ _).
+%total { } (min-implies-GE _ _ _).
+
+
+%theorem min-left-preserves-GE* :
+	forall* {X1} {X2} {X3} {X4} {X5} 
+	forall {G:GE X2 X4}
+	       {M12:min X1 X2 X3} 
+	       {M14:min X1 X4 X5}
+	exists {G:GE X3 X5}
+	true.
+
+- : min-left-preserves-GE* _ min/= M G
+    <- min-implies-GE M G _.
+
+- : min-left-preserves-GE* X2>=X4 (min/> X1>X2) X1&X4=X5 X2>=X5
+    <- min-implies-GE X1&X4=X5 _ X4>=X5
+    <- GE-transitive X2>=X4 X4>=X5 X2>=X5.
+
+- : min-left-preserves-GE* _ (min/< _) X1&X4=X5 X1>=X5
+    <- min-implies-GE X1&X4=X5 X1>=X5 _.
+
+%worlds () (min-left-preserves-GE* _ _ _ _).
+%total { } (min-left-preserves-GE* _ _ _ _).
+
+
+%theorem min-left-preserves-LE* :
+	forall* {X1} {X2} {X3} {X4} {X5} 
+	forall {G:LE X2 X4}
+	       {M12:min X1 X2 X3} 
+	       {M14:min X1 X4 X5}
+	exists {G:LE X3 X5}
+	true.
+
+- : min-left-preserves-LE* G1 M12 M14 G2
+    <- min-left-preserves-GE* G1 M14 M12 G2.
+
+%worlds () (min-left-preserves-LE* _ _ _ _).
+%total { } (min-left-preserves-LE* _ _ _ _).
+
+%{%
+#define OP(X,Y) X&Y
+#define OPN min
+#define CMP(X,Y) X>=Y
+#define CMPN GE
+#define OP_TOTAL 1
+#define OP_COMMUTATIVE 1
+#define CMP_TRANSITIVE 1
+BEGIN_ELF
+#include "OPN-preserves-CMPN.i"
+END_ELF
+#undef CMPN
+#undef CMP
+#define CMPN LE
+#define CMP(X,Y) X<=Y
+BEGIN_ELF
+#include "OPN-preserves-CMPN.i"
+END_ELF
+#undef CMPN
+#undef CMP
+#undef CMP_TRANSITIVE
+#undef OP_COMMUTATIVE
+#undef OP_TOTAL
+#undef OP
+#undef OPN
+%}%
+
+%theorem min-is-glb :
+	forall* {X1} {X2} {X3} {X4}
+	forall {M:min X1 X2 X3}
+	       {G1:GE X1 X4}
+	       {G2:GE X2 X4}
+	exists {G3:GE X3 X4}
+	true.
+
+- : min-is-glb min/= G _ G.
+
+- : min-is-glb (min/> X1>X2) _ G G.
+
+- : min-is-glb (min/< X2>X1) G _ G.
+
+%worlds () (min-is-glb _ _ _ _).
+%total { } (min-is-glb _ _ _ _).
+
+
+%theorem min-associative :
+	forall* {X1} {X2} {X3} {X4} {X7}
+	forall {M12:min X1 X2 X3}
+	       {M34:min X3 X4 X7}
+	exists {X6} {M24:min X2 X4 X6}
+	       {M16:min X1 X6 X7}
+	true.
+
+- : min-associative min/= min/= _ min/= min/=.
+
+- : min-associative min/= (min/> X3>X4) _ (min/> X3>X4) (min/> X3>X4).
+
+- : min-associative min/= (min/< X4>X3) _ (min/< X4>X3) (min/=).
+
+- : min-associative (min/> X1>X2) min/= _ (min/=) (min/> X1>X2).
+
+- : min-associative (min/> X1>X2) (min/> X2>X4) _ (min/> X2>X4) (min/> X1>X4)
+    <- GT-transitive X1>X2 X2>X4 X1>X4.
+
+- : min-associative (min/> X1>X2) (min/< X4>X2) _ (min/< X4>X2) (min/> X1>X2).
+
+- : min-associative (min/< X2>X1) min/= _ (min/> X2>X1) min/=.
+
+- : min-associative (min/< X2>X1) (min/> X1>X4) _ (min/> X2>X4) (min/> X1>X4)
+    <- GT-transitive X2>X1 X1>X4 X2>X4.
+
+- : min-associative (min/< X2>X1) (min/< X4>X1) _ M24 M16
+    <- min-total M24
+    <- min-is-glb M24 (GE/> X2>X1) (GE/> X4>X1) (X6>=X1: GE X6 X1)
+    <- GE-implies-min X6>=X1 M16c
+    <- min-commutative M16c M16.
+
+%worlds () (min-associative _ _ _ _ _).
+%total { } (min-associative _ _ _ _ _).
+
+%{%
+#define OPN min
+#define EQ eq
+#define OP(X,Y) X&Y
+BEGIN_ELF
+#include "OPN-assoc.i"
+END_ELF
+#undef OPN
+#undef OP
+#undef EQ
+%}%
+
+
+%%% Theorems about max
+
+
+%theorem false-implies-max :
+	forall* {X1} {X2} {X3}
+	forall {F:void}
+	exists {M:max X1 X2 X3}
+	true.
+
+%worlds () (false-implies-max _ _).
+%total { } (false-implies-max _ _).
+
+
+%theorem max-respects-eq :
+	forall* {X1} {X2} {X3}
+		{Y1} {Y2} {Y3}
+	forall {MX:max X1 X2 X3}
+	       {E1:eq X1 Y1} {E2:eq X2 Y2} {E3:eq X3 Y3}
+	exists {MY:max Y1 Y2 Y3}
+	true.
+
+- : max-respects-eq M eq/ eq/ eq/ M.
+
+%worlds () (max-respects-eq _ _ _ _ _).
+%total { } (max-respects-eq _ _ _ _ _).
+
+
+%theorem max-total** :
+	forall* {X1} {X2} {C}
+	forall {D:COMP X1 X2 C}
+	exists {X3} {M:max X1 X2 X3}
+	true.
+
+- : max-total** COMP/= _ max/=.
+
+- : max-total** (COMP/> X1>X2) _ (max/> X1>X2).
+
+- : max-total** (COMP/< X2>X1) _ (max/< X2>X1).
+
+%worlds () (max-total** _ _ _).
+%total { } (max-total** _ _ _).
+
+
+%theorem max-total* :
+	forall {X1} {X2}
+	exists {X3} {M:max X1 X2 X3}
+	true.
+
+- : max-total* X1 X2 X3 M
+    <- COMP-total D
+    <- max-total** D X3 M.
+
+%worlds () (max-total* _ _ _ _).
+%total { } (max-total* _ _ _ _).
+
+
+%abbrev max-total = max-total* _ _ _.
+
+
+%theorem max-deterministic :
+	forall* {X1} {X2} {X3}
+		{Y1} {Y2} {Y3}
+	forall {MX:max X1 X2 X3}
+	       {MY:max Y1 Y2 Y3}
+	       {E1:eq X1 Y1} {E2:eq X2 Y2}
+	exists {E3:eq X3 Y3}
+	true.
+
+- : max-deterministic (max/=) (max/=) eq/ eq/ eq/.
+
+- : max-deterministic (max/=) (max/> X>X) eq/ eq/ eq/.
+
+- : max-deterministic (max/=) (max/< X>X) eq/ eq/ eq/.
+
+- : max-deterministic (max/> X>X) (max/=) eq/ eq/ eq/.
+
+- : max-deterministic (max/> X>Y) (max/> X>YP) eq/ eq/ eq/.
+
+- : max-deterministic (max/> X>Y) (max/< Y>X) eq/ eq/ E
+    <- GT-anti-symmetric X>Y Y>X F
+    <- false-implies-eq F E.
+
+- : max-deterministic (max/< X>X) (max/=) eq/ eq/ eq/.
+
+- : max-deterministic (max/< X>Y) (max/> Y>X) eq/ eq/ E
+    <- GT-anti-symmetric X>Y Y>X F
+    <- false-implies-eq F E.
+
+- : max-deterministic (max/< X>Y) (max/< X>YP) eq/ eq/ eq/.
+
+%worlds () (max-deterministic _ _ _ _ _).
+%total { } (max-deterministic _ _ _ _ _).
+
+
+%theorem max-commutative :
+	forall* {X1} {X2} {X3}
+	forall {M:max X1 X2 X3}
+	exists {Mc:max X2 X1 X3}
+	true.
+
+- : max-commutative max/= max/=.
+
+- : max-commutative (max/> X>Y) (max/< X>Y).
+
+- : max-commutative (max/< X>Y) (max/> X>Y).
+
+%worlds () (max-commutative _ _).
+%total { } (max-commutative _ _).
+
+
+%theorem GE-implies-max :
+	forall* {X1} {X2}
+	forall {G:GE X1 X2}
+	exists {M:max X1 X2 X1}
+	true.
+
+- : GE-implies-max (GE/> X1>X2) (max/> X1>X2).
+
+- : GE-implies-max (GE/= eq/) (max/=).
+
+%worlds () (GE-implies-max _ _).
+%total { } (GE-implies-max _ _).
+
+
+%theorem LE-implies-max :
+	forall* {X1} {X2}
+	forall {G:LE X1 X2}
+	exists {M:max X1 X2 X2}
+	true.
+
+- : LE-implies-max X2>=X1 M
+    <- GE-implies-max X2>=X1 Mc
+    <- max-commutative Mc M.
+
+%worlds () (LE-implies-max _ _).
+%total { } (LE-implies-max _ _).
+
+
+%theorem max-implies-GE :
+	forall* {X1} {X2} {X3}
+	forall {M:max X1 X2 X3}
+	exists {G1:GE X3 X1} {G2:GE X3 X2}
+	true.
+
+- : max-implies-GE max/= (GE/= eq/) (GE/= eq/).
+
+- : max-implies-GE (max/> X1>X2) (GE/= eq/) (GE/> X1>X2).
+
+- : max-implies-GE (max/< X2>X1) (GE/> X2>X1) (GE/= eq/).
+
+%worlds () (max-implies-GE _ _ _).
+%total { } (max-implies-GE _ _ _).
+
+
+%theorem max-is-lub :
+	forall* {X0} {X1} {X2} {X3}
+	forall {M:max X1 X2 X3}
+	       {G1:GE X0 X1}
+	       {G2:GE X0 X2}
+	exists {G3:GE X0 X3}
+	true.
+
+- : max-is-lub max/= G _ G.
+
+- : max-is-lub (max/> X1>X2) G _ G.
+
+- : max-is-lub (max/< X2>X1) _ G G.
+
+%worlds () (max-is-lub _ _ _ _).
+%total { } (max-is-lub _ _ _ _).
+
+
+%theorem max-left-preserves-GE* :
+	forall* {X1} {X2} {X3} {X4} {X5} 
+	forall {G:GE X2 X4}
+	       {M12:max X1 X2 X3} 
+	       {M14:max X1 X4 X5}
+	exists {G:GE X3 X5}
+	true.
+
+- : max-left-preserves-GE* X>=X4 max/= X|X4=X5 X>=X5
+    <- GE-reflexive _ X>=X
+    <- max-is-lub X|X4=X5 X>=X X>=X4 X>=X5.
+
+- : max-left-preserves-GE* X2>=X4 (max/> X1>X2) X1|X4=X5 X1>=X5
+    <- GE-transitive (GE/> X1>X2) X2>=X4 X1>=X4
+    <- GE-reflexive _ X1>=X1
+    <- max-is-lub X1|X4=X5 X1>=X1 X1>=X4 X1>=X5.
+
+- : max-left-preserves-GE* X2>=X4 (max/< X2>X1) X1|X4=X5 X2>=X5
+    <- max-is-lub X1|X4=X5 (GE/> X2>X1) X2>=X4 X2>=X5.
+
+%worlds () (max-left-preserves-GE* _ _ _ _).
+%total { } (max-left-preserves-GE* _ _ _ _).
+
+
+%theorem max-left-preserves-LE* :
+	forall* {X1} {X2} {X3} {X4} {X5} 
+	forall {G:LE X2 X4}
+	       {M12:max X1 X2 X3} 
+	       {M14:max X1 X4 X5}
+	exists {G:LE X3 X5}
+	true.
+
+- : max-left-preserves-LE* G1 M12 M14 G2
+    <- max-left-preserves-GE* G1 M14 M12 G2.
+
+%worlds () (max-left-preserves-LE* _ _ _ _).
+%total { } (max-left-preserves-LE* _ _ _ _).
+
+%{%
+#define OP(X,Y) X&Y
+#define OPN max
+#define CMP(X,Y) X>=Y
+#define CMPN GE
+#define OP_TOTAL 1
+#define OP_COMMUTATIVE 1
+#define CMP_TRANSITIVE 1
+BEGIN_ELF
+#include "OPN-preserves-CMPN.i"
+END_ELF
+#undef CMPN
+#undef CMP
+#define CMPN LE
+#define CMP(X,Y) X<=Y
+BEGIN_ELF
+#include "OPN-preserves-CMPN.i"
+END_ELF
+#undef CMPN
+#undef CMP
+#undef CMP_TRANSITIVE
+#undef OP_COMMUTATIVE
+#undef OP_TOTAL
+#undef OP
+#undef OPN
+%}%
+
+%theorem max-associative :
+	forall* {X1} {X2} {X3} {X4} {X7}
+	forall {M12:max X1 X2 X3}
+	       {M34:max X3 X4 X7}
+	exists {X6} {M24:max X2 X4 X6}
+	       {M16:max X1 X6 X7}
+	true.
+
+- : max-associative max/= max/= _ max/= max/=.
+
+- : max-associative max/= (max/> X3>X4) _ (max/> X3>X4) max/=.
+
+- : max-associative max/= (max/< X4>X3) _ (max/< X4>X3) (max/< X4>X3).
+
+- : max-associative (max/> X1>X2) max/= _ (max/< X1>X2) max/=.
+
+- : max-associative (max/> X1>X2) (max/> X1>X4) _ M24 M16
+    <- max-total M24
+    <- max-is-lub M24 (GE/> X1>X2) (GE/> X1>X4) X1>=X6
+    <- GE-implies-max X1>=X6 M16.
+
+- : max-associative (max/> X1>X2) (max/< X4>X1) _ (max/< X4>X2) (max/< X4>X1)
+    <- GT-transitive X4>X1 X1>X2 X4>X2.
+
+- : max-associative (max/< X2>X1) max/= _ max/= (max/< X2>X1).
+
+- : max-associative (max/< X2>X1) (max/> X2>X4) _ (max/> X2>X4) (max/< X2>X1).
+
+- : max-associative (max/< X2>X1) (max/< X4>X2) _ (max/< X4>X2) (max/< X4>X1)
+    <- GT-transitive X4>X2 X2>X1 X4>X1.
+
+%worlds () (max-associative _ _ _ _ _).
+%total { } (max-associative _ _ _ _ _).
+
+%{%
+#define OPN max
+#define EQ eq
+#define OP(X,Y) X|Y
+BEGIN_ELF
+#include "OPN-assoc.i"
+END_ELF
+%}%
+
+
+%%% Distributivity theorems
+
+
+%theorem min-right-distributes-over-max :
+	forall* {X1} {X2} {X3} {X4} {X7}
+        forall {A12:max X1 X2 X3} {M34:min X3 X4 X7}
+        exists {X5} {X6}
+               {M14:min X1 X4 X5} {M24:min X2 X4 X6}
+               {A56:max X5 X6 X7}
+	true.
+
+- : min-right-distributes-over-max max/= M _ _ M M max/=.
+
+- : min-right-distributes-over-max (max/> X1>X2) X1&X4=X7 _ _ 
+                                   X1&X4=X7 X2&X4=X6 X7|X6=X7
+    <- min-total X2&X4=X6
+    <- min-right-preserves-GE* (GE/> X1>X2) X1&X4=X7 X2&X4=X6 X7>=X6
+    <- GE-implies-max X7>=X6 X7|X6=X7.
+
+- : min-right-distributes-over-max (max/< X2>X1) X2&X4=X7 _ _
+				   X1&X4=X5 X2&X4=X7 X5|X7=X7
+    <- min-total X1&X4=X5
+    <- min-right-preserves-GE* (GE/> X2>X1) X2&X4=X7 X1&X4=X5 X7>=X5
+    <- GE-implies-max X7>=X5 X7|X5=X7
+    <- max-commutative X7|X5=X7 X5|X7=X7.
+
+%worlds () (min-right-distributes-over-max _ _ _ _ _ _ _).
+%total { } (min-right-distributes-over-max _ _ _ _ _ _ _).
+
+
+%theorem max-right-distributes-over-min :
+	forall* {X1} {X2} {X3} {X4} {X7}
+        forall {A12:min X1 X2 X3} {M34:max X3 X4 X7}
+        exists {X5} {X6}
+               {M14:max X1 X4 X5} {M24:max X2 X4 X6}
+               {A56:min X5 X6 X7}
+	true.
+
+- : max-right-distributes-over-min min/= M _ _ M M min/=.
+
+- : max-right-distributes-over-min (min/> X1>X2) X2|X4=X7 _ _
+                                   X1|X4=X5 X2|X4=X7 X5&X7=X7
+    <- max-total X1|X4=X5
+    <- max-right-preserves-GE* (GE/> X1>X2) X1|X4=X5 X2|X4=X7 X5>=X7
+    <- GE-implies-min X5>=X7 X5&X7=X7.
+
+- : max-right-distributes-over-min (min/< X2>X1) X1|X4=X7 _ _
+				   X1|X4=X7 X2|X4=X6 X7&X6=X7
+    <- max-total X2|X4=X6
+    <- max-right-preserves-GE* (GE/> X2>X1) X2|X4=X6 X1|X4=X7 X6>=X7
+    <- LE-implies-min X6>=X7 X7&X6=X7.
+
+%worlds () (max-right-distributes-over-min _ _ _ _ _ _ _).
+%total { } (max-right-distributes-over-min _ _ _ _ _ _ _).
+
+%{%
+#define ADD_TOTAL 1
+#define MUL_COMMUTATIVE 1
+#define ADDN max
+#define ADD(X,Y) X|Y
+#define MULN min
+#define MUL(X,Y) X&Y
+BEGIN_ELF
+#include "distrib.i"
+END_ELF
+#undef ADD
+#undef ADDN
+#undef MUL
+#undef MULN
+#define ADDN min
+#define ADD(X,Y) X&Y
+#define MULN max
+#define MUL(X,Y) X|Y
+BEGIN_ELF
+#include "distrib.i"
+END_ELF
+#undef ADD
+#undef ADDN
+#undef MUL
+#undef MULN
+#undef MUL_COMMUTATIVE
+#undef ADD_TOTAL
+%}%

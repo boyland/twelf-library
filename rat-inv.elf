@@ -1,0 +1,223 @@
+%%%%% rat-inv.elf
+%%%%% Subtraction and dvision for rational numbers
+%%%%% This file is part of the rat.elf signature
+
+%{%
+ Subtraction (sub) and division (div) are declared as abbreviations
+ using addition (add) and multiplication (mul).  With one exception
+ the theorems are simple restatements of properties of the base
+ relations.  The exception is the right-totality (effectiveness)
+ of rational division. See "div-total*".
+%}%
+
+%{%
+#define EQ equ
+#define GT grt
+
+#define OP_CANCELS 1
+
+#define OPN add
+#define IOPN sub
+#define OP(X,Y) X+Y
+#define IOP(X,Y) X-Y
+BEGIN_ELF
+#include "OPN-inv.i"
+#include "OPN-inv-assoc.i"
+END_ELF
+%}%
+
+%abbrev sub-implies-grt* = add-implies-grt*.
+
+
+%theorem sub-implies-grt :
+	forall* {Q1} {Q2} {Q3}
+	forall {S:sub Q1 Q2 Q3}
+        exists {G1:grt Q1 Q2} {G2:grt Q1 Q3}
+        true.
+
+- : sub-implies-grt Q3+Q2=Q1 Q1>Q2 Q1>Q3
+    <- add-implies-grt Q3+Q2=Q1 Q1>Q3 Q1>Q2.
+
+%worlds () (sub-implies-grt Q1-Q2=Q3 Q1>Q2 Q1>Q3).
+%total {} (sub-implies-grt _ _ _).
+
+%{%
+BEGIN_ELF
+#include "OPN-inv-cancel.i"
+END_ELF
+
+#define ADDN add
+#define IADDN sub
+#define MULN mul
+#define MUL(X,Y) X*Y
+#define MUL_COMMUTATIVE 1
+BEGIN_ELF
+#include "nozero-MUL-right-factors-over-SUB.i"
+#include "SUB-distrib.i"
+END_ELF
+#undef MUL_COMMUTATIVE
+#undef MUL
+#undef MULN
+#undef ADDN
+
+#undef OPN
+#undef IOPN
+#undef OP
+#undef IOP
+
+#define OPN mul
+#define IOPN div
+#define OP(X,Y) X*Y
+#define IOP(X,Y) X/Y
+
+BEGIN_ELF
+#include "OPN-inv.i"
+END_ELF
+
+#undef OP_CANCELS
+%}%
+
+%theorem div-total* :
+	forall {Q3} {Q2}
+	exists {Q1} {D:div Q3 Q2 Q1}
+	true.
+
+- : div-total* Q3 Q2 Q1 (mul/ R12 TN12 TM12 A2 A1)
+    <- abs-total* Q3 M3- N3- A3
+    <- abs-total* Q2 M2- N2- A2
+    <- times-preserves-positive M3- N2- P32- T32
+    <- times-preserves-positive M2- N3- P23- T23
+    <- rep-total* P32- P23- Q1 R23
+    <- abs-total* Q1 M1- N1- A1
+    <- abs-inverse-of-rep-mult R23 A1 X M1*X=P32 N1*X=P23
+    <- times-preserves-positive M1- M2- M12- TM12
+    <- times-preserves-positive N1- N2- N12- TN12
+    <- rep-inverse-of-abs A3 R3
+    <- times-preserves-positive M2- N2- P22- T22
+    <- times-commutative T22 T22c
+    <- times-total* (s M3-) (s P22-) M3*P22 T-1
+    <- times-total* (s N3-) (s P22-) N3*P22 T-2
+    <- rep-times-right R3 eq/ T-1 T-2 R3*P22
+    <- times-associative-converse* T22c T-1 T32 
+                                   (T-1a:times (s P32-) (s M2-) M3*P22)
+    <- times-commutative T23 T23c
+    <- times-associative-converse* T22 T-2 T23c
+                                   (T-2a:times (s P23-) (s N2-) N3*P22)
+    <- times-commutative M1*X=P32 X*M1=P32
+    <- times-commutative N1*X=P23 X*N1=P23 
+    <- times-associative* X*M1=P32 T-1a TM12 X*M12=M3*P22
+    <- times-associative* X*N1=P23 T-2a TN12 X*N12=N3*P22
+    <- rep-left-cancels R3*P22 X*M12=M3*P22 X*N12=N3*P22 R12.
+
+%worlds () (div-total* Q1 Q2 Q3 Q1/Q2=Q3).
+%total {} (div-total* _ _ _ _).
+
+
+%abbrev
+div-total = div-total* _ _ _.
+
+%{%
+#define IOP_TOTAL 1
+BEGIN_ELF
+#include "OPN-inv-assoc.i"
+#include "OPN-inv-cancel.i"
+END_ELF
+
+#define MUL(X,Y) X/Y
+#define MULN div
+%}%
+
+%theorem div-right-distributes-over-add :
+	forall* {Q1} {Q2} {Q3} {Q4} {Q7}
+        forall {A12:add Q1 Q2 Q3} {D34:div Q3 Q4 Q7}
+        exists {Q5} {Q6} {D14:div Q1 Q4 Q5} {D24:div Q2 Q4 Q6}
+               {A56:add Q5 Q6 Q7}
+	true.
+
+- : div-right-distributes-over-add Q1+Q2=Q3 Q7*Q4=Q3 
+                                   Q5 Q6 Q5*Q4=Q1 Q6*Q4=Q2 Q5+Q6=Q7
+    <- div-total Q5*Q4=Q1
+    <- div-total Q6*Q4=Q2
+    <- add-total Q5+Q6=Q7P
+    <- mul-total Q7P*Q4=Q3P
+    <- mul-right-distributes-over-add* Q5+Q6=Q7P Q7P*Q4=Q3P Q5*Q4=Q1 Q6*Q4=Q2
+                                       Q1+Q2=Q3P
+    <- add-deterministic Q1+Q2=Q3P Q1+Q2=Q3 equ/ equ/ Q3P=Q3
+    <- mul-right-cancels Q7P*Q4=Q3P Q7*Q4=Q3 equ/ Q3P=Q3 Q7P=Q7
+    <- add-respects-equ Q5+Q6=Q7P equ/ equ/ Q7P=Q7 Q5+Q6=Q7.
+
+%worlds () (div-right-distributes-over-add Q1+Q2=Q3 Q3/Q4=Q7 
+                                    %{=>}% Q5 Q6 Q1/Q4=Q5 Q2/Q4=Q6 Q5+Q6=Q7).
+%total {} (div-right-distributes-over-add _ _ _ _ _ _ _).
+
+%{%
+#define ADD(X,Y) X+Y
+#define ADDN add
+#define ADD_TOTAL 1
+BEGIN_ELF
+#include "distrib.i"
+END_ELF
+
+#define IADDN sub
+BEGIN_ELF
+#include "nozero-MUL-right-factors-over-SUB.i"
+#include "SUB-distrib.i"
+END_ELF
+#undef IADDN
+
+#undef ADD
+#undef ADDN
+#undef ADD_TOTAL
+
+#undef MUL
+#undef MULN
+
+#undef OPN
+#undef IOPN
+#undef OP
+#undef IOP
+#undef IOP_TOTAL
+%}%
+
+% a theorem needed in fractional permissions
+%theorem add-cross-comparable :
+	forall* {Q} {Q1} {Q2} {Q3} {Q4}
+	forall {A12:add Q1 Q2 Q} {A34:add Q3 Q4 Q}
+	exists {Q13} {Q14} {Q23} {Q24}
+	       {A1:add Q13 Q14 Q1} {A2:add Q23 Q24 Q2}
+	       {A3:add Q13 Q23 Q3} {A4:add Q14 Q24 Q4}
+	true.
+
+- : add-cross-comparable Q1+Q2=Q Q3+Q4=Q Q1Q3/Q Q1Q4/Q Q2Q3/Q Q2Q4/Q
+                             Q1Q3/Q+Q1Q4/Q=Q1 Q2Q3/Q+Q2Q4/Q=Q2
+			     Q1Q3/Q+Q2Q3/Q=Q3 Q1Q4/Q+Q2Q4/Q=Q4
+    <- mul-total Q*Q3=QQ3
+    <- mul-right-distributes-over-add 
+	Q1+Q2=Q Q*Q3=QQ3 Q1Q3 Q2Q3 Q1*Q3=Q1Q3 Q2*Q3=Q2Q3 Q1Q3+Q2Q3=QQ3
+    <- mul-commutative Q*Q3=QQ3 QQ3/Q=Q3
+    <- div-right-distributes-over-add 
+	Q1Q3+Q2Q3=QQ3 QQ3/Q=Q3 Q1Q3/Q Q2Q3/Q Q1Q3/Q=Q1Q3/Q Q2Q3/Q=Q2Q3/Q
+        Q1Q3/Q+Q2Q3/Q=Q3
+    <- mul-total Q*Q4=QQ4
+    <- mul-right-distributes-over-add 
+	Q1+Q2=Q Q*Q4=QQ4 Q1Q4 Q2Q4 Q1*Q4=Q1Q4 Q2*Q4=Q2Q4 Q1Q4+Q2Q4=QQ4
+    <- mul-commutative Q*Q4=QQ4 QQ4/Q=Q4
+    <- div-right-distributes-over-add 
+	Q1Q4+Q2Q4=QQ4 QQ4/Q=Q4 Q1Q4/Q Q2Q4/Q Q1Q4/Q=Q1Q4/Q Q2Q4/Q=Q2Q4/Q
+        Q1Q4/Q+Q2Q4/Q=Q4
+    <- mul-total Q1*Q=Q1Q % the same as Q1Q/Q=Q1
+    <- mul-left-distributes-over-add*
+	Q3+Q4=Q Q1*Q=Q1Q Q1*Q3=Q1Q3 Q1*Q4=Q1Q4 Q1Q3+Q1Q4=Q1Q
+    <- div-right-distributes-over-add*
+        Q1Q3+Q1Q4=Q1Q Q1*Q=Q1Q Q1Q3/Q=Q1Q3/Q Q1Q4/Q=Q1Q4/Q Q1Q3/Q+Q1Q4/Q=Q1
+    <- mul-total Q2*Q=Q2Q % the same as Q2Q/Q=Q2
+    <- mul-left-distributes-over-add*
+	Q3+Q4=Q Q2*Q=Q2Q Q2*Q3=Q2Q3 Q2*Q4=Q2Q4 Q2Q3+Q2Q4=Q2Q
+    <- div-right-distributes-over-add*
+        Q2Q3+Q2Q4=Q2Q Q2*Q=Q2Q Q2Q3/Q=Q2Q3/Q Q2Q4/Q=Q2Q4/Q Q2Q3/Q+Q2Q4/Q=Q2.
+
+%worlds () (add-cross-comparable _ _ _ _ _ _ _ _ _ _).
+%total { } (add-cross-comparable _ _ _ _ _ _ _ _ _ _).
+
+
+

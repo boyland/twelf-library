@@ -1,0 +1,81 @@
+%%%% Redefinitions
+
+%{%
+  This file includes definitions of operations with
+  more appropriate names and/or arguments than the
+  ones created by map.
+%}%
+
+%abbrev set = map.
+%abbrev set/0 = map/0.
+%abbrev set/+ = [N] [S] (map/+ N unit/ S).
+
+
+%%  To avoid nasty skolemization functions, we do some explicit typing:
+
+%abbrev set/+-preserves-eq = [NE:nat`eq N NP] [ME:eq M MP]
+        (map/+-preserves-eq NE unit`eq/ ME).
+
+%abbrev set/+-preserves-leq = [NE:nat`eq N NP] [ML:leq M MP]
+        (map/+-preserves-leq NE unit`eq/ ML).
+
+
+%abbrev member = [S] [N] lookup S N unit/.
+
+%{%
+/*
+%abbrev not-member = fresh.
+
+%abbrev member? = domain?.
+%abbrev member?/in = domain?/in.
+%abbrev member?/out = domain?/out.
+*/
+%}%
+
+%% 'join' and 'meet' and converted using CPP,
+%% but some names don't quite work:
+
+%abbrev union/= = [U] [E:nat`eq N1 N2] union/= U unit`union/ E.
+%abbrev intersection/= = [I] [E:nat`eq N1 N2] intersection/= I unit`union/ E.
+
+%abbrev add = [S1] [N] [S2] update S1 N unit/ S2.
+
+
+%%% Theorem renamings.
+
+%% using "member"
+
+%abbrev false-implies-member = false-implies-lookup.
+%abbrev fresh-member-implies-ne = fresh-lookup-not-equal.
+%abbrev in-implies-member = in-implies-lookup.
+
+%abbrev member-respects-eq = 
+    [L:member M N] [EM:eq M MP] [EN:nat`eq N NP] [LP:member MP NP] 
+    lookup-respects-eq L EM EN unit`eq/ LP.
+
+%abbrev member-respects-leq = 
+    [L:member M N] [EM:leq M MP] [LP:member MP N]
+    lookup-respects-leq L EM unit/ LP unit`eq/.
+
+
+%% using "add"
+
+%abbrev false-implies-add = false-implies-update.
+%abbrev add-respects-eq = update-respects-eq.
+%abbrev add-deterministic = update-deterministic.
+%abbrev add-total* = update-total*.
+%abbrev add-implies-member = update-implies-lookup.
+%abbrev add-preserves-member = update-preserves-lookup.
+%abbrev add-preserves-fresh = update-preserves-fresh.
+%abbrev add-preserves-membership = update-preserves-membership.
+%abbrev add-overwrites = update-overwrites.
+%abbrev add-idempotent = update-idempotent.
+%abbrev add-commutes = update-commutes.
+%abbrev add-commutes* = update-commutes*.
+%abbrev add-preserves-leq* = update-left-preserves-leq*.
+
+
+%% using "union"
+
+% nothing yet
+

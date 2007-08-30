@@ -1,0 +1,117 @@
+%%%%% nat-inv.elf
+%%%%% Minus for natural numbers
+%%%%% This file is part of the nat.elf signature
+
+%{%
+#define EQ eq
+#define GT gt
+
+#define OP_CANCELS 1
+#define OP_COMMUTATIVE
+#define OP_TOTAL 1
+
+#define OPN plus
+#define IOPN minus
+#define OP(X,Y) X+Y
+#define IOP(X,Y) X-Y
+
+BEGIN_ELF
+#include "OPN-inv.i"
+#include "OPN-inv-assoc.i"
+END_ELF
+
+%}%
+
+%theorem minus-is-zero-implies-eq :
+	forall* {N1} {N2} {N3}
+	forall {P:minus N1 N2 N3} {E3:eq N3 z}
+        exists {E1:eq N1 N2}
+	true.
+
+- : minus-is-zero-implies-eq plus/z eq/ eq/.
+
+%worlds () (minus-is-zero-implies-eq X-Y=Z Z=0 %{=>}% X=Y).
+%total {} (minus-is-zero-implies-eq _ _ _).
+
+
+%abbrev minus-implies-gt = plus-implies-gt.
+
+%{%
+BEGIN_ELF
+#include "OPN-inv-cancel.i"
+END_ELF
+
+#undef OPN
+#undef IOPN
+#undef OP
+#undef IOP
+
+#define MUL(X,Y) X*Y
+#define MULN times
+#define ADDN plus
+#define IADDN minus
+#define MUL_COMMUTATIVE 1
+
+BEGIN_ELF
+#include "SUB-distrib.i"
+END_ELF
+
+#undef MUL_COMMUTATIVE 
+#undef IADDN
+#undef ADDN
+#undef MULN
+#undef MUL
+%}%
+
+%theorem times-right-factors-over-minus :
+	forall* {Y} {Z} {XY} {XZ} {YZ} {XYZ} {Z-}
+	forall {TXY:times XY Z XYZ} {TY:times Y Z YZ}
+               {M:minus XYZ YZ XZ} {EZ:eq Z (s Z-)}
+        exists {X} {M':minus XY Y X} {TX:times X Z XZ}
+        true.
+
+% minus isn't total, so this is harder.
+- : times-right-factors-over-minus XY*Z=YZ Y*Z=YZ plus/z eq/ 
+                                   z ZERO+Y=XY times/z
+    <- times-right-cancels* XY*Z=YZ Y*Z=YZ eq/ eq/ XY=Y
+    <- plus-respects-eq plus/z eq/ XY=Y eq/ ZERO+Y=XY.
+
+- : times-right-factors-over-minus XY*Z=XYZ Y*Z=YZ XZ+YZ=XYZ _
+                                   (s X-) X+Y=XY X*Z=XZ
+    %% we assume XZ is of the form (s XZ-)
+    <- plus-implies-gt XZ+YZ=XYZ eq/ XYZ>YZ 
+    <- times-right-cancels-gt XY*Z=XYZ Y*Z=YZ eq/ XYZ>YZ XY>Y
+    <- gt-implies-plus XY>Y X- X+Y=XY
+    <- times-right-factors-over-minus* XY*Z=XYZ Y*Z=YZ XZ+YZ=XYZ X+Y=XY X*Z=XZ.
+
+%worlds () (times-right-factors-over-minus XY*Z=XYZ Y*Z=YZ XYZ-YZ=XZ Z+
+                                           X XY-Y=X X*Z=XZ).
+%total {} (times-right-factors-over-minus _ _ _ _ _ _ _).
+
+
+%theorem times-left-factors-over-minus :
+	forall* {X} {Y} {Z} {XY} {XZ} {XYZ} {X-}
+	forall {TXY:times X Y XY} {TXZ:times X Z XZ}
+               {M:minus XY XZ XYZ} {EX:eq X (s X-)}
+        exists {YZ} {MYZ:minus Y Z YZ} {TXYZ:times X YZ XYZ}
+        true.
+
+- : times-left-factors-over-minus X*Y=XY X*Z=XZ XY-XZ=XYZ X=sX- YZ Y-Z=YZ X*YZ=XYZ
+    <- times-commutative X*Y=XY Y*X=XY
+    <- times-commutative X*Z=XZ Z*X=XZ
+    <- times-right-factors-over-minus Y*X=XY Z*X=XZ XY-XZ=XYZ X=sX- 
+                                      YZ Y-Z=YZ YZ*X=XYZ
+    <- times-commutative YZ*X=XYZ X*YZ=XYZ.
+
+%worlds () (times-left-factors-over-minus X*Y=XY X*Z=XZ XY-XZ=XYZ X=sX-
+                                   %{=>}% YZ Y-Z=YZ X*YZ=XYZ).
+%total {} (times-left-factors-over-minus _ _ _ _ _ _ _).
+
+%{%
+#undef OP_TOTAL
+#undef OP_COMMUTATIVE
+#undef OP_CANCELS
+%}%
+
+
+

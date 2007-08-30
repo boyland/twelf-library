@@ -1,0 +1,572 @@
+%%%%% natpair.elf
+%%%%% Pairs of natural numbers
+%%%%% John Boyland
+
+%{%
+Pairs of natural numbers are mapped one-to-one to the natural numbers.
+We use the binary merging technique, e.g.:
+   (x3x2x1x0,y3y2y1y0) <-> x3y3x2y2x1y1x0y0
+%}%
+
+
+
+
+%%%% Functor use
+
+
+
+%{%
+#define data1 nat
+#define data2 nat
+#define DATA_NE
+BEGIN_ELF
+#include "pair.elf"
+END_ELF
+#undef data1
+#undef data2
+%}%
+
+
+
+
+%%%% Definitions
+
+
+
+%%% local abbreviations:
+
+ %abbrev ssN>N = (gt/> gt/1).
+ %abbrev 2>0 : gt (s (s z)) z = ssN>N.
+ %abbrev 1*N=N = (times/s times/z plus/z).
+ %abbrev 1*2=2 : times (s z) (s (s z)) (s (s z)) = 1*N=N.
+ %abbrev 2*2=4 = (times/s 1*N=N (plus/s (plus/s plus/z))).
+ %abbrev 2+1=3 : plus (s (s z)) (s z) (s (s (s z))) = (plus/s (plus/s plus/z)).
+
+
+%%% mapping from a pair to a nat
+
+
+pair2nat : pair -> nat -> type.
+
+
+pair2nat/00 : pair2nat (pair/ z z) z.
+
+pair2nat/XX : 
+	plus Z3 Y0 Z ->
+        plus Z2 X2 Z3 ->
+        times X0 (s (s z)) X2 ->
+        times Z1 (s (s (s (s z)))) Z2 ->
+	pair2nat (pair/ X1 Y1) Z1 ->
+        divrem Y (s (s z)) Y1 Y0 ->
+	divrem X (s (s z)) X1 X0 ->
+    pair2nat (pair/ X Y) Z.
+
+
+
+%%% mapping from a nat to pair
+
+
+%abbrev 
+nat2pair : nat -> pair -> type = [N] [P] pair2nat P N.
+
+
+
+%%%% Theorems
+
+
+%theorem false-implies-pair2nat :
+	forall* {P} {N}
+	forall {F:void}
+	exists {P2N:pair2nat P N}
+	true.
+
+%worlds () (false-implies-pair2nat _ _).
+%total { } (false-implies-pair2nat _ _).
+
+
+%abbrev false-implies-not2pair = false-implies-pair2nat.
+
+
+%theorem pair2nat-respects-eq :
+	forall* {P1} {N1} {P2} {N2}
+	forall {D1:pair2nat P1 N1} {EP:eq P1 P2} {EN:nat`eq N1 N2}
+	exists {D2:pair2nat P2 N2}
+	true.
+
+- : pair2nat-respects-eq P2N eq/ nat`eq/ P2N.
+
+%worlds () (pair2nat-respects-eq _ _ _ _).
+%total { } (pair2nat-respects-eq _ _ _ _).
+%reduces D1 = D2 (pair2nat-respects-eq D1 _ _ D2).
+
+%abbrev nat2pair-respects-eq :
+	  (nat2pair N1 P1) -> (nat`eq N1 N2) -> (eq P1 P2) -> (nat2pair N2 P2)
+        -> type
+	= [D1] [EN] [EP] [D2] pair2nat-respects-eq D1 EP EN D2.
+
+
+%theorem pair2nat-total** :
+	forall {X:nat} {Y:nat}
+	exists {Z} {P2N:pair2nat (pair/ X Y) Z}
+	true.
+
+- : pair2nat-total** z z z pair2nat/00.
+
+- : pair2nat-total** (s X-) Y Z 
+	(pair2nat/XX Z3+Y0=Z Z2+X2=Z3 X0*2=X2 Z1*4=Z2 
+                     (P2N:pair2nat (pair/ X1 Y1) Z1) Y/2=Y1,Y0 X/2=X1,X0)
+    <- divrem-total X/2=X1,X0
+    <- divrem-total Y/2=Y1,Y0
+    <- quotient-of-nonzero-is-smaller X/2=X1,X0 nat`eq/ X>X1
+    <- quotient-is-no-greater Y/2=Y1,Y0 Y>=Y1
+    <- meta-gt _ _ X>X1
+    <- meta-ge _ _ Y>=Y1
+    <- pair2nat-total** _ _ _ P2N
+    <- times-total Z1*4=Z2
+    <- times-total X0*2=X2
+    <- plus-total Z2+X2=Z3
+    <- plus-total Z3+Y0=Z.
+
+- : pair2nat-total** X (s Y-) Z 
+	(pair2nat/XX Z3+Y0=Z Z2+X2=Z3 X0*2=X2 Z1*4=Z2 
+                     (P2N:pair2nat (pair/ X1 Y1) Z1) Y/2=Y1,Y0 X/2=X1,X0)
+    <- divrem-total X/2=X1,X0
+    <- divrem-total Y/2=Y1,Y0
+    <- quotient-is-no-greater X/2=X1,X0 X>=X1
+    <- quotient-of-nonzero-is-smaller Y/2=Y1,Y0 nat`eq/ Y>Y1
+    <- meta-ge _ _ X>=X1
+    <- meta-gt _ _ Y>Y1
+    <- pair2nat-total** _ _ _ P2N
+    <- times-total Z1*4=Z2
+    <- times-total X0*2=X2
+    <- plus-total Z2+X2=Z3
+    <- plus-total Z3+Y0=Z.
+
+%worlds () (pair2nat-total** _ _ _ _).
+%total [X Y] (pair2nat-total** X Y _ _).
+
+%theorem pair2nat-total* :
+	forall {P:pair}
+	exists {N:nat} {P2N:pair2nat P N}
+	true.
+
+- : pair2nat-total* (pair/ X Y) Z P2N
+    <- pair2nat-total** X Y Z P2N.
+
+%worlds () (pair2nat-total* _ _ _).
+%total { } (pair2nat-total* _ _ _).
+
+
+%abbrev pair2nat-total = pair2nat-total* _ _.
+
+
+%theorem nat2pair-total* :
+	forall {N:nat}
+	exists {P:pair} {N2P:nat2pair N P}
+	true.
+
+- : nat2pair-total* z (pair/ z z) (pair2nat/00).
+
+- : nat2pair-total* (s Z-) (pair/ X Y)
+	(pair2nat/XX Z3+Y0=Z Z2+X2=Z3 X0*2=X2 Z1*4=Z2 
+                     (P2N:pair2nat (pair/ X1 Y1) Z1) Y/2=Y1,Y0 X/2=X1,X0)
+    <- divrem-total Z/4=Z1,R
+    <- divrem-implies-gt Z/4=Z1,R FOUR>R
+    <- divrem-can-be-inverted Z/4=Z1,R Z2 Z1*4=Z2 Z2+R=Z
+    <- divrem-total R/2=X0,Y0
+    <- divrem-implies-gt R/2=X0,Y0 TWO>Y0
+    <- divrem-can-be-inverted R/2=X0,Y0 X2 X0*2=X2 X2+Y0=R
+    <- plus-associative-converse X2+Y0=R Z2+R=Z Z3 Z2+X2=Z3 Z3+Y0=Z
+    % now we need to get 2>X0
+    <- plus-commutative X2+Y0=R Y0+X2=R
+    <- plus-implies-ge Y0+X2=R R>=X2
+    <- gt-transitive-ge FOUR>R R>=X2 FOUR>X2
+    <- times-right-cancels-gt 2*2=4 X0*2=X2 nat`eq/ FOUR>X2 TWO>X0
+    % now we need to prove Z>Z1 (for termination)
+    <- quotient-of-nonzero-is-smaller Z/4=Z1,R nat`eq/ Z>Z1
+    <- meta-gt _ _ Z>Z1
+    <- nat2pair-total* Z1 (pair/ X1 Y1) P2N
+    <- times-total X1*2=XE
+    <- times-total Y1*2=YE
+    <- plus-total XE+X0=X
+    <- plus-total YE+Y0=Y
+    <- divrem-can-be-constructed X1*2=XE XE+X0=X TWO>X0 X/2=X1,X0
+    <- divrem-can-be-constructed Y1*2=YE YE+Y0=Y TWO>Y0 Y/2=Y1,Y0.
+
+%worlds () (nat2pair-total* _ _ _).
+%total (Z) (nat2pair-total* Z _ _).
+% %reduces X <= N (nat2pair-total* N (pair/ X _) _).
+% %reduces Y <= N (pair2nat-total* N (pair/ _ Y) _).
+
+
+%abbrev nat2pair-total = nat2pair-total* _ _.
+
+
+%theorem pair2nat-deterministic :
+	forall* {P1} {P2} {N1} {N2}
+	forall {D1:pair2nat P1 N1} {D2:pair2nat P2 N2}
+	       {EP:eq P1 P2}
+	exists {EN:nat`eq N1 N2}
+	true.
+
+- : pair2nat-deterministic pair2nat/00 pair2nat/00 eq/ nat`eq/.
+
+% lemma
+%theorem pair2nat-deterministic/00 :
+	forall* {Z}
+	forall {P2N:pair2nat (pair/ z z) Z}
+	exists {E:nat`eq Z z}
+	true.
+
+- : pair2nat-deterministic/00 pair2nat/00 nat`eq/.
+
+- : pair2nat-deterministic/00
+	(pair2nat/XX Z3+Y0=Z Z2+X2=Z3 X0*2=X2 Z1*4=Z2 
+                     (P2N:pair2nat (pair/ X1 Y1) Z1) ZERO/2=Y1,Y0 ZERO/2=X1,X0)
+        Z=0
+    <- divrem-deterministic ZERO/2=X1,X0 (divrem/z 2>0) nat`eq/ nat`eq/
+                            X1=0 X0=0
+    <- divrem-deterministic ZERO/2=Y1,Y0 (divrem/z 2>0) nat`eq/ nat`eq/
+                            Y1=0 Y0=0
+    <- pair-preserves-eq X1=0 Y1=0 X1,Y1=0,0
+    <- pair2nat-respects-eq P2N X1,Y1=0,0 nat`eq/ ZERO,ZERO->Z1
+    <- pair2nat-deterministic/00 ZERO,ZERO->Z1 Z1=0
+    <- times-deterministic Z1*4=Z2 times/z Z1=0 nat`eq/ Z2=0
+    <- times-deterministic X0*2=X2 times/z X0=0 nat`eq/ X2=0
+    <- plus-deterministic Z2+X2=Z3 plus/z Z2=0 X2=0 Z3=0
+    <- plus-deterministic Z3+Y0=Z plus/z Z3=0 Y0=0 Z=0.
+
+%worlds () (pair2nat-deterministic/00 _ _).
+%total (D) (pair2nat-deterministic/00 D _).
+
+- : pair2nat-deterministic pair2nat/00 P2N eq/ ZERO=Z
+    <- pair2nat-deterministic/00 P2N Z=0
+    <- nat`eq-symmetric Z=0 ZERO=Z.
+
+- : pair2nat-deterministic P2N pair2nat/00 eq/ Z=0
+    <- pair2nat-deterministic/00 P2N Z=0.
+
+- : pair2nat-deterministic
+	(pair2nat/XX Z3+Y0=Z Z2+X2=Z3 X0*2=X2 Z1*4=Z2 
+                     (P2N:pair2nat (pair/ X1 Y1) Z1) Y/2=Y1,Y0 X/2=X1,X0)
+	(pair2nat/XX Z3'+Y0'=Z' Z2'+X2'=Z3' X0'*2=X2' Z1'*4=Z2' 
+                     (P2N':pair2nat (pair/ X1' Y1')Z1') Y/2=Y1',Y0' X/2=X1',X0')
+        eq/ Z=Z'
+    <- divrem-deterministic X/2=X1,X0 X/2=X1',X0' nat`eq/ nat`eq/ X1=X1' X0=X0'
+    <- divrem-deterministic Y/2=Y1,Y0 Y/2=Y1',Y0' nat`eq/ nat`eq/ Y1=Y1' Y0=Y0'
+    <- pair-preserves-eq X1=X1' Y1=Y1' X1,Y1=X1',Y1'
+    <- pair2nat-deterministic P2N P2N' X1,Y1=X1',Y1' Z1=Z1'
+    <- times-deterministic Z1*4=Z2 Z1'*4=Z2' Z1=Z1' nat`eq/ Z2=Z2'
+    <- times-deterministic X0*2=X2 X0'*2=X2' X0=X0' nat`eq/ X2=X2'
+    <- plus-deterministic Z2+X2=Z3 Z2'+X2'=Z3' Z2=Z2' X2=X2' Z3=Z3'
+    <- plus-deterministic Z3+Y0=Z Z3'+Y0'=Z' Z3=Z3' Y0=Y0' Z=Z'.
+
+%worlds () (pair2nat-deterministic _ _ _ _).
+%total (D) (pair2nat-deterministic D _ _ _).
+
+
+%theorem nat2pair-deterministic :
+	forall* {P1} {P2} {N1} {N2}
+	forall {D1:nat2pair N1 P1} {D2:nat2pair N2 P2}	{EN:nat`eq N1 N2}
+	exists {EP:eq P1 P2}
+	true.
+
+% lemma
+%theorem nat2pair-deterministic/0 :
+	forall* {P}
+	forall {D:nat2pair z P}
+	exists {EP:eq P (pair/ z z)}
+	true.
+
+- : nat2pair-deterministic/0 pair2nat/00 eq/.
+
+- : nat2pair-deterministic/0 
+	(pair2nat/XX Z3+Y0=0 Z2+X2=Z3 X0*2=X2 Z1*4=Z2 
+                     (P2N:pair2nat (pair/ X1 Y1) Z1) Y/2=Y1,Y0 X/2=X1,X0)
+	X,Y=0,0
+    <- plus-is-zero-implies-zero Z3+Y0=0 nat`eq/ Z3=0 Y0=0
+    <- plus-is-zero-implies-zero Z2+X2=Z3 Z3=0 Z2=0 X2=0
+    <- times-right-cancels X0*2=X2 times/z nat`eq/ X2=0 X0=0
+    <- times-right-cancels Z1*4=Z2 times/z nat`eq/ Z2=0 Z1=0
+    <- nat2pair-respects-eq P2N Z1=0 eq/ N2P
+    <- nat2pair-deterministic/0 N2P X1,Y1=0,0
+    <- pair-eq-implies-eq X1,Y1=0,0 X1=0 Y1=0
+    <- divrem-can-be-inverted X/2=X1,X0 XM X1*2=XM XM+X0=X
+    <- divrem-can-be-inverted Y/2=Y1,Y0 YM Y1*2=YM YM+Y0=Y
+    <- times-deterministic X1*2=XM times/z X1=0 nat`eq/ XM=0
+    <- times-deterministic Y1*2=YM times/z Y1=0 nat`eq/ YM=0
+    <- plus-deterministic XM+X0=X plus/z XM=0 X0=0 X=0
+    <- plus-deterministic YM+Y0=Y plus/z YM=0 Y0=0 Y=0
+    <- pair-preserves-eq X=0 Y=0 X,Y=0,0.
+
+%worlds () (nat2pair-deterministic/0 _ _).
+%total (D) (nat2pair-deterministic/0 D _).
+
+- : nat2pair-deterministic N2P N2P' nat`eq/ X,Y=X',Y'
+    <- nat2pair-deterministic/0 N2P X,Y=0,0
+    <- nat2pair-deterministic/0 N2P' X',Y'=0,0
+    <- eq-symmetric X',Y'=0,0 ZERO,ZERO=X',Y'
+    <- eq-transitive X,Y=0,0 ZERO,ZERO=X',Y' X,Y=X',Y'.
+
+- : nat2pair-deterministic
+	(pair2nat/XX Z3+Y0=Z Z2+X2=Z3 X0*2=X2 Z1*4=Z2 
+                     (P2N:pair2nat (pair/ X1 Y1) Z1) Y/2=Y1,Y0 X/2=X1,X0)
+	(pair2nat/XX Z3'+Y0'=Z Z2'+X2'=Z3' X0'*2=X2' Z1'*4=Z2' 
+                     (P2N':pair2nat (pair/ X1' Y1') Z1') 
+                     Y'/2=Y1',Y0' X'/2=X1',X0')
+        nat`eq/ X,Y=X',Y'
+    <- plus-associative Z2+X2=Z3 Z3+Y0=Z R X2+Y0=R Z2+R=Z
+    <- divrem-implies-gt X/2=X1,X0 TWO>X0
+    <- divrem-implies-gt Y/2=Y1,Y0 TWO>Y0
+    <- succ-gt-implies-ge TWO>X0 ONE>=X0
+    <- succ-gt-implies-ge TWO>Y0 ONE>=Y0
+    <- times-right-preserves-ge* ONE>=X0 1*2=2 X0*2=X2 TWO>=X2
+    <- plus-preserves-ge* TWO>=X2 ONE>=Y0 2+1=3 X2+Y0=R THREE>=R
+    <- ge-implies-succ-gt THREE>=R FOUR>R
+    <- divrem-can-be-constructed Z1*4=Z2 Z2+R=Z FOUR>R Z/4=Z1,R
+    <- plus-associative Z2'+X2'=Z3' Z3'+Y0'=Z R' X2'+Y0'=R' Z2'+R'=Z
+    <- divrem-implies-gt X'/2=X1',X0' TWO>X0'
+    <- divrem-implies-gt Y'/2=Y1',Y0' TWO>Y0'
+    <- succ-gt-implies-ge TWO>X0' ONE>=X0'
+    <- succ-gt-implies-ge TWO>Y0' ONE>=Y0'
+    <- times-right-preserves-ge* ONE>=X0' 1*2=2 X0'*2=X2' TWO>=X2'
+    <- plus-preserves-ge* TWO>=X2' ONE>=Y0' 2+1=3 X2'+Y0'=R' THREE>=R'
+    <- ge-implies-succ-gt THREE>=R' FOUR>R'
+    <- divrem-can-be-constructed Z1'*4=Z2' Z2'+R'=Z FOUR>R' Z/4=Z1',R'
+    <- divrem-deterministic Z/4=Z1,R Z/4=Z1',R' nat`eq/ nat`eq/ Z1=Z1' R=R'
+    <- divrem-can-be-constructed X0*2=X2 X2+Y0=R TWO>Y0 R/2=X0,Y0
+    <- divrem-can-be-constructed X0'*2=X2' X2'+Y0'=R' TWO>Y0' R'/2=X0',Y0'
+    <- divrem-deterministic R/2=X0,Y0 R'/2=X0',Y0' R=R' nat`eq/ X0=X0' Y0=Y0'
+    <- nat2pair-deterministic P2N P2N' Z1=Z1' X1,Y1=X1',Y1'
+    <- pair-eq-implies-eq X1,Y1=X1',Y1' X1=X1' Y1=Y1'
+    <- divrem-can-be-inverted X/2=X1,X0 XM X1*2=XM XM+X0=X
+    <- divrem-can-be-inverted Y/2=Y1,Y0 YM Y1*2=YM YM+Y0=Y
+    <- divrem-can-be-inverted X'/2=X1',X0' XM' X1'*2=XM' XM'+X0'=X'
+    <- divrem-can-be-inverted Y'/2=Y1',Y0' YM' Y1'*2=YM' YM'+Y0'=Y'
+    <- times-deterministic X1*2=XM X1'*2=XM' X1=X1' nat`eq/ XM=XM'
+    <- plus-deterministic XM+X0=X XM'+X0'=X' XM=XM' X0=X0' X=X'
+    <- times-deterministic Y1*2=YM Y1'*2=YM' Y1=Y1' nat`eq/ YM=YM'
+    <- plus-deterministic YM+Y0=Y YM'+Y0'=Y' YM=YM' Y0=Y0' Y=Y'
+    <- pair-preserves-eq X=X' Y=Y' X,Y=X',Y'.
+
+%worlds () (nat2pair-deterministic _ _ _ _).
+%total (D) (nat2pair-deterministic D _ _ _).
+
+
+%theorem pair2nat-preserves-ne* :
+	forall* {P1} {P2} {N1} {N2}
+	forall {PNE: ne P1 P2} {T1:pair2nat P1 N1} {T2:pair2nat P2 N2}
+	exists {NE: nat`ne N1 N2}
+	true.
+
+%theorem pair2nat-preserves-ne*/L :
+	forall* {P1} {P2} {N1} {N2} {B}
+	forall {PNE: ne P1 P2} {T1:pair2nat P1 N1} {T2:pair2nat P2 N2}
+               {NT: nat`eq? N1 N2 B}
+	exists {NE: nat`ne N1 N2}
+	true.
+
+- : pair2nat-preserves-ne* P1<>P2 P1->N1 P2->N2 N1<>N2
+    <- nat`eq?-total EQ?
+    <- pair2nat-preserves-ne*/L P1<>P2 P1->N1 P2->N2 EQ? N1<>N2.
+
+- : pair2nat-preserves-ne*/L _ _ _ (nat`eq?/no N1<>N2) N1<>N2.
+
+- : pair2nat-preserves-ne*/L P1<>P2 P1->N P2->N (nat`eq?/yes) N<>N
+    <- nat2pair-deterministic P1->N P2->N nat`eq/ P1=P2
+    <- eq-ne-implies-false P1=P2 P1<>P2 F
+    <- nat`false-implies-ne F N<>N.
+
+%worlds () (pair2nat-preserves-ne*/L _ _ _ _ _).
+%total { } (pair2nat-preserves-ne*/L _ _ _ _ _).
+
+%worlds () (pair2nat-preserves-ne* _ _ _ _).
+%total { } (pair2nat-preserves-ne* _ _ _ _).
+
+
+%theorem pair2nat-preserves-ne :
+	forall* {P1} {P2}
+	forall {PNE: ne P1 P2} 
+        exists {N1} {N2} {T1:pair2nat P1 N1} {T2:pair2nat P2 N2}
+	       {NE: nat`ne N1 N2}
+	true.
+
+- : pair2nat-preserves-ne P1<>P2 N1 N2 T1 T2 N1<>N2
+   <- pair2nat-total T1
+   <- pair2nat-total T2
+   <- pair2nat-preserves-ne* P1<>P2 T1 T2 N1<>N2.
+
+%worlds () (pair2nat-preserves-ne _ _ _ _ _ _).
+%total { } (pair2nat-preserves-ne _ _ _ _ _ _).
+
+
+%theorem nat2pair-preserves-ne* :
+	forall* {P1} {P2} {N1} {N2}
+	forall {NE: nat`ne N1 N2} {T1:nat2pair N1 P1} {T2:nat2pair N2 P2}
+	exists {PNE: ne P1 P2}
+	true.
+
+%theorem nat2pair-preserves-ne*/L :
+	forall* {P1} {P2} {N1} {N2} {B}
+	forall {NE: nat`ne N1 N2} {T1:nat2pair N1 P1} {T2:nat2pair N2 P2}
+               {PT: eq? P1 P2 B}
+	exists {PNE: ne P1 P2}
+	true.
+
+- : nat2pair-preserves-ne* N1<>N2 N1->P1 N2->P2 P1<>P2
+    <- eq?-total EP?
+    <- nat2pair-preserves-ne*/L N1<>N2 N1->P1 N2->P2 EP? P1<>P2.
+
+- : nat2pair-preserves-ne*/L _ _ _ (eq?/no P1<>P2) P1<>P2.
+
+- : nat2pair-preserves-ne*/L N1<>N2 N1->P N2->P (eq?/yes) P<>P
+    <- pair2nat-deterministic N1->P N2->P eq/ N1=N2
+    <- nat`eq-ne-implies-false N1=N2 N1<>N2 F
+    <- false-implies-ne F P<>P.
+
+%worlds () (nat2pair-preserves-ne*/L _ _ _ _ _).
+%total { } (nat2pair-preserves-ne*/L _ _ _ _ _).
+
+%worlds () (nat2pair-preserves-ne* _ _ _ _).
+%total { } (nat2pair-preserves-ne* _ _ _ _).
+
+
+%theorem nat2pair-preserves-ne :
+	forall* {N1} {N2}
+	forall {NNE: nat`ne N1 N2} 
+        exists {P1} {P2} {T1:nat2pair N1 P1} {T2:nat2pair N2 P2}
+	       {PE: ne P1 P2}
+	true.
+
+- : nat2pair-preserves-ne N1<>N2 P1 P2 T1 T2 P1<>P2
+   <- nat2pair-total T1
+   <- nat2pair-total T2
+   <- nat2pair-preserves-ne* N1<>N2 T1 T2 P1<>P2.
+
+%worlds () (nat2pair-preserves-ne _ _ _ _ _ _).
+%total { } (nat2pair-preserves-ne _ _ _ _ _ _).
+
+
+%theorem nonzero-nat2pair-implies-gt-ge :
+	forall* {N} {X} {Y}
+	forall {D:nat2pair (s N) (pair/ X Y)}
+	exists {G1: gt (s N) X} {G2: ge (s N) Y}
+	true.
+
+- : nonzero-nat2pair-implies-gt-ge 
+     (pair2nat/XX plus/z plus/z times/z times/z _ (divrem/z _) (divrem/z _))
+     N+1>0 (nat`ge/= nat`eq/)
+     <- succ-implies-gt-zero _ N+1>0.
+
+- : nonzero-nat2pair-implies-gt-ge 
+     (pair2nat/XX X2+Y=sN plus/z (times/s X-1*2=X2-2 X2-2+2=X2) 
+     times/z _ (divrem/z _) (divrem/z TWO>X)) N+1>X N+1>=Y
+    <- plus-implies-ge X2+Y=sN (N+1>=Y:ge (s N) Y)
+    <- succ-gt-implies-ge TWO>X ONE>=X
+    <- ge-succ-implies-gt ONE>=X ONE>X-1
+    <- succ-gt-implies-ge ONE>X-1 ZERO>=X-1
+    <- ge-zero-always _ X-1>=0
+    <- ge-anti-symmetric ZERO>=X-1 X-1>=0 ZERO=X-1
+    <- succ-deterministic ZERO=X-1 ONE=X
+    <- times-deterministic times/z X-1*2=X2-2 ZERO=X-1 nat`eq/ ZERO=X2-2
+    <- plus-deterministic plus/z X2-2+2=X2 ZERO=X2-2 nat`eq/ TWO=X2
+    <- gt-respects-eq (gt/1) TWO=X2 ONE=X X2>X
+    <- plus-commutative X2+Y=sN Y+X2=sN
+    <- plus-implies-ge Y+X2=sN N+1>=X2
+    <- ge-transitive-gt N+1>=X2 X2>X N+1>X.
+
+- : nonzero-nat2pair-implies-gt-ge 
+     (pair2nat/XX _ _ _ _ (P2z:pair2nat (pair/ (s _) _) z) _ _) GT GE
+    <- nat2pair-deterministic pair2nat/00 P2z nat`eq/ ZERO,0=sN,_
+    <- pair-eq-implies-eq ZERO,0=sN,_ ZERO=sN _
+    <- nat`eq-contradiction ZERO=sN F
+    <- nat`false-implies-gt F GT
+    <- nat`false-implies-ge F GE.
+
+- : nonzero-nat2pair-implies-gt-ge 
+     (pair2nat/XX _ _ _ _ (P2z:pair2nat (pair/ _ (s _)) z) _ _) GT GE
+    <- nat2pair-deterministic pair2nat/00 P2z nat`eq/ ZERO,0=_,sN
+    <- pair-eq-implies-eq ZERO,0=_,sN _ ZERO=sN
+    <- nat`eq-contradiction ZERO=sN F
+    <- nat`false-implies-gt F GT
+    <- nat`false-implies-ge F GE.
+
+- : nonzero-nat2pair-implies-gt-ge 
+     (pair2nat/XX Z3+Y0=sN Z2+X2=Z3 X0*2=X2 Z1*4=Z2 Z1->X1,Y1 
+	          Y/2=Y1,Y0 X/2=X1,X0) N+1>X (ge/> N+1>Y)
+    <- plus-commutative Z3+Y0=sN Y0+Z3=sN
+    <- plus-implies-ge Y0+Z3=sN N+1>=Z3
+    <- plus-commutative Z2+X2=Z3 X2+Z2=Z3
+    <- plus-implies-ge X2+Z2=Z3 Z3>=Z2
+    <- ge-transitive N+1>=Z3 Z3>=Z2 N+1>=Z2
+    <- nonzero-nat2pair-implies-gt-ge Z1->X1,Y1 Z1>X1 Z1>=Y1
+    <- times-associative-converse 2*2=4 Z1*4=Z2 Z2/2 Z1*2=Z2/2 Z2/2*2=Z2
+    <- divrem-can-be-inverted Y/2=Y1,Y0 Y12 Y1*2=Y12 Y12+Y0=Y
+    <- divrem-can-be-inverted X/2=X1,X0 X12 X1*2=X12 X12+X0=X
+    <- times-right-preserves-gt* Z1>X1 Z1*2=Z2/2 X1*2=X12 nat`eq/ Z2/2>X12
+    <- succ-implies-gt-zero _ Z1>0
+    <- gt-implies-ge-succ Z1>0 Z1>=1
+    <- times-right-preserves-ge* Z1>=1 Z1*2=Z2/2 1*2=2 Z2/2>=2
+    <- ge-implies-plus Z2/2>=2 ZZ ZZ+2=Z2/2
+    <- plus-commutative ZZ+2=Z2/2 TWO+ZZ=Z2/2
+    <- plus-deterministic TWO+ZZ=Z2/2 (plus/s (plus/s plus/z)) nat`eq/ nat`eq/
+                          Z2/2=ssZZ
+    <- times-respects-eq Z2/2*2=Z2 Z2/2=ssZZ nat`eq/ nat`eq/ SSZZ*2=Z2
+    <- non-trivial-times-implies-much-gt* SSZZ*2=Z2 Z2>sssZZ
+    <- divrem-implies-gt X/2=X1,X0 TWO>X0
+    <- succ-gt-implies-ge TWO>X0 ONE>=X0
+    <- plus-right-identity _ X12+0=X12 
+    <- plus-right-increase X12+0=X12 X12+1=sX12
+    <- plus-left-preserves-ge* ONE>=X0 X12+1=sX12 X12+X0=X SX12>=X
+    <- gt-implies-ge-succ Z2/2>X12 Z2/2>=sX12
+    <- ge-transitive Z2/2>=sX12 SX12>=X Z2/2>=X
+    <- ge-respects-eq Z2/2>=X Z2/2=ssZZ nat`eq/ SSZZ>=X
+    <- ge-implies-succ-gt SSZZ>=X SSSZZ>X
+    <- gt-transitive Z2>sssZZ SSSZZ>X Z2>X
+    <- ge-transitive-gt N+1>=Z2 Z2>X N+1>X
+    <- times-right-preserves-ge* Z1>=Y1 Z1*2=Z2/2 Y1*2=Y12 Z2/2>=Y12
+    <- ge-respects-eq Z2/2>=Y12 Z2/2=ssZZ nat`eq/ SSZZ>=Y12
+    <- divrem-implies-gt Y/2=Y1,Y0 TWO>Y0
+    <- succ-gt-implies-ge TWO>Y0 ONE>=Y0
+    <- plus-right-identity _ Y12+0=Y12 
+    <- plus-right-increase Y12+0=Y12 Y12+1=sY12
+    <- plus-left-preserves-ge* ONE>=Y0 Y12+1=sY12 Y12+Y0=Y SY12>=Y
+    <- succ-preserves-ge SSZZ>=Y12 SSSZZ>=SY12
+    <- ge-transitive SSSZZ>=SY12 SY12>=Y SSSZZ>=Y
+    <- gt-transitive-ge Z2>sssZZ SSSZZ>=Y Z2>Y
+    <- ge-transitive-gt N+1>=Z2 Z2>Y N+1>Y.
+
+%worlds () (nonzero-nat2pair-implies-gt-ge _ _ _).
+%total (N) (nonzero-nat2pair-implies-gt-ge N _ _).
+
+
+%theorem nat2pair-implies-ge :
+	forall* {N} {X} {Y}
+	forall {D:nat2pair N (pair/ X Y)}
+	exists {G1: ge N X} {G2: ge N Y}
+	true.
+	
+- : nat2pair-implies-ge N2P (ge/> N>X) N>=Y
+    <- nonzero-nat2pair-implies-gt-ge N2P N>X N>=Y.
+
+- : nat2pair-implies-ge Z2P (ge/= ZERO=X) (ge/= ZERO=Y)
+    <- nat2pair-deterministic pair2nat/00 Z2P nat`eq/ ZERO,ZERO=X,Y
+    <- pair-eq-implies-eq ZERO,ZERO=X,Y ZERO=X ZERO=Y.
+
+%worlds () (nat2pair-implies-ge _ _ _).
+%total { } (nat2pair-implies-ge _ _ _).
+
+
+
+
+%%%% Renamings
+
+
+%abbrev natpair = pair.
+
+
+%abbrev natpair/ = pair/.
+
+
+
+%%%% Exports

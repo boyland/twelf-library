@@ -1,0 +1,630 @@
+%%%%%% Non-negative rational numbers
+%%%%%% John Boyland
+%%%%%% Anyone may use, copy or modify this software without restriction
+
+%%%%% This file requires: std.elf, bool.elf, nat.elf, rat.elf
+
+%{%
+ This is an "adequate" representation of the non-negative rationals:
+ It is layered directly on the representation of the positive rational
+ numbers.  It is not as complete as the latter signature,
+ because I'm lazy.
+%}%
+
+%{%
+ The identifiers clash with those of rat: add mul
+%}%
+
+%{%
+ The theorems in this signature mostly fall into the same groups
+ as those of the natural signature. (q.v.)
+%}%
+
+
+%%%% Definitions
+
+
+rat0 : type.
+
+
+zero : rat0.
+
+rat+ : rat -> rat0.
+
+
+%abbrev one = rat+ rat`one.
+
+
+
+eq : rat0 -> rat0 -> type.
+
+
+eq/ : eq R R.
+
+
+
+ne : rat0 -> rat0 -> type.
+
+
+ne/0Q : ne zero (rat+ _).
+
+ne/Q0 : ne (rat+ _) zero.
+
+ne/QQ : (neq Q1 Q2) -> ne (rat+ Q1) (rat+ Q2).
+
+
+
+eq? : rat0 -> rat0 -> bool -> type.
+
+
+eq?/yes : eq? R R true.
+
+
+eq?/no : (ne R1 R2) -> eq? R1 R2 false.
+
+
+
+add : rat0 -> rat0 -> rat0 -> type.
+
+
+add/L : add zero R R.
+
+add/R : add R zero R.
+
+add/Q : (rat`add Q1 Q2 Q3) -> add (rat+ Q1) (rat+ Q2) (rat+ Q3).
+
+
+
+mul : rat0 -> rat0 -> rat0 -> type.
+
+
+mul/L : mul zero R zero.
+
+mul/R : mul R zero zero.
+
+mul/Q : (rat`mul Q1 Q2 Q3) -> mul (rat+ Q1) (rat+ Q2) (rat+ Q3).
+
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about eq
+
+%{%
+#define EQ eq
+BEGIN_ELF
+#include "EQ.i"
+END_ELF
+%}%
+
+%theorem rat+-eq-implies-eq :
+	forall* {Q1} {Q2}
+        forall {E:eq (rat+ Q1) (rat+ Q2)}
+	exists {EP:equ Q1 Q2}
+	true.
+
+- : rat+-eq-implies-eq eq/ equ/.
+
+%worlds () (rat+-eq-implies-eq _ _).
+%total { } (rat+-eq-implies-eq _ _).
+
+
+%theorem rat+-preserves-eq :
+	forall* {Q1} {Q2}
+	forall {E:equ Q1 Q2}
+        exists {E:eq (rat+ Q1) (rat+ Q2)}
+	true.
+
+- : rat+-preserves-eq equ/ eq/.
+
+%worlds () (rat+-preserves-eq _ _).
+%total { } (rat+-preserves-eq _ _).
+
+
+
+%%% theorems about ne
+
+
+%theorem false-implies-ne :
+	forall* {X1} {X2}
+	forall {F:void}
+	exists {G:ne X1 X2}
+	true.
+
+%worlds () (false-implies-ne _ _).
+%total { } (false-implies-ne _ _).
+
+
+%theorem ne-respects-eq :
+	forall* {X1} {X2} {Y1} {Y2}
+	forall {D1:ne X1 X2} {E1:eq X1 Y1} {E2:eq X2 Y2}
+	exists {D2:ne Y1 Y2}
+	true.
+
+- : ne-respects-eq X1<>X2 eq/ eq/ X1<>X2.
+
+%worlds () (ne-respects-eq _ _ _ _).
+%total { } (ne-respects-eq _ _ _ _).
+
+
+%theorem ne-anti-reflexive :
+	forall* {R}
+	forall {D:ne R R}
+	exists {F:void}
+	true.
+
+- : ne-anti-reflexive (ne/QQ X<>X) F
+    <- rat`ne-anti-reflexive X<>X F.
+
+%worlds () (ne-anti-reflexive _ _).
+%total { } (ne-anti-reflexive _ _).
+
+
+%theorem ne-symmetric :
+	forall* {R1} {R2}
+	forall {D1:ne R1 R2}
+	exists {D2:ne R2 R1}
+	true.
+
+- : ne-symmetric ne/0Q ne/Q0.
+
+- : ne-symmetric Ne/Q0 ne/0Q.
+
+- : ne-symmetric (ne/QQ X1<>X2) (ne/QQ X2<>X1)
+    <- rat`ne-symmetric X1<>X2 X2<>X1.
+
+%worlds () (ne-symmetric _ _).
+%total { } (ne-symmetric _ _).
+
+
+%theorem eq-ne-implies-false :
+	forall* {R1} {R2}
+	forall {D1:eq R1 R2} {D2:ne R1 R2}
+	exists {F:void}
+	true.
+
+- : eq-ne-implies-false eq/ X<>X F
+    <- ne-anti-reflexive X<>X F.
+
+%worlds () (eq-ne-implies-false _ _ _).
+%total { } (eq-ne-implies-false _ _ _).
+
+
+
+%%% theorems about eq?
+
+
+%theorem equ?-implies-eq? :
+	forall* {Q1} {Q2} {B}
+	forall {E:rat`eq? Q1 Q2 B}
+	exists {EP:eq? (rat+ Q1) (rat+ Q2) B}
+	true.
+
+- : equ?-implies-eq? rat`eq?/yes eq?/yes.
+
+- : equ?-implies-eq? (rat`eq?/no Q1<>Q2) (eq?/no (ne/QQ Q1<>Q2)).
+
+%worlds () (equ?-implies-eq? _ _).
+%total { } (equ?-implies-eq? _ _).
+
+
+%theorem eq?-total* :
+	forall {R1} {R2}
+	exists {B} {T:eq? R1 R2 B}
+	true.
+
+- : eq?-total* zero zero _ eq?/yes.
+
+- : eq?-total* zero (rat+ _) _ (eq?/no ne/0Q).
+
+- : eq?-total* (rat+ _) zero _ (eq?/no ne/Q0).
+
+- : eq?-total* (rat+ Q1) (rat+ Q2) _ TEST
+    <- rat`eq?-total EQU?
+    <- equ?-implies-eq? EQU? TEST.
+
+%worlds () (eq?-total* _ _ _ _).
+%total { } (eq?-total* _ _ _ _).
+
+
+%abbrev eq?-total = eq?-total* _ _ _.
+
+
+
+%%% Theorems about add
+
+
+%theorem false-implies-add :
+	forall* {R1} {R2} {R3}
+	forall {F:void}
+	exists {A:add R1 R2 R3}
+	true.
+
+%worlds () (false-implies-add _ _).
+%total { } (false-implies-add _ _).
+
+
+%theorem add-respects-eq :
+	forall* {R1a} {R1b} {R2a} {R2b} {R3a} {R3b}
+	forall {Aa:add R1a R2a R3a}
+	       {E1:eq R1a R1b} {E2:eq R2a R2b} {E3:eq R3a R3b}
+	exists {Ab:add R1b R2b R3b}
+	true.
+
+- : add-respects-eq A eq/ eq/ eq/ A.
+
+%worlds () (add-respects-eq _ _ _ _ _).
+%total { } (add-respects-eq _ _ _ _ _).
+
+
+%theorem add-total* :
+	forall {R1} {R2}
+	exists {R3} {A:add R1 R2 R3}
+	true.
+
+- : add-total* _ _ _ add/R.
+
+- : add-total* _ _ _ add/L.
+
+- : add-total* _ _ _ (add/Q Q1+Q2=Q3)
+    <- rat`add-total Q1+Q2=Q3.
+
+%worlds () (add-total* _ _ _ _).
+%total { } (add-total* _ _ _ _).
+
+
+%abbrev add-total = add-total* _ _ _.
+
+
+%theorem add-deterministic :
+	forall* {R1a} {R1b} {R2a} {R2b} {R3a} {R3b}
+	forall {Aa:add R1a R2a R3a} {Ab:add R1b R2b R3b}
+	       {E1:eq R1a R1b} {E2:eq R2a R2b}
+	exists {E3:eq R3a R3b}
+	true.
+
+- : add-deterministic add/L add/L eq/ eq/ eq/.
+
+- : add-deterministic add/L add/R eq/ eq/ eq/.
+
+- : add-deterministic add/R add/L eq/ eq/ eq/.
+
+- : add-deterministic add/R add/R eq/ eq/ eq/.
+
+- : add-deterministic (add/Q Q1a+Q2a=Q3a) (add/Q Q1b+Q2b=Q3b) eq/ eq/ R3a=R3b
+    <- rat`add-deterministic Q1a+Q2a=Q3a Q1b+Q2b=Q3b equ/ equ/ Q3a=Q3b
+    <- rat+-preserves-eq Q3a=Q3b R3a=R3b.
+
+%worlds () (add-deterministic _ _ _ _ _).
+%total { } (add-deterministic _ _ _ _ _).
+
+
+%theorem add-left-identity :
+	forall {R}
+	exists {A:add zero R R}
+	true.
+
+- : add-left-identity _ add/L.
+
+%worlds () (add-left-identity _ _).
+%total { } (add-left-identity _ _).
+
+
+%theorem add-right-identity :
+	forall {R}
+	exists {A:add R zero R}
+	true.
+
+- : add-right-identity _ add/R.
+
+%worlds () (add-right-identity _ _).
+%total { } (add-right-identity _ _).
+
+
+%theorem add-commutative :
+	forall* {R1} {R2} {R3}
+	forall {A12:add R1 R2 R3}
+	exists {A21:add R2 R1 R3}
+	true.
+
+- : add-commutative add/R add/L.
+
+- : add-commutative add/L add/R.
+
+- : add-commutative (add/Q Q1+Q2=Q3) (add/Q Q2+Q1=Q3)
+    <- rat`add-commutative Q1+Q2=Q3 Q2+Q1=Q3.
+
+%worlds () (add-commutative _ _).
+%total { } (add-commutative _ _).
+
+
+%theorem add-associative :
+	forall* {R1} {R2} {R3} {R4} {R7}
+	forall {A12:add R1 R2 R3} {A34:add R3 R4 R7}
+	exists {R6} {A24:add R2 R4 R6} {A16:add R1 R6 R7}
+	true.
+
+- : add-associative add/L A _ A add/L.
+
+- : add-associative add/R A _ add/L A.
+
+- : add-associative _ add/L _ add/L add/L.
+
+- : add-associative A add/R _ add/R A.
+
+- : add-associative (add/Q Q1+Q2=Q3) (add/Q Q3+Q4=Q7) (rat+ Q6)
+		    (add/Q Q2+Q4=Q6) (add/Q Q1+Q6=Q7)
+    <- rat`add-associative Q1+Q2=Q3 Q3+Q4=Q7 Q6 Q2+Q4=Q6 Q1+Q6=Q7.
+
+%worlds () (add-associative _ _ _ _ _).
+%total { } (add-associative _ _ _ _ _).
+
+%{%
+#define OPN add
+#define OP(X,Y) X+Y
+#define OP_TOTAL 1
+#define OP_COMMUTATIVE 1
+BEGIN_ELF
+#include "OPN-assoc.i"
+END_ELF
+#undef OP_COMMUTATIVE
+#undef OP_TOTAL
+#undef OP
+#undef OPN
+%}%
+
+%theorem add-left-cancels : 
+	forall* {R1a} {R2a} {R3a} {R1b} {R2b} {R3b}
+	forall {A1:add R1a R2a R3a} {A2:add R1b R2b R3b}
+               {E:eq R1a R1b} {ES:eq R3a R3b}
+	exists {ER:eq R2a R2b}
+	true.
+
+- : add-left-cancels add/L add/L eq/ eq/ eq/.
+
+- : add-left-cancels add/L add/R eq/ eq/ eq/.
+
+- : add-left-cancels add/R add/L eq/ eq/ eq/.
+
+- : add-left-cancels add/R add/R eq/ eq/ eq/.
+
+- : add-left-cancels (add/Q Q1+Q2a=Q3) (add/Q Q1+Q2b=Q3) eq/ eq/ R2a=R2b
+    <- rat`add-left-cancels Q1+Q2a=Q3 Q1+Q2b=Q3 equ/ equ/ Q2a=Q2b
+    <- rat+-preserves-eq Q2a=Q2b R2a=R2b.
+
+- : add-left-cancels add/R (add/Q Q1+Q2=Q1) eq/ eq/ E
+    <- rat`add-no-right-identity Q1+Q2=Q1 F
+    <- false-implies-eq F E.
+
+- : add-left-cancels (add/Q Q1+Q2=Q1) add/R eq/ eq/ E
+    <- rat`add-no-right-identity Q1+Q2=Q1 F
+    <- false-implies-eq F E.
+
+%worlds () (add-left-cancels _ _ _ _ _).
+%total { } (add-left-cancels _ _ _ _ _).
+
+
+%theorem add-right-cancels :
+        forall* {Q1} {R1} {S1} {Q2} {R2} {S2}
+        forall {A1:add Q1 R1 S1} {A2:add Q2 R2 S2}
+               {ER:eq R1 R2} {ES:eq S1 S2}
+        exists {E:eq Q1 Q2}
+        true.
+
+- : add-right-cancels Q1+Q2=Q3 Q1'+Q2'=Q3' Q2=Q2' Q3=Q3' Q1=Q1'
+    <- add-commutative Q1+Q2=Q3 Q2+Q1=Q3
+    <- add-commutative Q1'+Q2'=Q3' Q2'+Q1'=Q3'
+    <- add-left-cancels Q2+Q1=Q3 Q2'+Q1'=Q3'  Q2=Q2' Q3=Q3' Q1=Q1'.
+
+%worlds () (add-right-cancels _ _ _ _ _).
+%total { } (add-right-cancels _ _ _ _ _).
+
+
+
+%%% Theorems about mul
+
+
+%theorem false-implies-mul :
+	forall* {R1} {R2} {R3}
+	forall {F:void}
+	exists {M:mul R1 R2 R3}
+	true.
+
+%worlds () (false-implies-mul _ _).
+%total { } (false-implies-mul _ _).
+
+
+%theorem mul-respects-eq :
+	forall* {R1a} {R1b} {R2a} {R2b} {R3a} {R3b}
+	forall {Ma:mul R1a R2a R3a}
+	       {E1:eq R1a R1b} {E2:eq R2a R2b} {E3:eq R3a R3b}
+	exists {Mb:mul R1b R2b R3b}
+	true.
+
+- : mul-respects-eq M eq/ eq/ eq/ M.
+
+%worlds () (mul-respects-eq _ _ _ _ _).
+%total { } (mul-respects-eq _ _ _ _ _).
+
+
+%theorem mul-total* :
+	forall {R1} {R2}
+	exists {R3} {M:mul R1 R2 R3}
+	true.
+
+- : mul-total* _ _ _ mul/R.
+
+- : mul-total* _ _ _ mul/L.
+
+- : mul-total* _ _ _ (mul/Q Q1*Q2=Q3)
+    <- rat`mul-total Q1*Q2=Q3.
+
+%worlds () (mul-total* _ _ _ _).
+%total { } (mul-total* _ _ _ _).
+
+
+%abbrev mul-total = mul-total* _ _ _.
+
+
+%theorem mul-deterministic :
+	forall* {R1a} {R1b} {R2a} {R2b} {R3a} {R3b}
+	forall {Ma:mul R1a R2a R3a} {Mb:mul R1b R2b R3b}
+	       {E1:eq R1a R1b} {E2:eq R2a R2b}
+	exists {E3:eq R3a R3b}
+	true.
+
+- : mul-deterministic mul/L _ eq/ _ eq/.
+
+- : mul-deterministic mul/R _ _ eq/ eq/.
+
+- : mul-deterministic (mul/Q Q1a*Q2a=Q3a) (mul/Q Q1b*Q2b=Q3b) eq/ eq/ R3a=R3b
+    <- rat`mul-deterministic Q1a*Q2a=Q3a Q1b*Q2b=Q3b equ/ equ/ Q3a=Q3b
+    <- rat+-preserves-eq Q3a=Q3b R3a=R3b.
+
+%worlds () (mul-deterministic _ _ _ _ _).
+%total { } (mul-deterministic _ _ _ _ _).
+
+
+%theorem mul-left-zero :
+	forall {R}
+	exists {M:mul zero R zero}
+	true.
+
+- : mul-left-zero _ mul/L.
+
+%worlds () (mul-left-zero _ _).
+%total { } (mul-left-zero _ _).
+
+
+%theorem mul-right-zero :
+	forall {R}
+	exists {M:mul R zero zero}
+	true.
+
+- : mul-right-zero _ mul/R.
+
+%worlds () (mul-right-zero _ _).
+%total { } (mul-right-zero _ _).
+
+
+%theorem mul-left-identity :
+	forall {R}
+	exists {M:mul one R R}
+	true.
+
+- : mul-left-identity _ mul/R.
+
+- : mul-left-identity _ (mul/Q ONE*Q=Q)
+    <- rat`mul-left-identity _ ONE*Q=Q.
+
+%worlds () (mul-left-identity _ _).
+%total { } (mul-left-identity _ _).
+
+
+%theorem mul-right-identity :
+	forall {R}
+	exists {M:mul R one R}
+	true.
+
+- : mul-right-identity _ mul/L.
+
+- : mul-right-identity _ (mul/Q Q*1=Q)
+    <- rat`mul-right-identity _ Q*1=Q.
+
+%worlds () (mul-right-identity _ _).
+%total { } (mul-right-identity _ _).
+
+
+%theorem mul-commutative :
+	forall* {R1} {R2} {R3}
+	forall {M12:mul R1 R2 R3}
+	exists {M21:mul R2 R1 R3}
+	true.
+
+- : mul-commutative mul/R mul/L.
+
+- : mul-commutative mul/L mul/R.
+
+- : mul-commutative (mul/Q Q1*Q2=Q3) (mul/Q Q2*Q1=Q3)
+    <- rat`mul-commutative Q1*Q2=Q3 Q2*Q1=Q3.
+
+%worlds () (mul-commutative _ _).
+%total { } (mul-commutative _ _).
+
+
+%theorem mul-associative :
+	forall* {R1} {R2} {R3} {R4} {R7}
+	forall {M12:mul R1 R2 R3} {M34:mul R3 R4 R7}
+	exists {R6} {M24:mul R2 R4 R6} {M16:mul R1 R6 R7}
+	true.
+
+- : mul-associative mul/L _ _ M mul/L
+    <- mul-total M.
+
+- : mul-associative mul/R _ _ mul/L mul/R.
+
+- : mul-associative _ mul/R _ mul/R mul/R.
+
+- : mul-associative (mul/Q Q1*Q2=Q3) (mul/Q Q3*Q4=Q7) (rat+ Q6)
+		    (mul/Q Q2*Q4=Q6) (mul/Q Q1*Q6=Q7)
+    <- rat`mul-associative Q1*Q2=Q3 Q3*Q4=Q7 Q6 Q2*Q4=Q6 Q1*Q6=Q7.
+
+%worlds () (mul-associative _ _ _ _ _).
+%total { } (mul-associative _ _ _ _ _).
+
+%{%
+#define OPN mul
+#define OP(X,Y) X*Y
+#define OP_TOTAL 1
+#define OP_COMMUTATIVE 1
+BEGIN_ELF
+#include "OPN-assoc.i"
+END_ELF
+#undef OP_COMMUTATIVE
+#undef OP_TOTAL
+#undef OP
+#undef OPN
+%}%
+
+%theorem mul-right-distributes-over-add :
+        forall* {R1} {R2} {R3} {R4} {R7}
+        forall {A12:add R1 R2 R3} {M34:mul R3 R4 R7}
+        exists {R5} {R6} {M14:mul R1 R4 R5} {M24:mul R2 R4 R6}
+               {A56:add R5 R6 R7}
+        true.
+
+- : mul-right-distributes-over-add add/L R2*R4=R7 _ _ mul/L R2*R4=R7 add/L.
+
+- : mul-right-distributes-over-add add/R R1*R4=R7 _ _ R1*R4=R7 mul/L add/R.
+
+- : mul-right-distributes-over-add R1+R2=R3 mul/R _ _ mul/R mul/R add/L.
+
+- : mul-right-distributes-over-add (add/Q Q1+Q2=Q3) (mul/Q Q3*Q4=Q7) _ _
+                                   (mul/Q Q1*Q4=Q5) (mul/Q Q2*Q4=Q6)
+				   (add/Q Q5+Q6=Q7)
+    <- rat`mul-right-distributes-over-add Q1+Q2=Q3 Q3*Q4=Q7 _ _ 
+					  Q1*Q4=Q5 Q2*Q4=Q6 Q5+Q6=Q7.
+
+%worlds () (mul-right-distributes-over-add _ _ _ _ _ _ _).
+%total { } (mul-right-distributes-over-add _ _ _ _ _ _ _).
+
+%{%
+#define MULN mul
+#define MUL(X,Y) X*Y
+#define ADDN add
+#define ADD(X,Y) X+Yq
+#define MUL_COMMUTATIVE 1
+#define ADD_TOTAL 1
+BEGIN_ELF
+#include "distrib.i"
+END_ELF
+#undef ADD_TOTAL
+#undef MUL_COMMUTATIVE
+%}%
+
+
+
+%%%% Exports

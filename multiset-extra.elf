@@ -1,0 +1,160 @@
+%%%%% set-extra.elf
+%%%%% Extra theorems about sets not derived from map.
+%%%%% This file is part of the set.elf signature
+
+
+
+%%%% Theorems
+
+
+%theorem union-right-distributes-over-intersection :
+	forall* {S1} {S2} {S3} {S4} {S7}
+        forall {I12:intersection S1 S2 S3} {U34:union S3 S4 S7}
+        exists {S5} {S6} {U14:union S1 S4 S5} {U24:union S2 S4 S6}
+               {I56:intersection S5 S6 S7}
+	true.
+
+- : union-right-distributes-over-intersection S1*S2=S3 S3+S4=S7 S5 S6
+                                              S1+S4=S5 S2+S4=S6 S5*S6=S7
+    <- union-total S1+S4=S5
+    <- union-total S2+S4=S6
+    <- intersection-total S5*S6=S7'
+    <- union-implies-leq S2+S4=S6 _ S4<=S6
+    <- leq-implies-intersection S4<=S6 S4*S6=S4
+    <- intersection-total S1*S6=S8
+    <- intersection-total S1*S4=S9
+    <- intersection-right-distributes-over-union* S1+S4=S5 S5*S6=S7'
+                                                  S1*S6=S8 S4*S6=S4 S8+S4=S7'
+    <- intersection-left-distributes-over-union* S2+S4=S6 S1*S6=S8
+                                                 S1*S2=S3 S1*S4=S9 S3+S9=S8
+    <- intersection-implies-leq S1*S4=S9 _ S9<=S4
+    <- leq-implies-union S9<=S4 S9+S4=S4
+    <- union-associative* S3+S9=S8 S8+S4=S7' S9+S4=S4 S3+S4=S7'
+    <- union-deterministic S3+S4=S7' S3+S4=S7 eq/ eq/ S7'=S7 
+    <- intersection-respects-eq S5*S6=S7' eq/ eq/ S7'=S7 S5*S6=S7.
+
+%worlds () (union-right-distributes-over-intersection _ _ _ _ _ _ _).
+%total { } (union-right-distributes-over-intersection _ _ _ _ _ _ _).
+
+%{%
+#define MUL_COMMUTATIVE 1
+#define ADD_TOTAL 1
+#define ADD(X,Y) X*Y
+#define ADDN intersection
+#define MUL(X,Y) X+Y
+#define MULN union
+#define EQ eq
+BEGIN_ELF
+#include "distrib.i"
+END_ELF
+#undef EQ
+#undef ADD
+#undef ADDN
+#undef MUL
+#undef MULN
+#undef ADD_TOTAL
+#undef MUL_COMMUTATIVE
+%}%
+
+
+
+%%%% Definitions
+
+
+
+count : map -> nat -> nat -> type.
+
+
+count/s : lookup M N C -> count M N (s C).
+
+count/z : not-member M N -> count M N z.
+
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about count
+
+
+%theorem false-implies-count :
+	forall* {M} {N} {C}
+	forall {F:void}
+	exists {MC:count M N C}
+	true.
+
+%worlds () (false-implies-count _ _).
+%total { } (false-implies-count _ _).
+
+
+%theorem count-respects-eq :
+	forall* {M1} {N1} {C1} {M2} {N2} {C2}
+	forall {MC1:count M1 N1 C1}
+	       {EM:eq M1 M2} {EN:nat`eq N1 N2} {EC:nat`eq C1 C2}
+	exists {MC2:count M2 N2 C2}
+	true.
+
+- : count-respects-eq C eq/ nat`eq/ nat`eq/ C.
+
+%worlds () (count-respects-eq _ _ _ _ _).
+%total { } (count-respects-eq _ _ _ _ _).
+
+
+%theorem count-total** :
+	forall* {M} {N} {B}
+	forall {D?:member? M N B}
+	exists {C} {MC:count M N C}
+	true.
+
+- : count-total** (member?/in L) _ (count/s L).
+
+- : count-total** (member?/out F) _ (count/z F).
+
+%worlds () (count-total** _ _ _).
+%total { } (count-total** _ _ _).
+
+
+%theorem count-total* :
+	forall {M} {N}
+	exists {C} {MC:count M N C}
+	true.
+
+- : count-total* M N _ MC
+    <- member?-total M?
+    <- count-total** M? _ MC.
+
+%worlds () (count-total* _ _ _ _).
+%total { } (count-total* _ _ _ _).
+
+
+%abbrev count-total = count-total* _ _ _.
+
+
+%theorem count-deterministic :
+	forall* {M1} {N1} {C1} {M2} {N2} {C2}
+	forall {MC1:count M1 N1 C1}
+	       {MC2:count M2 N2 C2}
+	       {EM:eq M1 M2} {EN:nat`eq N1 N2} 
+	exists {EC:nat`eq C1 C2}
+	true.
+
+- : count-deterministic (count/z _) (count/z _) _ _ nat`eq/.
+
+- : count-deterministic (count/s L) (count/s L') eq/ nat`eq/ SC=sC'
+    <- lookup-deterministic L L' eq/ nat`eq/ C=C'
+    <- succ-deterministic C=C' SC=sC'.
+
+- : count-deterministic (count/z F) (count/s L) eq/ nat`eq/ E
+    <- not-member-lookup-not-equal F L N<>N
+    <- nat`ne-anti-reflexive N<>N V
+    <- nat`false-implies-eq V E.
+
+- : count-deterministic (count/s L) (count/z F) eq/ nat`eq/ E
+    <- not-member-lookup-not-equal F L N<>N
+    <- nat`ne-anti-reflexive N<>N V
+    <- nat`false-implies-eq V E.
+
+%worlds () (count-deterministic _ _ _ _ _).
+%total { } (count-deterministic _ _ _ _ _).

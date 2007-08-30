@@ -1,0 +1,34 @@
+%%%% Functor Use
+
+
+%{%
+#define DATA_NE
+#define DATA_JOIN_IMPLIES_LEQ 1
+#define DATA_JOIN_IS_LUB 1
+#define DATA_JOIN_PRESERVES_LEQ 1
+#define DATA_JOIN_DETERMINISTIC 1
+#define DATA_JOIN_TOTAL_STAR 1
+#define DATA_JOIN_COMMUTATIVE 1
+#define DATA_JOIN_ASSOCIATIVE 1
+#define DATA_LEQ 1
+#define DATA_MEET_IMPLIES_LEQ 1
+#define DATA_MEET_IS_GLB 1
+#define DATA_MEET_PRESERVES_LEQ 1
+#define DATA_MEET_DETERMINISTIC 1
+#define DATA_MEET_TOTAL_STAR 1
+#define DATA_MEET_COMMUTATIVE 1
+#define DATA_MEET_ASSOCIATIVE 1
+#define DATA_MEET_RIGHT_DISTRIBUTES_OVER_JOIN 1
+  /* #define DATA_JOIN_RIGHT_DISTRIBUTES_OVER_MEET 1 */
+BEGIN_ELF
+#include "map-base.elf"
+#include "map-leq.elf"
+#include "map-join.elf"
+#include "map-join-leq.elf"
+#include "map-meet.elf"
+#include "map-meet-leq.elf"
+#include "map-meet-join.elf"
+END_ELF
+%}%
+
+

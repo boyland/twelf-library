@@ -1,0 +1,45 @@
+%%%%% Natural numbers
+%%%%% John Boyland
+%%%%% Anyone may use, copy or modify this software without restriction
+
+%%%%% This file requires std.elf
+
+%{%
+ The natural numbers signature comes in several pieces,
+ all of which are concatenated in nat.elf:
+    - nat-base.elf (basic definitions, relations and operations)
+    - nat-comp.elf (composed orders: ge, ne)
+    - nat-inv.elf (inverse operation: minus)
+    - nat-less.elf (inverse orders: lt, le)
+    - nat-inv-comp.elf (theorems about minus and composed relations)
+    - nat-inv-less.elf (theorems about minus and inverse orders)
+    - nat-divrem.elf (quotient/remainder operation)
+    - nat-minmax-elf (min/max operations)
+ With the exception of the nat-inv-XXX.elf files,
+ all later files depend on (require) only the nat-base.elf file.
+ The nat-inv-XXX.elf files depend also on nat-inv.elf and nat-XXX.elf.
+%}%
+
+%{%
+ The theorems in this signature mostly fall into the following groups:
+   false-implies-XXX: one can derive XXX after a contradiction
+   XXX-respects-eq: one can substitute equal terms in a relation XXX
+   XXX-total: effectiveness lemma for XXX
+   XXX-deterministic: uniqueness lemma for XXX
+   XXX-reflexive, XXX-symmetric, XXX-transitive: properties of an equivalence
+   XXX-anti-reflexive, XXX-anti-symmetric: properties of a partial order
+   XXX-commutative, XXX-associative: properties of a binary operation
+   XXX-left/right-distributes-over-YYY: distribution theorem
+   XXX-left/right-factors-over-YYY: converse of distribution theorem
+   XXX-left/right-preserves-ORD: If X ORD Y then we can apply Z to both sides
+   XXX-left/right-cancels: cancellation property of binary operator XXX
+   XXX-left/right-cancels-ORD: cancellation property w.r.t. order ORD
+   XXX-contradiction: case where XXX can never happen
+   XXX-implies-YYY: if XXX is true, we show YYY is true
+   TTT-converse: converse of theorem TTT
+ Additionally there are varieties of theorems with star appended to the name.
+ These versions of the theorems typically require more inputs.
+%}%
+
+
+

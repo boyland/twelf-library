@@ -1,0 +1,86 @@
+%%%%% rat-comp.elf
+%%%%% Composed relations for rational numbers
+%%%%% This file is part of the rat.elf signature
+
+%{%
+ We define derived relations for greater-than-or-equal "gre" 
+ and not-equal "neq".  The theorems here never need to look
+ into the representation of rationals.
+%}%
+
+%{%
+#define TYPE rat
+#define EQ equ
+#define GE gre
+#define GT grt
+#define NE neq
+#define COMP cmp
+
+BEGIN_ELF
+#include "GE.i"
+END_ELF
+%}%
+
+%theorem add-implies-gre :
+	forall* {X1} {X2} {X3}
+	forall {OP1:add X1 X2 X3}
+	exists {G1:gre X3 X1} {G2:gre X3 X2}
+	true.
+
+- : add-implies-gre X1+X2=X3 (gre/> X3>X1) (gre/> X3>X2)
+    <- add-implies-grt X1+X2=X3 X3>X1 X3>X2.
+
+%worlds () (add-implies-gre X1+X2=X3 X3>=X1 X3>=X2).
+%total {} (add-implies-gre _ _ _).
+
+
+%abbrev add-implies-gre* = [A:add X1 X2 X3] [G1:gre X3 X1] 
+                           add-implies-gre A G1 (G2:gre X3 X2).
+
+%{%
+#define OP_TOTAL 1
+#define OP_CANCELS 1
+#define OP_COMMUTATIVE 1
+
+#define OPN add
+#define OP(X,Y) X+Y
+BEGIN_ELF
+#include "OPN-preserves-GE.i"
+END_ELF
+#undef OP
+#undef OPN
+
+#define OPN mul
+#define OP(X,Y) X*Y
+BEGIN_ELF
+#include "OPN-preserves-GE.i"
+END_ELF
+#undef OP
+#undef OPN
+
+BEGIN_ELF
+#include "NE.i"
+END_ELF
+
+#define OPN add
+#define OP(X,Y) X+Y
+BEGIN_ELF
+#include "OPN-preserves-NE.i"
+END_ELF
+#undef OP
+#undef OPN
+
+#define OPN mul
+#define OP(X,Y) X*Y
+BEGIN_ELF
+#include "OPN-preserves-NE.i"
+END_ELF
+#undef OP
+#undef OPN
+
+#undef OP_CANCELS
+#undef OP_TOTAL
+#undef OP_COMMUTATIVE
+%}%
+
+

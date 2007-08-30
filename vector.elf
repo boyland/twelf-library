@@ -1,0 +1,1268 @@
+%%%%%% vector.elf
+%%%%%% John Boyland
+%%%%%% You may freely use, modify and distribute this file without restrictions.
+
+%%%%% This file requires the "nat.elf" signature (base only).
+
+%{%
+This signature implements vectors of a arbitrary ring.
+The vectors carry their length around so that we can
+ensure that operations succeed.
+
+The representation is "adequate" in that every vector
+has a unique representation.  In other words, equality of the terms
+is the same as semantic equality.
+%}%
+
+%{% 
+This signature is incomplete.  It requires the following declarations:
+
+data : type.
+data`eq : data -> data -> type
+data`eq/ : data`eq X X.
+%theorem data`false-implies-eq : 
+	forall* {X} {X'} forall {F:void} exists {E:data`eq X X'} true.
+%worlds () (data`false-implies-eq _ %{=>}% X=X').
+%total {} (data`false-implies-eq _ _).
+
+It also assumes the existence of add and mul operations
+and that these operators are deterministic/total/commutative/associative.
+
+This file is intended to be copied and modified to apply to specific
+data types.  If/when Twelf gets a module system, this signature
+should be rewritten as a functor.
+%}%
+
+%{%
+This file follows the same theorem naming convention as nat.elf (q.v.)
+%}%
+
+
+
+%%%% Definitions
+
+
+
+%%% Definition of vectors
+
+
+vector : nat -> type.
+
+
+vector/0 : vector z.
+
+vector/+ : data -> vector N -> vector (s N).
+
+
+
+%%% Relations on vectors
+
+
+eq : vector N -> vector N -> type.
+
+eq/ : eq V V.
+
+
+
+%{%
+#ifdef DATA_NE
+%}%
+
+ne : vector N -> vector N -> type.
+
+
+ne/1 : data`ne D1 D2 -> ne (vector/+ D1 _) (vector/+ D2 _).
+
+ne/+ : ne V1 V2 -> ne (vector/+ _ V1) (vector/+ _ V2).
+
+
+
+eq? : vector N -> vector N -> bool -> type.
+
+
+eq?/yes : eq? V V true.
+
+eq?/no : ne V1 V2 -> eq? V1 V2 false.
+
+%{%
+#endif
+%}%
+
+
+%%% addition
+
+
+add : vector N -> vector N -> vector N -> type.
+
+
+add/0 : add vector/0 vector/0 vector/0.
+
+add/+ : 
+	data`add X1 X2 X3 ->
+	add V1 V2 V3 ->
+    add (vector/+ X1 V1) (vector/+ X2 V2) (vector/+ X3 V3).
+
+
+
+%%% scaling
+
+
+scale : data -> vector N -> vector N -> type.
+
+
+scale/0 : scale _ vector/0 vector/0.
+
+scale/+ : 
+	data`mul X0 X1 X2 ->
+	scale X0 V1 V2 ->
+    scale X0 (vector/+ X1 V1) (vector/+ X2 V2).
+
+
+%{%
+#ifdef DATA_ZERO
+%}%
+
+%%% zero?
+
+
+zero? : vector N -> bool -> type.
+
+
+zero?/0 : zero? vector/0 true.
+
+zero?/+ : zero? V B -> zero? (vector/+ data`zero V) B.
+
+zero?/X : data`ne D data`zero -> zero? (vector/+ D _) false.
+
+
+
+%%% dot product
+
+
+dot : vector N -> vector N -> data -> type.
+
+
+dot/0 : dot vector/0 vector/0 data`zero.
+
+dot/+ : 
+	data`mul X1 X2 X3 ->
+	dot V1 V2 X4 ->
+	data`add X3 X4 X5 ->
+    dot (vector/+ X1 V1) (vector/+ X2 V2) X5.
+
+
+%{%
+#endif
+%}%
+
+%%%% Theorems
+
+
+
+%%% Theorems about eq
+
+
+%theorem false-implies-eq :
+        forall* {N} {X1:vector N} {X2}
+        forall {F:void}
+        exists {E:eq X1 X2}
+        true.
+
+%worlds () (false-implies-eq _ _).
+%total { } (false-implies-eq _ _).
+
+
+%theorem meta-eq :
+	forall* {N}
+        forall {X1: vector N} {X2} {E:eq X1 X2}
+        true.
+
+- : meta-eq _ _ eq/.
+
+%worlds () (meta-eq _ _ _).
+%total { } (meta-eq _ _ _).
+%reduces X = Y (meta-eq X Y _).
+
+        
+%theorem eq-reflexive : 
+	forall* {N}
+        forall {X: vector N} 
+        exists {E:eq X X} 
+        true.
+
+- : eq-reflexive _ eq/.
+
+%worlds () (eq-reflexive _ _).
+%total { } (eq-reflexive _ _).
+
+
+%theorem eq-symmetric : 
+        forall* {N} {X:vector N} {Y}
+        forall {E:eq X Y}
+        exists {F:eq Y X}
+        true.
+
+- : eq-symmetric (eq/) (eq/).
+
+%worlds () (eq-symmetric _ _).
+%total { } (eq-symmetric _ _).
+
+
+%theorem eq-transitive : 
+        forall* {N} {X: vector N} {Y} {Z}
+        forall {E1:eq X Y} {E2:eq Y Z}
+        exists {F:eq X Z}
+        true.
+
+- : eq-transitive (eq/) (eq/) (eq/).
+
+%worlds () (eq-transitive _ _ _).
+%total { } (eq-transitive _ _ _).
+
+
+%theorem vector/+-eq-implies-eq :
+	forall* {N} {D1} {V1:vector N} {D2} {V2}
+        forall {E:eq (vector/+ D1 V1) (vector/+ D2 V2)}
+	exists {E1:data`eq D1 D2}
+               {E2:eq V1 V2}
+	true.
+
+- : vector/+-eq-implies-eq eq/ data`eq/ eq/.
+
+%worlds () (vector/+-eq-implies-eq _ _ _).
+%total { } (vector/+-eq-implies-eq _ _ _).
+
+
+%theorem vector/+-preserves-eq :
+	forall* {N} {D1} {D2} {V1:vector N} {V2}
+	forall {E1:data`eq D1 D2}
+               {E2:eq V1 V2}
+        exists {E:eq (vector/+ D1 V1) (vector/+ D2 V2)}
+	true.
+
+- : vector/+-preserves-eq data`eq/ eq/ eq/.
+
+%worlds () (vector/+-preserves-eq _ _ _).
+%total { } (vector/+-preserves-eq _ _ _).
+
+
+%{%
+#ifdef DATA_NE
+%}%
+
+%%% theorems about ne
+
+
+%theorem false-implies-ne :
+	forall* {N} {X1:vector N} {X2}
+	forall {F:void}
+	exists {G:ne X1 X2}
+	true.
+
+%worlds () (false-implies-ne _ _).
+%total { } (false-implies-ne _ _).
+
+
+%theorem ne-respects-eq :
+	forall* {N} {X1:vector N} {X2} {Y1} {Y2}
+	forall {D1:ne X1 X2} {E1:eq X1 Y1} {E2:eq X2 Y2}
+	exists {D2:ne Y1 Y2}
+	true.
+
+- : ne-respects-eq X1<>X2 eq/ eq/ X1<>X2.
+
+%worlds () (ne-respects-eq _ _ _ _).
+%total { } (ne-respects-eq _ _ _ _).
+
+
+%theorem ne-anti-reflexive :
+	forall* {N} {V: vector N}
+	forall {R:ne V V}
+	exists {F:void}
+	true.
+
+- : ne-anti-reflexive (ne/1 X<>X) F
+    <- data`ne-anti-reflexive X<>X F.
+
+- : ne-anti-reflexive (ne/+ Y<>Y) F
+    <- ne-anti-reflexive Y<>Y F.
+
+%worlds () (ne-anti-reflexive _ _).
+%total (V) (ne-anti-reflexive V _).
+
+
+%theorem ne-symmetric :
+	forall* {N} {V1: vector N} {V2}
+	forall {R1:ne V1 V2}
+	exists {R2:ne V2 V1}
+	true.
+
+- : ne-symmetric (ne/1 X1<>X2) (ne/1 X2<>X1)
+    <- data`ne-symmetric X1<>X2 X2<>X1.
+
+- : ne-symmetric (ne/+ Y1<>Y2) (ne/+ Y2<>Y1)
+    <- ne-symmetric Y1<>Y2 Y2<>Y1.
+
+%worlds () (ne-symmetric _ _).
+%total (N) (ne-symmetric N _).
+
+
+%theorem eq-ne-implies-false :
+	forall* {N} {V1:vector N} {V2}
+	forall {D1:eq V1 V2} {D2:ne V1 V2}
+	exists {F:void}
+	true.
+
+- : eq-ne-implies-false eq/ X<>X F
+    <- ne-anti-reflexive X<>X F.
+
+%worlds () (eq-ne-implies-false _ _ _).
+%total { } (eq-ne-implies-false _ _ _).
+
+
+
+%%% theorems about eq?
+
+
+%theorem eq?-total* :
+	forall* {N}
+	forall {V1: vector N} {V2}
+	exists {B} {T:eq? V1 V2 B}
+	true.
+
+%theorem eq?-total*/L :
+	forall* {N} {X1} {Y1} {X2:vector N} {Y2} {B1} {B2}
+	forall {T1:data`eq? X1 Y1 B1} {T2:eq? X2 Y2 B2}
+	exists {B} {T:eq? (vector/+ X1 X2) (vector/+ Y1 Y2) B}
+	true.
+
+- : eq?-total*/L (data`eq?/yes) (eq?/yes) _ (eq?/yes).
+
+- : eq?-total*/L (data`eq?/no X1<>Y1) _ _ (eq?/no (ne/1 X1<>Y1)).
+
+- : eq?-total*/L _ (eq?/no X2<>Y2) _ (eq?/no (ne/+ X2<>Y2)).
+
+%worlds () (eq?-total*/L _ _ _ _).
+%total { } (eq?-total*/L _ _ _ _).
+
+- : eq?-total* _ _ _ eq?/yes.
+
+- : eq?-total* _ _ _ T
+    <- data`eq?-total E?1
+    <- eq?-total* _ _ _ E?2
+    <- eq?-total*/L E?1 E?2 _ T.
+
+%worlds () (eq?-total* _ _ _ _).
+%total (V) (eq?-total* V _ _ _).
+
+
+%abbrev eq?-total = eq?-total* _ _ _.
+
+%{%
+#endif
+
+#ifdef DATA_ZERO
+%}%
+
+
+%%% Theorems about zero
+
+
+%theorem false-implies-zero? :
+	forall* {N} {Z:vector N} {B}
+	forall {F:void}
+	exists {D:zero? Z B}
+	true.
+
+%worlds () (false-implies-zero? _ _).
+%total { } (false-implies-zero? _ _).
+
+
+%theorem zero?-respects-eq :
+	forall* {N} {Z1:vector N} {Z2} {B1} {B2}
+	forall {D1:zero? Z1 B1} {EZ:eq Z1 Z2} {EB:bool`eq B1 B2}
+	exists {D2:zero? Z2 B2}
+	true.
+
+- : zero?-respects-eq Z? eq/ bool`eq/ Z?.
+
+%worlds () (zero?-respects-eq _ _ _ _).
+%total { } (zero?-respects-eq _ _ _ _).
+
+
+%theorem zero-exists* :
+	forall {N}
+	exists {Z: vector N} {D:zero? Z true}
+	true.
+
+- : zero-exists* _ _ zero?/0.
+
+- : zero-exists* _ _ (zero?/+ D)
+    <- zero-exists* _ _ D.
+
+%worlds () (zero-exists* _ _ _).
+%total (N) (zero-exists* N _ _).
+
+
+%abbrev zero-exists = zero-exists* _ _.
+
+
+%theorem zero?-deterministic :
+	forall* {N} {Z1:vector N} {Z2} {B1} {B2}
+	forall {D1:zero? Z1 B1} {D2:zero? Z2 B2}
+	       {EZ:eq Z1 Z2}
+	exists {EB:bool`eq B1 B2}
+	true.
+
+- : zero?-deterministic _ _ _ bool`eq/.
+
+- : zero?-deterministic (zero?/+ Z1?) (zero?/+ Z2?) eq/ E
+    <- zero?-deterministic Z1? Z2? eq/ E.
+
+- : zero?-deterministic (zero?/+ _) (zero?/X ZERO<>ZERO) eq/ E
+    <- data`ne-anti-reflexive ZERO<>ZERO F
+    <- bool`false-implies-eq F E.
+
+- : zero?-deterministic (zero?/X ZERO<>ZERO) (zero?/+ _) eq/ E
+    <- data`ne-anti-reflexive ZERO<>ZERO F
+    <- bool`false-implies-eq F E.
+
+%worlds () (zero?-deterministic _ _ _ _).
+%total (D) (zero?-deterministic D _ _ _).
+
+
+%theorem zero-unique :
+	forall* {N} {Z1:vector N} {Z2}
+	forall {D1:zero? Z1 true} {D2:zero? Z2 true}
+	exists {E:eq Z1 Z2}
+	true.
+
+- : zero-unique _ _ eq/.
+
+- : zero-unique (zero?/+ Z?1) (zero?/+ Z?2) V1=V2
+    <- zero-unique Z?1 Z?2 Z1=Z2
+    <- vector/+-preserves-eq data`eq/ Z1=Z2 V1=V2.
+
+%worlds () (zero-unique _ _ _).
+%total (Z) (zero-unique Z _ _).
+
+%{%
+#endif
+%}%
+
+
+%%% Theorems about add
+
+
+%theorem false-implies-add :
+	forall* {N} {V1:vector N} {V2} {V3}
+	forall {F:void}
+	exists {A:add V1 V2 V3}
+	true.
+
+%worlds () (false-implies-add _ _).
+%total { } (false-implies-add _ _).
+
+
+%theorem add-respects-eq :
+	forall* {N} {V1a:vector N} {V1b} {V2a} {V2b} {V3a} {V3b}
+	forall {Aa:add V1a V2a V3a}
+	       {E1:eq V1a V1b} {E2:eq V2a V2b} {E3:eq V3a V3b}
+	exists {Ab:add V1b V2b V3b}
+	true.
+
+- : add-respects-eq A eq/ eq/ eq/ A.
+
+%worlds () (add-respects-eq _ _ _ _ _).
+%total { } (add-respects-eq _ _ _ _ _).
+
+
+%theorem add-total* :
+	forall* {N}
+	forall {V1:vector N} {V2}
+	exists {V3} {A:add V1 V2 V3}
+	true.
+
+- : add-total* _ _ _ add/0.
+
+- : add-total* _ _ _ (add/+ Q1+Q2=Q3 V1+V2=V3)
+    <- data`add-total Q1+Q2=Q3
+    <- add-total* _ _ _ V1+V2=V3.
+
+%worlds () (add-total* _ _ _ _).
+%total (V) (add-total* V _ _ _).
+
+
+%abbrev add-total = add-total* _ _ _.
+
+
+%theorem add-deterministic :
+	forall* {N} {V1a:vector N} {V1b} {V2a} {V2b} {V3a} {V3b}
+	forall {Aa:add V1a V2a V3a} {Ab:add V1b V2b V3b}
+	       {E1:eq V1a V1b} {E2:eq V2a V2b}
+	exists {E3:eq V3a V3b}
+	true.
+
+- : add-deterministic add/0 add/0 eq/ eq/ eq/.
+
+- : add-deterministic (add/+ Q1+Q2=Q3 V1+V2=V3) (add/+ Q1+Q2=Q4 V1+V2=V4)
+		      eq/ eq/ E
+    <- data`add-deterministic Q1+Q2=Q3 Q1+Q2=Q4 data`eq/ data`eq/ Q3=Q4
+    <- add-deterministic V1+V2=V3 V1+V2=V4 eq/ eq/ V3=V4
+    <- vector/+-preserves-eq Q3=Q4 V3=V4 E.
+
+%worlds () (add-deterministic _ _ _ _ _).
+%total (V) (add-deterministic V _ _ _ _).
+
+
+%theorem add-left-identity :
+	forall* {N} {V: vector N} {Z}
+	forall {D:zero? Z true}
+	exists {A:add Z V V}
+	true.
+
+- : add-left-identity zero?/0 add/0.
+
+- : add-left-identity (zero?/+ Z?) (add/+ ZERO+Q=Q Z+V=V)
+    <- data`add-left-identity _ ZERO+Q=Q
+    <- add-left-identity Z? Z+V=V.
+
+%worlds () (add-left-identity _ _).
+%total (Z) (add-left-identity Z _).
+
+
+%theorem add-right-identity :
+	forall* {N} {V: vector N} {Z}
+	forall {D:zero? Z true}
+	exists {A:add V Z V}
+	true.
+
+- : add-right-identity zero?/0 add/0.
+
+- : add-right-identity (zero?/+ Z?) (add/+ Q+0=Q V+Z=V)
+    <- data`add-right-identity _ Q+0=Q
+    <- add-right-identity Z? V+Z=V.
+
+%worlds () (add-right-identity _ _).
+%total (Z) (add-right-identity Z _).
+
+
+%theorem add-commutative :
+	forall* {N} {V1:vector N} {V2} {V3}
+	forall {A12:add V1 V2 V3}
+	exists {A21:add V2 V1 V3}
+	true.
+
+- : add-commutative add/0 add/0.
+
+- : add-commutative (add/+ Q1+Q2=Q3 V1+V2=V3) (add/+ Q2+Q1=Q3 V2+V1=V3)
+    <- data`add-commutative Q1+Q2=Q3 Q2+Q1=Q3
+    <- add-commutative V1+V2=V3 V2+V1=V3.
+
+%worlds () (add-commutative _ _).
+%total (A) (add-commutative A _).
+
+
+%theorem add-associative :
+	forall* {N} {V1:vector N} {V2} {V3} {V4} {V7}
+	forall {A12:add V1 V2 V3} {A34:add V3 V4 V7}
+	exists {V6} {A24:add V2 V4 V6} {A16:add V1 V6 V7}
+	true.
+
+- : add-associative add/0 add/0 _ add/0 add/0.
+
+- : add-associative (add/+ Q1+Q2=Q3 V1+V2=V3) (add/+ Q3+Q4=Q7 V3+V4=V7) _
+		    (add/+ Q2+Q4=Q6 V2+V4=V6) (add/+ Q1+Q6=Q7 V1+V6=V7)
+    <- data`add-associative Q1+Q2=Q3 Q3+Q4=Q7 Q6 Q2+Q4=Q6 Q1+Q6=Q7
+    <- add-associative V1+V2=V3 V3+V4=V7 V6 V2+V4=V6 V1+V6=V7.
+
+%worlds () (add-associative _ _ _ _ _).
+%total (A) (add-associative A _ _ _ _).
+
+
+%theorem add-associative* :
+        forall* {N} {X1: vector N} {X2} {X12} {X3} {X23} {X123}
+        forall {OP12:add X1 X2 X12} {OP12-3:add X12 X3 X123} {OP23:add X2 X3 X23}
+        exists {OP1-23:add X1 X23 X123}
+        true.
+
+- : add-associative* X1+X2=X3 X3+X4=X7 X2+X4=X6 X1+X6=X7
+    <- add-associative X1+X2=X3 X3+X4=X7 Y6 X2+X4=Y6 X1+Y6=X7
+    <- add-deterministic X2+X4=Y6 X2+X4=X6 eq/ eq/ Y6=X6
+    <- add-respects-eq X1+Y6=X7 eq/ Y6=X6 eq/ X1+X6=X7.
+
+%worlds () (add-associative* _ _ _ _).
+%total {} (add-associative* _ _ _ _).
+
+%theorem add-associative-converse :
+        forall* {N} {X1:vector N} {X2} {X4} {X6} {X7}
+        forall {OP24:add X2 X4 X6} {OP16:add X1 X6 X7}
+        exists {X3} {OP12:add X1 X2 X3} {OP34:add X3 X4 X7}
+        true.
+
+- : add-associative-converse X2+X4=X6 X1+X6=X7 _ X1+X2=X3 X3+X4=X7
+    <- add-commutative X2+X4=X6 X4+X2=X6
+    <- add-commutative X1+X6=X7 X6+X1=X7
+    <- add-associative X4+X2=X6 X6+X1=X7 _ X2+X1=X3 X4+X3=X7
+    <- add-commutative X2+X1=X3 X1+X2=X3
+    <- add-commutative X4+X3=X7 X3+X4=X7.
+
+%worlds () (add-associative-converse X2+X4=X6 X1+X6=X7 X3 X1+X2=X3 X3+X4=X7).
+%total {} (add-associative-converse _ _ _ _ _).
+
+%theorem add-associative-converse* :
+        forall* {N} {X1: vector N} {X2} {X3} {X4} {X6} {X7}
+        forall {OP24:add X2 X4 X6} {OP16:add X1 X6 X7} {OP12:add X1 X2 X3} 
+        exists {OP34:add X3 X4 X7}
+        true.
+
+- : add-associative-converse* X2+X4=X6 X1+X6=X7 X1+X2=X3 X3+X4=X7
+    <- add-associative-converse X2+X4=X6 X1+X6=X7 X3P X1+X2=X3P X3P+X4=X7
+    <- add-deterministic X1+X2=X3P X1+X2=X3 eq/ eq/ X3P=X3
+    <- add-respects-eq X3P+X4=X7 X3P=X3 eq/ eq/ X3+X4=X7.
+
+%worlds () (add-associative-converse* X2+X4=X6 X1+X6=X7 X1+X2=X3 %{=>}% X3+X4=X7).
+%total {} (add-associative-converse* _ _ _ _).
+
+%% The following two theorems are useful for reordering elements
+%% is a left-associative sequence of operations.
+
+%theorem add-assoc-commutative* :
+        forall* {N} {X1: vector N} {X2} {X3} {X4} {X5} {X7}
+        forall {OP1:add X1 X2 X3} {OP2:add X3 X4 X7}
+               {OP3:add X1 X4 X5} 
+        exists {OP4:add X5 X2 X7}
+        true.
+
+- : add-assoc-commutative* X1+X2=X3 X3+X4=X7 X1+X4=X5 X5+X2=X7
+    <- add-associative X1+X2=X3 X3+X4=X7 X6 X2+X4=X6 X1+X6=X7
+    <- add-commutative X2+X4=X6 X4+X2=X6
+    <- add-associative-converse* X4+X2=X6 X1+X6=X7 X1+X4=X5 X5+X2=X7.
+
+%worlds () (add-assoc-commutative* X1+X2=X3 X3+X4=X7 X1+X4=X5 %{=>}% X5+X2=X7).
+%total {} (add-assoc-commutative* _ _ _ _).
+
+%theorem add-assoc-commutative :
+        forall* {N} {X1: vector N} {X2} {X3} {X4} {X7}
+        forall {OP1:add X1 X2 X3} {OP2:add X3 X4 X7}
+        exists {X5} {OP3:add X1 X4 X5} {OP4:add X5 X2 X7}
+        true.
+
+- : add-assoc-commutative X1+X2=X3 X3+X4=X7 X5 X1+X4=X5 X5+X2=X7
+    <- add-associative X1+X2=X3 X3+X4=X7 X6 X2+X4=X6 X1+X6=X7
+    <- add-commutative X2+X4=X6 X4+X2=X6
+    <- add-associative-converse X4+X2=X6 X1+X6=X7 X5 X1+X4=X5 X5+X2=X7.
+
+%worlds () (add-assoc-commutative X1+X2=X3 X3+X4=X7 %{=>}% X5 X1+X4=X5 X5+X2=X7).
+%total {} (add-assoc-commutative _ _ _ _ _).
+
+
+%% The following theorem is a useful shortcut to
+%% re-associate (AB)(CD) to (AC)(BD):
+
+%theorem add-double-associative* :
+        forall* {N} {A:vector N} {B} {C} {D} {A+B} {C+D} {A+C} {B+D} {X}
+        forall {AB:add A B A+B} {CD:add C D C+D} {ABCD:add A+B C+D X}
+               {AC:add A C A+C} {BD:add B D B+D} 
+        exists {ACBD:add A+C B+D X}
+        true.
+
+- : add-double-associative* X1+X2=X3 X4+X8=XC X3+XC=XF X1+X4=X5 X2+X8=XA X5+XA=XF
+    <- add-associative X1+X2=X3 X3+XC=XF XE X2+XC=XE X1+XE=XF
+    <- add-commutative X4+X8=XC X8+X4=XC
+    <- add-associative-converse* X8+X4=XC X2+XC=XE X2+X8=XA XA+X4=XE
+    <- add-commutative XA+X4=XE X4+XA=XE
+    <- add-associative-converse* X4+XA=XE X1+XE=XF X1+X4=X5 X5+XA=XF.
+
+%worlds () (add-double-associative* _ _ _ _ _ _).
+%total { } (add-double-associative* _ _ _ _ _ _).
+
+
+%theorem add-double-associative :
+        forall* {N} {A: vector N} {B} {C} {D} {A+B} {C+D} {X}
+        forall {AB:add A B A+B} {CD:add C D C+D} {ABCD:add A+B C+D X}
+        exists {A+C} {B+D} {AC:add A C A+C} {BD:add B D B+D} 
+               {ACBD:add A+C B+D X}
+        true.
+
+- : add-double-associative X1+X2=X3 X4+X8=XC X3+XC=XF X5 XA X1+X4=X5 X2+X8=XA X5+XA=XF
+    <- add-associative X1+X2=X3 X3+XC=XF XE X2+XC=XE X1+XE=XF
+    <- add-commutative X4+X8=XC X8+X4=XC
+    <- add-associative-converse X8+X4=XC X2+XC=XE XA X2+X8=XA XA+X4=XE
+    <- add-commutative XA+X4=XE X4+XA=XE
+    <- add-associative-converse X4+XA=XE X1+XE=XF X5 X1+X4=X5 X5+XA=XF.
+
+%worlds () (add-double-associative _ _ _ _ _ _ _ _).
+%total { } (add-double-associative _ _ _ _ _ _ _ _).
+
+
+%theorem add-left-cancels : 
+	forall* {N} {V1a:vector N} {V2a} {V3a} {V1b} {V2b} {V3b}
+	forall {A1:add V1a V2a V3a} {A2:add V1b V2b V3b}
+               {E:eq V1a V1b} {ES:eq V3a V3b}
+	exists {EV:eq V2a V2b}
+	true.
+
+- : add-left-cancels _ _ eq/ eq/ eq/.
+
+- : add-left-cancels (add/+ Q1+Q2a=Q3 V1+V2a=V3) (add/+ Q1+Q2b=Q3 V1+V2b=V3) 
+                     eq/ eq/ E
+    <- data`add-left-cancels Q1+Q2a=Q3 Q1+Q2b=Q3 data`eq/ data`eq/ Q2a=Q2b
+    <- add-left-cancels V1+V2a=V3 V1+V2b=V3 eq/ eq/ V2a=V2b
+    <- vector/+-preserves-eq Q2a=Q2b V2a=V2b E.
+
+%worlds () (add-left-cancels _ _ _ _ _).
+%total (A) (add-left-cancels A _ _ _ _).
+
+
+%theorem add-right-cancels :
+        forall* {N} {Q1:vector N} {V1} {S1} {Q2} {V2} {S2}
+        forall {A1:add Q1 V1 S1} {A2:add Q2 V2 S2}
+               {EV:eq V1 V2} {ES:eq S1 S2}
+        exists {E:eq Q1 Q2}
+        true.
+
+- : add-right-cancels V1+V2=V3 V1'+V2'=V3' V2=V2' V3=V3' V1=V1'
+    <- add-commutative V1+V2=V3 V2+V1=V3
+    <- add-commutative V1'+V2'=V3' V2'+V1'=V3'
+    <- add-left-cancels V2+V1=V3 V2'+V1'=V3'  V2=V2' V3=V3' V1=V1'.
+
+%worlds () (add-right-cancels _ _ _ _ _).
+%total { } (add-right-cancels _ _ _ _ _).
+
+
+
+
+%%% Theorems about scale
+
+
+%theorem false-implies-scale :
+	forall* {N} {Q1} {V2:vector N} {V3}
+	forall {F:void}
+	exists {M:scale Q1 V2 V3}
+	true.
+
+%worlds () (false-implies-scale _ _).
+%total { } (false-implies-scale _ _).
+
+
+%theorem scale-respects-eq :
+	forall* {N} {Q1a} {Q1b} {V2a:vector N} {V2b} {V3a} {V3b}
+	forall {Ma:scale Q1a V2a V3a}
+	       {E1:data`eq Q1a Q1b} {E2:eq V2a V2b} {E3:eq V3a V3b}
+	exists {Mb:scale Q1b V2b V3b}
+	true.
+
+- : scale-respects-eq S data`eq/ eq/ eq/ S.
+
+%worlds () (scale-respects-eq _ _ _ _ _).
+%total { } (scale-respects-eq _ _ _ _ _).
+
+
+%theorem scale-total* :
+	forall* {N}
+	forall {Q1} {V2:vector N}
+	exists {V3} {M:scale Q1 V2 V3}
+	true.
+
+- : scale-total* _ _ _ scale/0.
+
+- : scale-total* _ _ _ (scale/+ Q1*Q2=Q3 Q1*V2=V3)
+    <- data`mul-total Q1*Q2=Q3
+    <- scale-total* _ _ _ Q1*V2=V3.
+
+%worlds () (scale-total* _ _ _ _).
+%total (V) (scale-total* _ V _ _).
+
+
+%abbrev scale-total = scale-total* _ _ _.
+
+
+%theorem scale-deterministic :
+	forall* {N} {Q1a} {Q1b} {V2a:vector N} {V2b} {V3a} {V3b}
+	forall {Ma:scale Q1a V2a V3a} {Mb:scale Q1b V2b V3b}
+	       {E1:data`eq Q1a Q1b} {E2:eq V2a V2b}
+	exists {E3:eq V3a V3b}
+	true.
+
+- : scale-deterministic scale/0 _ data`eq/ eq/ eq/.
+
+- : scale-deterministic (scale/+ Q1*Q2=Q3a Q1*V2=V3a) 
+                        (scale/+ Q1*Q2=Q3b Q1*V2=V3b) data`eq/ eq/ Va=Vb
+    <- data`mul-deterministic Q1*Q2=Q3a Q1*Q2=Q3b data`eq/ data`eq/ Q3a=Q3b
+    <- scale-deterministic Q1*V2=V3a Q1*V2=V3b data`eq/ eq/ V3a=V3b
+    <- vector/+-preserves-eq Q3a=Q3b V3a=V3b Va=Vb.
+
+%worlds () (scale-deterministic _ _ _ _ _).
+%total (S) (scale-deterministic S _ _ _ _).
+
+%{%
+#ifdef DATA_ZERO
+%}%
+
+%theorem scale-left-zero :
+	forall* {N} {V:vector N} {Z}
+	forall {S:scale data`zero V Z}
+	exists {D:zero? Z true}
+	true.
+
+- : scale-left-zero scale/0 zero?/0.
+
+- : scale-left-zero (scale/+ ZERO*Q=R ZERO*V=Z) Z?
+    <- data`mul-left-zero _ ZERO*Q=ZERO
+    <- data`mul-deterministic ZERO*Q=ZERO ZERO*Q=R data`eq/ data`eq/ ZERO=R
+    <- scale-left-zero ZERO*V=Z Z=0
+    <- vector/+-preserves-eq ZERO=R eq/ V'=V
+    <- zero?-respects-eq (zero?/+ Z=0) V'=V bool`eq/ Z?.
+
+%worlds () (scale-left-zero _ _).
+%total (S) (scale-left-zero S _).
+
+
+%theorem scale-right-zero :
+	forall* {N} {Q} {Z:vector N}
+	forall {D:zero? Z true}
+	exists {M:scale Q Z Z}
+	true.
+
+- : scale-right-zero _ scale/0.
+
+- : scale-right-zero (zero?/+ Z?) (scale/+ Q*0=0 ZERO*0=0)
+    <- scale-right-zero Z? ZERO*0=0
+    <- data`mul-right-zero _ Q*0=0.
+
+%worlds () (scale-right-zero _ _).
+%total (S) (scale-right-zero S _).
+
+%{%
+#endif
+%}%
+
+%theorem scale-left-identity :
+	forall* {N}
+	forall {V:vector N}
+	exists {M:scale data`one V V}
+	true.
+
+- : scale-left-identity _ scale/0.
+
+- : scale-left-identity _ (scale/+ ONE*Q=Q ONE*V=V)
+    <- data`mul-left-identity _ ONE*Q=Q
+    <- scale-left-identity _ ONE*V=V.
+
+%worlds () (scale-left-identity _ _).
+%total (V) (scale-left-identity V _).
+
+
+%abbrev scale-identity = scale-left-identity.
+
+
+%theorem scale-associates* :
+	forall* {N} {S1} {S2} {S3} {V4:vector N} {V6} {V7}
+	forall {C:data`mul S1 S2 S3}
+	       {SC34:scale S3 V4 V7}
+               {SC24:scale S2 V4 V6}
+        exists {SC16:scale S1 V6 V7}
+	true.
+
+- : scale-associates* _ scale/0 scale/0 scale/0.
+
+- : scale-associates* S1*S2=S3 (scale/+ S3*D=D3 S3*V=V3)
+                               (scale/+ S2*D=D2 S2*V=V2)
+                               (scale/+ S1*D2=D3 S1*V2=V3)
+    <- data`mul-associative* S1*S2=S3 S3*D=D3 S2*D=D2 S1*D2=D3
+    <- scale-associates* S1*S2=S3 S3*V=V3 S2*V=V2 S1*V2=V3.
+
+%worlds () (scale-associates* _ _ _ _).
+%total (S) (scale-associates* _ S _ _).
+
+
+%theorem scale-associates :
+	forall* {N} {S1} {S2} {S3} {V4:vector N} {V7}
+	forall {C:data`mul S1 S2 S3}
+	       {SC34:scale S3 V4 V7}
+        exists {V6} {SC24:scale S2 V4 V6} {SC16:scale S1 V6 V7}
+	true.
+
+- : scale-associates S1*S2=S3 S3*V4=V7 V6 S2*V4=V6 S1*V6=V7
+    <- scale-total S2*V4=V6
+    <- scale-associates* S1*S2=S3 S3*V4=V7 S2*V4=V6 S1*V6=V7.
+
+%worlds () (scale-associates _ _ _ _ _).
+%total { } (scale-associates _ _ _ _ _).
+
+
+%theorem scale-associates-converse* :
+	forall* {N} {S1} {S2} {S3} {V4:vector N} {V6} {V7}
+	forall {SC24:scale S2 V4 V6} {SC16:scale S1 V6 V7} 
+               {C:mul S1 S2 S3}
+	exists {SC34:scale S3 V4 V7}
+	true.
+
+- : scale-associates-converse* S2*V4=V6 S1*V6=V7 S1*S2=S3 S3*V4=V7
+    <- scale-total S3*V4=V7P
+    <- scale-associates* S1*S2=S3 S3*V4=V7P S2*V4=V6 S1*V6=V7P
+    <- scale-deterministic S1*V6=V7P S1*V6=V7 data`eq/ eq/ V7P=V7
+    <- scale-respects-eq S3*V4=V7P data`eq/ eq/ V7P=V7 S3*V4=V7.
+
+%worlds () (scale-associates-converse* _ _ _ _).
+%total { } (scale-associates-converse* _ _ _ _).
+
+
+%theorem scale-left-distributes-over-add* :
+        forall* {N} {V1:vector N} {V2} {V3} {S} {SV1} {SV2} {SV3}
+	forall {J:add V1 V2 V3} {SC3:scale S V3 SV3}
+	       {SC1:scale S V1 SV1} {SC2:scale S V2 SV2}
+	exists {SJ:add SV1 SV2 SV3}
+	true.
+
+- : scale-left-distributes-over-add* add/0 _ _ _ add/0.
+
+- : scale-left-distributes-over-add* 
+	(add/+ Q1+Q2=Q3 V1+V2=V3) (scale/+ S*Q3=SQ3 S*V3=SV3)
+	(scale/+ S*Q1=SQ1 S*V1=SV1) (scale/+ S*Q2=SQ2 S*V2=SV2)
+        (add/+ SQ1+SQ2=SQ3 SV1+SV2=SV3)
+    <- data`mul-left-distributes-over-add*
+	Q1+Q2=Q3 S*Q3=SQ3 S*Q1=SQ1 S*Q2=SQ2 SQ1+SQ2=SQ3
+    <- scale-left-distributes-over-add* 
+	V1+V2=V3 S*V3=SV3 S*V1=SV1 S*V2=SV2 SV1+SV2=SV3.
+
+%worlds () (scale-left-distributes-over-add* _ _ _ _ _).
+%total (A) (scale-left-distributes-over-add* A _ _ _ _).
+
+
+%theorem scale-left-distributes-over-add :
+        forall* {N} {V1:vector N} {V2} {V3} {S} {SV3}
+	forall {J:add V1 V2 V3} {SC3:scale S V3 SV3}
+	exists {SV1} {SV2} {SC1:scale S V1 SV1} {SC2:scale S V2 SV2}
+	       {SJ:add SV1 SV2 SV3}
+	true.
+
+- : scale-left-distributes-over-add J SC3 _ _ SC1 SC2 SJ
+    <- scale-total SC1 
+    <- scale-total SC2
+    <- scale-left-distributes-over-add* J SC3 SC1 SC2 SJ.
+
+%worlds () (scale-left-distributes-over-add _ _ _ _ _ _ _).
+%total { } (scale-left-distributes-over-add _ _ _ _ _ _ _).
+
+
+%theorem scale-left-factors-over-add* :
+	forall* {N} {X1} {X2:vector N} {X3} {X4} {X5} {X6} {X7}
+	forall {V12:scale X1 X2 X3} {V14:scale X1 X4 X5} 
+               {A35:add X3 X5 X7} {A24:add X2 X4 X6} 
+        exists {V16:scale X1 X6 X7}
+        true.
+
+- : scale-left-factors-over-add* X1*X2=X3 X1*X4=X5 X3+X5=X7 X2+X4=X6 X1*X6=X7
+    <- scale-total X1*X6=Y7
+    <- scale-left-distributes-over-add* X2+X4=X6 X1*X6=Y7 X1*X2=X3 X1*X4=X5
+                                      X3+X5=Y7
+    <- add-deterministic X3+X5=Y7 X3+X5=X7 eq/ eq/ Y7=X7
+    <- scale-respects-eq X1*X6=Y7 data`eq/ eq/ Y7=X7 X1*X6=X7.
+
+%worlds () (scale-left-factors-over-add* X1*X2=X3 X1*X4=X5 X3+X5=X7 X2+X4=X6 
+                              %{=>}% X1*X6=X7).
+%total { } (scale-left-factors-over-add* _ _ _ _ _).
+
+
+%theorem scale-left-factors-over-add :
+	forall* {N} {X1} {X2:vector N} {X3} {X4} {X5}
+	forall {V12:scale X1 X2 X3} {V14:scale X1 X4 X5} 
+        exists {X7} {X6} {A35:add X3 X5 X7} {A24:add X2 X4 X6} 
+               {V16:scale X1 X6 X7}
+        true.
+
+- : scale-left-factors-over-add X1*X2=X3 X1*X4=X5 _ _ X3+X5=X7 X2+X4=X6 X1*X6=X7
+    <- add-total X3+X5=X7
+    <- add-total X2+X4=X6
+    <- scale-left-factors-over-add* X1*X2=X3 X1*X4=X5 X3+X5=X7 X2+X4=X6 X1*X6=X7.
+
+%worlds () (scale-left-factors-over-add _ _ _ _ _ _ _).
+%total { } (scale-left-factors-over-add _ _ _ _ _ _ _).
+
+
+%theorem scale-right-distributes-over-add* :
+        forall* {N} {R1} {R2} {R3} {V4:vector N} {V5} {V6} {V7}
+        forall {A12:data`add R1 R2 R3} {S34:scale R3 V4 V7}
+               {S14:scale R1 V4 V5} {S24:scale R2 V4 V6}
+        exists {A56:add V5 V6 V7}
+        true.
+
+- : scale-right-distributes-over-add* _ scale/0 scale/0 scale/0 add/0.
+
+- : scale-right-distributes-over-add* 
+	R1+R2=R3 (scale/+ R3*R4=R7 R3*V4=V7)
+	(scale/+ R1*R4=R5 R1*V4=V5) (scale/+ R2*R4=R6 R2*V4=V6) 
+	(add/+ R5+R6=R7 V5+V6=V7)
+    <- data`mul-right-distributes-over-add* 
+	R1+R2=R3 R3*R4=R7 R1*R4=R5 R2*R4=R6 R5+R6=R7
+    <- scale-right-distributes-over-add* 
+	R1+R2=R3 R3*V4=V7 R1*V4=V5 R2*V4=V6 V5+V6=V7.
+    
+%worlds () (scale-right-distributes-over-add* _ S _ _ _).
+%total (S) (scale-right-distributes-over-add* _ S _ _ _).
+
+
+%theorem scale-right-distributes-over-add :
+        forall* {N} {R1} {R2} {R3} {V4:vector N} {V7}
+        forall {A12:data`add R1 R2 R3} {S34:scale R3 V4 V7}
+        exists {V5} {V6} {S14:scale R1 V4 V5} {S24:scale R2 V4 V6}
+               {A56:add V5 V6 V7}
+        true.
+
+- : scale-right-distributes-over-add A12 S34 _ _ S14 S24 A56
+    <- scale-total S14
+    <- scale-total S24
+    <- scale-right-distributes-over-add* A12 S34 S14 S24 A56.
+
+%worlds () (scale-right-distributes-over-add _ _ _ _ _ _ _).
+%total { } (scale-right-distributes-over-add _ _ _ _ _ _ _).
+
+
+%theorem scale-left-factors-over-add* :
+	forall* {N} {R1} {V2:vector N} {V3} {V4} {V5} {V6} {V7}
+	forall {S12:scale R1 V2 V3} {S14:scale R1 V4 V5} {A35:add V3 V5 V7}
+               {A24:add V2 V4 V6} 
+	exists {S16:scale R1 V6 V7}
+        true.
+
+- : scale-left-factors-over-add* scale/0 _ _ _ scale/0.
+
+- : scale-left-factors-over-add* 
+	(scale/+ R1*R2=R3 R1*V2=V3) (scale/+ R1*R4=R5 R1*V4=V5)
+	(add/+ R3+R5=R7 V3+V5=V7) (add/+ R2+R4=R6 V2+V4=V6) 
+	(scale/+ R1*R6=R7 R1*V6=V7)
+    <- data`mul-left-factors-over-add* 
+	R1*R2=R3 R1*R4=R5 R3+R5=R7 R2+R4=R6 R1*R6=R7
+    <- scale-left-factors-over-add*
+	R1*V2=V3 R1*V4=V5 V3+V5=V7 V2+V4=V6 R1*V6=V7.
+
+%worlds () (scale-left-factors-over-add* _ _ _ _ _).
+%total (S) (scale-left-factors-over-add* S _ _ _ _).
+
+
+%theorem scale-left-factors-over-add :
+	forall* {N} {R1} {V2:vector N} {V3} {V4} {V5} {V7}
+	forall {S12:scale R1 V2 V3} {S14:scale R1 V4 V5} {A35:add V3 V5 V7}
+        exists {V6} {A24:add V2 V4 V6} {S16:scale R1 V6 V7}
+        true.
+
+- : scale-left-factors-over-add S12 S14 A35 _ A24 S16
+    <- add-total A24
+    <- scale-left-factors-over-add* S12 S14 A35 A24 S16.
+
+%worlds () (scale-left-factors-over-add _ _ _ _ _ _).
+%total { } (scale-left-factors-over-add _ _ _ _ _ _).
+
+
+%theorem scale-right-factors-over-add* :
+	forall* {N} {R1} {R2} {R3} {V4:vector N} {V5} {V6} {V7}
+        forall {S14:scale R1 V4 V5} {S24:scale R2 V4 V6} {A56:add V5 V6 V7}
+               {A12:data`add R1 R2 R3} 
+        exists {S34:scale R3 V4 V7}
+	true.
+
+- : scale-right-factors-over-add* _ _ _ _ scale/0.
+
+- : scale-right-factors-over-add* 
+	(scale/+ R1*R4=R5 R1*V4=V5) (scale/+ R2*R4=R6 R2*V4=V6)
+	(add/+ R5+R6=R7 V5+V6=V7) R1+R2=R3 (scale/+ R3*R4=R7 R3*V4=V7)
+    <- data`mul-right-factors-over-add* 
+	R1*R4=R5 R2*R4=R6 R5+R6=R7 R1+R2=R3 R3*R4=R7
+    <- scale-right-factors-over-add* 
+	R1*V4=V5 R2*V4=V6 V5+V6=V7 R1+R2=R3 R3*V4=V7.
+
+%worlds () (scale-right-factors-over-add* _ _ _ _ _).
+%total (S) (scale-right-factors-over-add* S _ _ _ _).
+
+
+%theorem scale-right-factors-over-add :
+	forall* {N} {R1} {R2} {V4:vector N} {V5} {V6} {V7}
+        forall {S14:scale R1 V4 V5} {S24:scale R2 V4 V6} {A56:add V5 V6 V7}
+        exists {R3} {A12:data`add R1 R2 R3} {S34:scale R3 V4 V7}
+	true.
+
+- : scale-right-factors-over-add S14 S24 A56 _ A12 S34
+    <- data`add-total A12
+    <- scale-right-factors-over-add* S14 S24 A56 A12 S34.
+
+%worlds () (scale-right-factors-over-add _ _ _ _ _ _).
+%total { } (scale-right-factors-over-add _ _ _ _ _ _).
+
+
+%{%
+#ifdef DATA_ZERO
+%}%
+
+%%% Theorems about dot
+
+
+%theorem false-implies-dot:
+	forall* {N} {X:vector N} {Y} {Z}
+	forall {F:void}
+	exists {M:dot X Y Z}
+	true.
+
+%worlds () (false-implies-dot _ _).
+%total { } (false-implies-dot _ _).
+
+
+%theorem dot-respects-eq :
+	forall* {N} {V1:vector N} {V2} {R3} {V1P} {V2P} {R3P}
+	forall {D:dot V1 V2 R3} {E1:eq V1 V1P} {E2:eq V2 V2P} 
+	       {E3:data`eq R3 R3P}
+        exists {DP:dot V1P V2P R3P}
+        true.
+
+- : dot-respects-eq D eq/ eq/ data`eq/ D.
+
+%worlds () (dot-respects-eq _ _ _ _ _).
+%total { } (dot-respects-eq _ _ _ _ _).
+
+
+%theorem dot-total* :
+	forall* {N}
+	forall {V1: vector N} {V2}
+	exists {R3} {D:dot V1 V2 R3}
+        true.
+
+- : dot-total* _ _ _ dot/0.
+
+- : dot-total* _ _ _ (dot/+ R1*R2=R3 V1*V2=S3 R3+S3=T3)
+    <- data`mul-total R1*R2=R3
+    <- dot-total* _ _ _ V1*V2=S3
+    <- data`add-total R3+S3=T3.
+
+%worlds () (dot-total* _ _ _ _).
+%total (V) (dot-total* V _ _ _).
+
+
+%abbrev dot-total = dot-total* _ _ _.
+
+
+%theorem dot-deterministic :
+	forall* {N} {V1:vector N} {V2} {R3} {V1P} {V2P} {R3P}
+	forall {D:dot V1 V2 R3} {DP:dot V1P V2P R3P}
+               {E1:eq V1 V1P} {E2:eq V2 V2P}
+	exists {E3:data`eq R3 R3P}
+	true.
+
+- : dot-deterministic dot/0 dot/0 eq/ eq/ data`eq/.
+
+- : dot-deterministic (dot/+ R1*R2=R3 V1*V2=S3 R3+S3=T3)
+                      (dot/+ R1*R2=R3P V1*V2=S3P R3P+S3P=T3P)
+                      eq/ eq/ T3=T3P
+    <- data`mul-deterministic R1*R2=R3 R1*R2=R3P data`eq/ data`eq/ R3=R3P
+    <- dot-deterministic V1*V2=S3 V1*V2=S3P eq/ eq/ S3=S3P
+    <- data`add-deterministic R3+S3=T3 R3P+S3P=T3P R3=R3P S3=S3P T3=T3P.
+
+%worlds () (dot-deterministic _ _ _ _ _).
+%total (D) (dot-deterministic D _ _ _ _).
+
+
+%theorem dot-commutative :
+	forall* {N} {V1:vector N} {V2} {R3}
+        forall {D1:dot V1 V2 R3}
+	exists {D2:dot V2 V1 R3}
+        true.
+
+- : dot-commutative dot/0 dot/0.
+
+- : dot-commutative (dot/+ R1*R2=R3 V1*V2=S3 R3+S3=T3)
+		    (dot/+ R2*R1=R3 V2*V1=S3 R3+S3=T3)
+    <- data`mul-commutative R1*R2=R3 R2*R1=R3
+    <- dot-commutative V1*V2=S3 V2*V1=S3.
+
+%worlds () (dot-commutative _ _).
+%total (D) (dot-commutative D _).
+
+
+%{%
+#ifdef UNDEF
+/* association works strangely because we only have left scale. */
+%theorem dot-associates-with-scale :
+	forall* {V1} {V2} {X3} {V4} {X6} {V7}
+        forall {D12:mul V1 V2 X3} {S34:mul X3 V4 V7} {D23:mul V2 V4 X6}
+        exists {S61:mul R6 V1 V7}
+        true.
+#endif
+%}%
+
+%theorem dot-right-distributes-over-add* :
+	forall* {N} {V1: vector N} {V2} {V3} {V4} {R5} {R6} {R7}
+        forall {A12:add V1 V2 V3} {M34:dot V3 V4 R7}
+               {M14:dot V1 V4 R5} {M24:dot V2 V4 R6}
+        exists {A56:data`add R5 R6 R7}
+	true.
+
+- : dot-right-distributes-over-add* _ _ _ _ ZERO+ZERO=ZERO
+	<- data`add-right-identity _ ZERO+ZERO=ZERO.
+
+- : dot-right-distributes-over-add*
+	(add/+ R1+R2=R3 V1+V2=V3) (dot/+ R3*R4=R7 V3*V4=S7 R7+S7=T7)
+	(dot/+ R1*R4=R5 V1*V4=S5 R5+S5=T5) (dot/+ R2*R4=R6 V2*V4=S6 R6+S6=T6)
+	T5+T6=T7
+    <- data`mul-right-distributes-over-add*  
+	R1+R2=R3 R3*R4=R7 R1*R4=R5 R2*R4=R6 R5+R6=R7
+    <- dot-right-distributes-over-add*
+	V1+V2=V3 V3*V4=S7 V1*V4=S5 V2*V4=S6 S5+S6=S7
+    <- data`add-double-associative* 
+	R5+R6=R7 S5+S6=S7 R7+S7=T7 R5+S5=T5 R6+S6=T6 T5+T6=T7.
+        
+%worlds () (dot-right-distributes-over-add* _ _ _ _ _).
+%total (A) (dot-right-distributes-over-add* A _ _ _ _).
+	
+
+%theorem dot-right-distributes-over-add :
+        forall* {N} {V1:vector N} {V2} {V3} {V4} {R7}
+        forall {A12:add V1 V2 V3} {D34:dot V3 V4 R7}
+        exists {R5} {R6} {D14:dot V1 V4 R5} {D24:dot V2 V4 R6}
+               {A56:data`add R5 R6 R7}
+        true.
+
+- : dot-right-distributes-over-add A12 D34 _ _ D14 D24 A56
+    <- dot-total D14 
+    <- dot-total D24
+    <- dot-right-distributes-over-add* A12 D34 D14 D24 A56.
+
+%worlds () (dot-right-distributes-over-add _ _ _ _ _ _ _).
+%total { } (dot-right-distributes-over-add _ _ _ _ _ _ _).
+
+
+%theorem dot-left-distributes-over-add* :
+	forall* {N} {V1:vector N} {V2} {X3} {V4} {X5} {V6} {X7}
+        forall {A12:add V2 V4 V6} {M34:dot V1 V6 X7}
+               {M14:dot V1 V2 X3} {M24:dot V1 V4 X5}
+        exists {A56:data`add X3 X5 X7}
+	true.
+
+- : dot-left-distributes-over-add* A12 M34 M14 M24 A56
+    <- dot-commutative M34 M61
+    <- dot-commutative M14 M21
+    <- dot-commutative M24 M41
+    <- dot-right-distributes-over-add* A12 M61 M21 M41 A56.
+
+%worlds () (dot-left-distributes-over-add* _ _ _ _ _).
+%total { } (dot-left-distributes-over-add* _ _ _ _ _).
+
+
+%theorem dot-left-distributes-over-add :
+	forall* {N} {V1:vector N} {V2} {V4} {V6} {X7}
+        forall {A12:add V2 V4 V6} {D34:dot V1 V6 X7}
+        exists {X3} {X5} {D14:dot V1 V2 X3} {D24:dot V1 V4 X5}
+               {A56:data`add X3 X5 X7}
+	true.
+
+- : dot-left-distributes-over-add A1 D2 _ _ D3 D4 A5
+    <- dot-total D3
+    <- dot-total D4
+    <- dot-left-distributes-over-add* A1 D2 D3 D4 A5.
+
+%worlds () (dot-left-distributes-over-add _ _ _ _ _ _ _).
+%total { } (dot-left-distributes-over-add _ _ _ _ _ _ _).
+
+%{%
+#endif
+%}%
+

@@ -1,0 +1,53 @@
+%%%% More Functor Use to define add
+
+ %abbrev nat`add = nat`plus.
+ %abbrev nat`false-implies-add = nat`false-implies-plus.
+ %abbrev nat`add-deterministic = nat`plus-deterministic.
+ %abbrev nat`add-total* = nat`plus-total*.
+ %abbrev nat`add-commutative = nat`plus-commutative.
+ %abbrev nat`add-associative = nat`plus-associative.
+ %abbrev nat`add-associative* = nat`plus-associative*.
+ %abbrev nat`add-left-preserves-leq* = nat`plus-left-preserves-le*.
+ %abbrev nat`add-preserves-leq = nat`plus-preserves-le.
+
+ %theorem nat`add-implies-leq* :
+	forall* {N1} {N2} {N3}
+	forall {P:plus N1 N2 N3}
+	exists {G:ge N3 N1}
+	true.
+
+ - : nat`add-implies-leq* P G
+    <- nat`plus-commutative P Pc
+    <- nat`plus-implies-ge Pc G.
+
+ %worlds () (nat`add-implies-leq* _ _).
+ %total { } (nat`add-implies-leq* _ _).
+
+
+ %theorem nat`add-implies-leq :
+	forall* {N1} {N2} {N3}
+	forall {P:plus N1 N2 N3}
+	exists {G:ge N3 N1}
+	       {G:ge N3 N2}
+	true.
+
+ - : nat`add-implies-leq P G1 G2
+    <- nat`add-implies-leq* P G1
+    <- nat`plus-implies-ge P G2.
+
+ %worlds () (nat`add-implies-leq _ _ _).
+ %total { } (nat`add-implies-leq _ _ _).
+
+%{%
+#undef join
+#define join add
+#undef DATA_MEET_RIGHT_DISTRIBUTES_OVER_JOIN
+#undef DATA_JOIN_IS_LUB
+BEGIN_ELF
+#include "map-join.elf"
+#include "map-join-leq.elf"
+END_ELF
+#undef join
+%}%
+
+

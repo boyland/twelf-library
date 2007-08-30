@@ -1,0 +1,60 @@
+%%%%% rat-eq.elf
+%%%%% Part of rat.elf
+%%%%% John Boyland
+
+%{%
+Retrofit rat to use eq/ne/eq?
+
+The definition of rat assumes that nat and rat use different
+identifiers which is convenient for writing proofs using
+both but is inconvenient for `functors'.
+%}%
+
+
+
+%%%% Renamings
+
+
+
+%abbrev eq = equ.
+
+%abbrev eq/ = equ/.
+
+
+%abbrev false-implies-eq = false-implies-equ.
+
+%abbrev eq-reflexive = equ-reflexive.
+
+%abbrev eq-symmetric = equ-symmetric.
+
+%abbrev eq-transitive = equ-transitive.
+
+
+
+%abbrev ne = neq.
+
+
+%abbrev false-implies-ne = false-implies-neq.
+
+%abbrev neq-respects-eq = neq-respects-equ.
+
+%abbrev ne-anti-reflexive = neq-anti-reflexive.
+
+%abbrev ne-symmetric = neq-symmetric.
+
+
+%abbrev eq-ne-implies-false = equ-neq-implies-false.
+
+
+
+%abbrev eq? = equ?.
+
+%abbrev eq?/yes = equ?/yes.
+
+%abbrev eq?/no = equ?/no.
+
+
+%abbrev eq?-total = equ?-total.
+
+
+

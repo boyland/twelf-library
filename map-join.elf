@@ -1,0 +1,1680 @@
+%%%% Map addition
+
+
+
+%%% Definition of join
+
+
+join : map -> map -> map -> type.
+
+
+join/L : join map/0 M M.
+
+join/R : join M map/0 M.
+
+join/= : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N1 D3 M3)
+    <- nat`eq N1 N2
+    <- data`join D1 D2 D3
+    <- join M1 M2 M3.
+
+join/< : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N1 D1 M3)
+    <- nat`plus (s N0) N1 N2
+    <- join M1 (map/+ N0 D2 M2) M3.
+
+join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
+    <- nat`plus (s N3) N2 N1
+    <- join (map/+ N3 D1 M1) M2 M3.
+
+
+
+%%% Theorems about join
+
+
+%theorem false-implies-join :
+	forall* {M1} {M2} {M3}
+	forall {F:void}
+	exists {D:join M1 M2 M3}
+	true.
+
+%worlds () (false-implies-join _ _).
+%total {} (false-implies-join _ _).
+
+
+%theorem join-respects-eq :
+	forall* {M1} {M2} {M3} {M1P} {M2P} {M3P}
+	forall {A:join M1 M2 M3} {E1:eq M1 M1P} {E2:eq M2 M2P} {E3:eq M3 M3P}
+	exists {AP:join M1P M2P M3P}
+	true.
+
+- : join-respects-eq A eq/ eq/ eq/ A.
+
+%worlds () (join-respects-eq _ _ _ _ _).
+%total {} (join-respects-eq _ _ _ _ _).
+%reduces A = AP (join-respects-eq A _ _ _ AP).
+
+
+%% Inversion lemmas for join
+
+
+%theorem join/=-inversion :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {M} 
+	forall {A:join (map/+ N1 D1 M1) (map/+ N2 D2 M2) M}
+	       {G:nat`eq N1 N2}
+	exists {D3} {M3} 
+	       {D:data`join D1 D2 D3}
+               {AP:join M1 M2 M3}
+               {E:eq M (map/+ N1 D3 M3)}
+	true.
+
+- : join/=-inversion (join/= MM DD nat`eq/) _ _ _ DD MM eq/.
+
+- : join/=-inversion (join/< (JP:join _ (map/+ N0 D2 M2) M3) N0+1+N=N) nat`eq/ 
+                     D2 M3 DJ MJ ME
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- data`false-implies-join F DJ
+    <- false-implies-eq F (M022=M2:eq (map/+ N0 D2 M2) M2)
+    <- join-respects-eq JP eq/ M022=M2 eq/ MJ
+    <- false-implies-eq F ME.
+
+- : join/=-inversion (join/> (JP:join (map/+ _ D1 M1) M2 M3) N3+1+N=N) nat`eq/
+                     D1 M3 DJ MJ ME
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- nat`gt-anti-reflexive N>N F
+    <- data`false-implies-join F DJ
+    <- false-implies-eq F (M311=M1:eq (map/+ N3 D1 M1) M1)
+    <- join-respects-eq JP M311=M1 eq/ eq/ MJ
+    <- false-implies-eq F ME.
+
+%worlds () (join/=-inversion _ _ _ _ _ _ _).
+%total {} (join/=-inversion _ _ _ _ _ _ _).
+%reduces JP < J (join/=-inversion J _ _ _ _ JP _).
+
+
+%theorem join/<-inversion :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {M} {N0}
+	forall {A:join (map/+ N1 D1 M1) (map/+ N2 D2 M2) M}
+               {P:plus (s N0) N1 N2} 	       
+	exists {M3} 
+               {AP:join M1 (map/+ N0 D2 M2) M3}
+               {E:eq M (map/+ N1 D1 M3)}
+	true.
+
+- : join/<-inversion (join/< J P) P' _ J' eq/
+    <- nat`plus-right-cancels P P' nat`eq/ nat`eq/ N0+1=N0'+1
+    <- succ-cancels N0+1=N0'+1 N0=N0P
+    <- map/+-preserves-eq N0=N0P data`eq/ eq/ M022=M022'
+    <- join-respects-eq J eq/ M022=M022' eq/ J'.
+
+- : join/<-inversion (join/= J' _ nat`eq/) N0+1+N=N M3 J E
+    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F M2=M022
+    <- join-respects-eq J' eq/ M2=M022 eq/ J
+    <- false-implies-eq F E.
+
+- : join/<-inversion (join/> J' N3+1+N2=N1) N0+1+N1=N2 M3 J E
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F M311=M1
+    <- false-implies-eq F M2=M022
+    <- join-respects-eq J' M311=M1 M2=M022 eq/ J
+    <- false-implies-eq F E.
+
+%worlds () (join/<-inversion _ _ _ _ _).
+%total {}  (join/<-inversion _ _ _ _ _).
+%reduces JP < J (join/<-inversion J _ _ JP _).
+
+
+%theorem join/>-inversion :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {N3} {M} 
+	forall {A:join (map/+ N1 D1 M1) (map/+ N2 D2 M2) M}
+	       {P:plus (s N3) N2 N1}
+	exists {M3} 
+               {AP:join (map/+ N3 D1 M1) M2 M3}
+               {E:eq M (map/+ N2 D2 M3)}
+	true.
+
+- : join/>-inversion (join/> J P) P' _ J' eq/
+    <- nat`plus-right-cancels P P' nat`eq/ nat`eq/ N3+1=N3'+1
+    <- succ-cancels N3+1=N3'+1 N3=N3P
+    <- map/+-preserves-eq N3=N3P data`eq/ eq/ M311=M311'
+    <- join-respects-eq J M311=M311' eq/ eq/ J'.
+
+- : join/>-inversion (join/= J' _ nat`eq/) N3+1+N=N M3 J E
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F M1=M311
+    <- join-respects-eq J' M1=M311 eq/ eq/ J
+    <- false-implies-eq F E.
+
+- : join/>-inversion (join/< J' N0+1+N1=N2) N3+1+N2=N1 M3 J E
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F M1=M311
+    <- false-implies-eq F M022=M2
+    <- join-respects-eq J' M1=M311 M022=M2 eq/ J
+    <- false-implies-eq F E.
+
+%worlds () (join/>-inversion _ _ _ _ _).
+%total {} (join/>-inversion _ _ _ _ _).
+%reduces JP < J (join/>-inversion J _ _ JP _).
+
+%{%
+#ifdef DATA_JOIN_DETERMINISTIC
+%}%
+
+%theorem join-deterministic :
+	forall* {M1} {M2} {M3} {M1P} {M2P} {M3P}
+	forall {A:join M1 M2 M3} {AP:join M1P M2P M3P}
+               {E1:eq M1 M1P} {E2:eq M2 M2P}
+	exists {E3:eq M3 M3P}
+	true.
+
+- : join-deterministic join/L join/L eq/ eq/ eq/.
+
+- : join-deterministic join/L join/R eq/ eq/ eq/.
+
+- : join-deterministic join/R join/L eq/ eq/ eq/.
+
+- : join-deterministic join/R join/R eq/ eq/ eq/.
+
+- : join-deterministic (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                      (join/= M1+M2=M3' D1+D2=D3P nat`eq/) 
+		      eq/ eq/ M=M'
+    <- data`join-deterministic D1+D2=D3 D1+D2=D3P data`eq/ data`eq/ D3=D3'
+    <- join-deterministic M1+M2=M3 M1+M2=M3' eq/ eq/ M3=M3'
+    <- map/+-preserves-eq nat`eq/ D3=D3' M3=M3' M=M'.
+
+- : join-deterministic (join/< M1+MT=M3 N0+1+N1=N2)
+                      (join/< M1+MT'=M3' N0'+1+N1=N2)
+		      eq/ eq/ M=M'
+    <- plus-right-cancels N0+1+N1=N2 N0'+1+N1=N2 nat`eq/ nat`eq/ N0+1=N0'+1
+    <- succ-cancels N0+1=N0'+1 N0=N0P
+    <- map/+-preserves-eq N0=N0P data`eq/ eq/ MT=MT'
+    <- join-deterministic M1+MT=M3 M1+MT'=M3' eq/ MT=MT' M3=M3'
+    <- map/+-preserves-eq nat`eq/ data`eq/ M3=M3' M=M'.
+
+- : join-deterministic (join/> MT+M2=M3 N3+1+N2=N1)
+                      (join/> MT'+M2=M3' N3'+1+N2=N1) eq/ eq/ E
+    <- plus-right-cancels N3+1+N2=N1 N3'+1+N2=N1 nat`eq/ nat`eq/ N3+1=N3'+1
+    <- succ-cancels N3+1=N3'+1 N3=N3P
+    <- map/+-preserves-eq N3=N3P data`eq/ eq/ MT=MT'
+    <- join-deterministic MT+M2=M3 MT'+M2=M3' MT=MT' eq/ M3=M3'
+    <- map/+-preserves-eq nat`eq/ data`eq/ M3=M3' E.
+
+%% contradiction cases:
+
+- : join-deterministic (join/= _ _ nat`eq/) (join/< _ N'+1+N=N) eq/ eq/ E
+    <- plus-implies-gt N'+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : join-deterministic (join/= _ _ nat`eq/) (join/> _ N'+1+N=N) eq/ eq/ E
+    <- plus-implies-gt N'+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : join-deterministic (join/< _ NP+1+N=N) (join/= _ _ nat`eq/) eq/ eq/ E
+    <- plus-implies-gt NP+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : join-deterministic (join/< _ N0+1+N1=N2) (join/> _ N3+1+N2=N1) eq/ eq/ E
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F E.
+
+- : join-deterministic (join/> _ NP+1+N=N) (join/= _ _ nat`eq/) eq/ eq/ E
+    <- plus-implies-gt NP+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : join-deterministic (join/> _ N3+1+N2=N1) (join/< _ N0+1+N1=N2) eq/ eq/ E
+    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
+    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
+    <- false-implies-eq F E.
+
+%worlds () (join-deterministic _ _ _ _ _).
+%total (A) (join-deterministic A _ _ _ _).
+
+%{%
+#endif /* DATA_JOIN_DETERMINISTIC */
+%}%
+
+
+%{%
+#ifdef DATA_JOIN_TOTAL_STAR
+%}%
+
+%theorem join-total* :
+	forall {M1} {M2}
+	exists {M3} {A:join M1 M2 M3}
+	true.
+
+%% we need some lemmas
+%% We need them to ensure termination because
+%% join substitutes new maps on recursive calls which
+%% makes it hard to prove the arguments get smaller.
+
+%theorem join-map/+-M-total* :
+	forall {N1} {D1} {M1} {M2}
+        exists {M3} {A:join (map/+ N1 D1 M1) M2 M3}
+	true.
+
+%theorem join-M-map/+-total* :
+	forall {M1} {N2} {D2} {M2}
+        exists {M3} {A:join M1 (map/+ N2 D2 M2) M3}
+	true.
+
+%theorem join-map/+-map/+-total* :
+	forall {N1} {D1} {M1} {N2} {D2} {M2} {C} {CMP:nat`compare N1 N2 C}
+        exists {M3} 
+               {A:join (map/+ N1 D1 M1) (map/+ N2 D2 M2) M3}
+	true.
+
+- : join-total* map/0 M M join/L.
+
+- : join-total* M map/0 M join/R.
+
+- : join-total* (map/+ N1 D1 M1) (map/+ N2 D2 M2) M3 A
+    <- nat`compare-total* N1 N2 C CMP
+    <- join-map/+-map/+-total* N1 D1 M1 N2 D2 M2 C CMP M3 A.               
+
+- : join-map/+-map/+-total* N1 D1 M1 N2 D2 M2 equal CMP (map/+ N1 D3 M3)
+                           (join/= M1+M2=M3 D1+D2=D3 N1=N2)
+    <- equal-implies-eq CMP N1=N2
+    <- data`join-total* D1 D2 D3 D1+D2=D3
+    <- join-total* M1 M2 M3 M1+M2=M3.
+
+- : join-map/+-map/+-total* N1 D1 M1 N2 D2 M2 less CMP (map/+ N1 D1 M3)
+                           (join/< M1+T=M3 N0+1+N1=N2)
+    <- less-implies-lt CMP N2>N1
+    <- gt-implies-plus N2>N1 _ N0+1+N1=N2
+    <- join-M-map/+-total* M1 N0 D2 M2 M3 M1+T=M3.
+
+- : join-map/+-map/+-total* N1 D1 M1 N2 D2 M2 greater CMP (map/+ N2 D2 M3)
+                           (join/> T+M2=M3 N3+1+N2=N1)
+    <- greater-implies-gt CMP N1>N2
+    <- gt-implies-plus N1>N2 _ N3+1+N2=N1
+    <- join-map/+-M-total* N3 D1 M1 M2 M3 T+M2=M3.
+
+- : join-M-map/+-total* map/0 N2 D2 M2 (map/+ N2 D2 M2) join/L.
+
+- : join-M-map/+-total* (map/+ N1 D1 M1) N2 D2 M2 M3 A
+    <- nat`compare-total* N1 N2 C CMP
+    <- join-map/+-map/+-total* N1 D1 M1 N2 D2 M2 C CMP M3 A.
+
+- : join-map/+-M-total* N1 D1 M1 map/0 (map/+ N1 D1 M1) join/R.
+
+- : join-map/+-M-total* N1 D1 M1 (map/+ N2 D2 M2) M3 A
+    <- nat`compare-total* N1 N2 C CMP
+    <- join-map/+-map/+-total* N1 D1 M1 N2 D2 M2 C CMP M3 A.
+
+%worlds () (join-total* _ _ _ _)
+           (join-M-map/+-total* _ _ _ _ _ _)
+           (join-map/+-M-total* _ _ _ _ _ _)
+           (join-map/+-map/+-total* _ _ _ _ _ _ _ _ _ _).
+
+%total [ (M1a M1b M1c M1d) (M2a M2b M2c M2d) ]
+        (join-total* M1d M2d _ _)
+        (join-M-map/+-total* M1c _ _ M2c _ _)
+        (join-map/+-M-total* _ _ M1b M2b _ _)
+	(join-map/+-map/+-total* _ _ M1a _ _ M2a _ _ _ _).
+               
+%abbrev join-total = join-total* _ _ _.
+
+%{%
+#endif /* DATA_JOIN_TOTAL_STAR */ 
+%}%
+
+%theorem disjoint-join-total :
+	forall* {M1} {M2} 
+	forall {D:disjoint M1 M2}
+	exists {M3} {A:join M1 M2 M3}
+	true.
+
+- : disjoint-join-total disjoint/L _ join/L. 
+
+- : disjoint-join-total disjoint/R _ join/R.
+
+- : disjoint-join-total (disjoint/< D P) _ (join/< J P)
+    <- disjoint-join-total D _ J.
+
+- : disjoint-join-total (disjoint/> D P) _ (join/> J P)
+    <- disjoint-join-total D _ J.
+
+%worlds () (disjoint-join-total _ _ _).
+%total (D) (disjoint-join-total D _ _).
+
+
+%theorem join-empty-implies-empty :
+	forall* {M1} {M2}
+	forall {A:join M1 M2 map/0}
+	exists {E1:eq M1 map/0} {E2:eq M2 map/0}
+	true.
+
+- : join-empty-implies-empty join/L eq/ eq/.
+
+- : join-empty-implies-empty join/R eq/ eq/.
+
+%worlds () (join-empty-implies-empty _ _ _).
+%total { } (join-empty-implies-empty _ _ _).
+
+
+%theorem join-preserves-disjoint* :
+	forall* {M1} {M2} {M3} {M4}
+	forall {D1:disjoint M1 M4} {D2:disjoint M2 M4}
+	       {A:join M1 M2 M3}
+	exists {D3:disjoint M3 M4}
+	true.
+
+% a lemma that counts the size of maps to help prove termination
+%theorem join-preserves-disjoint*/L :
+	forall* {M1} {M2} {M3} {M4}
+	forall {S1} {S2} {SZ1:size M1 S1} {SZ2:size M2 S2}
+               {D1:disjoint M1 M4} {D2:disjoint M2 M4}
+	       {A:join M1 M2 M3}
+	exists {D3:disjoint M3 M4}
+	true.
+
+- : join-preserves-disjoint* D1 D2 J D3
+    <- size-total SZ1
+    <- size-total SZ2
+    <- join-preserves-disjoint*/L _ _ SZ1 SZ2 D1 D2 J D3.
+
+- : join-preserves-disjoint*/L _ _ _ _ disjoint/R _ _ disjoint/R.
+
+- : join-preserves-disjoint*/L _ _ _ _ _ disjoint/R _ disjoint/R.
+
+- : join-preserves-disjoint*/L _ _ _ _ _ D join/L D.
+
+- : join-preserves-disjoint*/L _ _ _ _ D _ join/R D.
+
+- : join-preserves-disjoint*/L (s S1) (s S2) (size/+ SZ1) (size/+ SZ2)
+                               (disjoint/< D1 N5+1+N1=N4) D2X 
+                               (join/= J _ nat`eq/)
+                               (disjoint/< D3 N5+1+N1=N4)
+    <- disjoint/<-inversion D2X N5+1+N1=N4 D2
+    <- join-preserves-disjoint*/L S1 S2 SZ1 SZ2 D1 D2 J D3.
+
+- : join-preserves-disjoint*/L (s S1) (s S2) (size/+ SZ1) (size/+ SZ2)
+                               (disjoint/< D1 N5+1+N1=N4) D2X
+                               (join/> J N3+1+N2=N1)
+                               (disjoint/< D3 N6+1+N2=N4)
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-associative-converse N3+N2+1=N1 N5+1+N1=N4 N6 N5+1+N3=N6 N6+N2+1=N4
+    <- plus-swap-succ-converse N6+N2+1=N4 N6+1+N2=N4
+    <- disjoint/<-inversion D2X N6+1+N2=N4 D2
+    <- plus-swap-succ N5+1+N3=N6 N5+N3+1=N6
+    <- plus-commutative N5+N3+1=N6 N3+1+N5=N6
+    <- shift-right-preserves-disjoint D1 (shift/+ N3+1+N5=N6) D1<<N3
+    <- join-preserves-disjoint*/L (s S1) S2 (size/+ SZ1) SZ2 D1<<N3 D2 J D3.
+
+- : join-preserves-disjoint*/L (s S1) (s S2) (size/+ SZ1) (size/+ SZ2)
+                               (disjoint/> D1 N5+1+N4=N1) D2X 
+                               (join/= J DJ nat`eq/)
+                               (disjoint/> D3 N5+1+N4=N1)
+    <- disjoint/>-inversion D2X N5+1+N4=N1 D2
+    <- join-preserves-disjoint*/L _ _ (size/+ SZ1) (size/+ SZ2) 
+                                  D1 D2 (join/= J DJ nat`eq/) D3.
+
+- : join-preserves-disjoint*/L (s S1) (s S2) (size/+ SZ1) (size/+ SZ2)
+                               (disjoint/> D1 N5+1+N4=N1) D2X
+                               (join/< J N0+1+N1=N2)
+                               (disjoint/> D3 N5+1+N4=N1)
+    <- plus-swap-succ N5+1+N4=N1 N5+N4+1=N1
+    <- plus-associative-converse N5+N4+1=N1 N0+1+N1=N2 N6 N0+1+N5=N6 N6+N4+1=N2
+    <- plus-swap-succ-converse N6+N4+1=N2 N6+1+N4=N2
+    <- disjoint/>-inversion D2X N6+1+N4=N2 D2
+    <- join-preserves-disjoint*/L _ _ (size/+ SZ1) (size/+ SZ2) 
+                                  D1 D2 (join/< J N0+1+N5=N6) D3.
+
+- : join-preserves-disjoint*/L (s S1) (s S2) (size/+ SZ1) (size/+ SZ2)
+                               D1X (disjoint/< D2 N6+1+N2=N4) 
+                               (join/< J N0+1+N1=N2)
+                               (disjoint/< D3 N5+1+N1=N4)
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-associative-converse N0+N1+1=N2 N6+1+N2=N4 N5 N6+1+N0=N5 N5+N1+1=N4
+    <- plus-swap-succ-converse N5+N1+1=N4 N5+1+N1=N4
+    <- disjoint/<-inversion D1X N5+1+N1=N4 D1
+    <- plus-swap-succ N6+1+N0=N5 N6+N0+1=N5
+    <- plus-commutative N6+N0+1=N5 N0+1+N6=N5
+    <- shift-right-preserves-disjoint D2 (shift/+ N0+1+N6=N5) D2<<N0
+    <- join-preserves-disjoint*/L S1 (s S2) SZ1 (size/+ SZ2) D1 D2<<N0 J D3.
+
+- : join-preserves-disjoint*/L (s S1) (s S2) (size/+ SZ1) (size/+ SZ2)
+                               D1X (disjoint/> D2 N6+1+N4=N2)
+                               (join/> J N3+1+N2=N1)
+                               (disjoint/> D3 N6+1+N4=N2)
+    <- plus-swap-succ N6+1+N4=N2 N6+N4+1=N2
+    <- plus-associative-converse N6+N4+1=N2 N3+1+N2=N1 N5 N3+1+N6=N5 N5+N4+1=N1
+    <- plus-swap-succ-converse N5+N4+1=N1 N5+1+N4=N1
+    <- disjoint/>-inversion D1X N5+1+N4=N1 D1
+    <- join-preserves-disjoint*/L _ _ (size/+ SZ1) (size/+ SZ2) 
+                                  D1 D2 (join/> J N3+1+N6=N5) D3.
+
+- : join-preserves-disjoint*/L (s S1) (s S2) (size/+ SZ1) (size/+ SZ2)
+                               (disjoint/< D1 N5+1+N1=N4)
+                               (disjoint/> D2 N6+1+N4=N2) JX D3X
+    <- plus-swap-succ N5+1+N1=N4 N5+N1+1=N4
+    <- plus-associative-converse N5+N1+1=N4 N6+1+N4=N2 N0 N6+1+N5=N0 N0+N1+1=N2
+    <- plus-swap-succ-converse N0+N1+1=N2 N0+1+N1=N2
+    <- join/<-inversion JX N0+1+N1=N2 _ J M=M113
+    <- eq-symmetric M=M113 M113=M
+    <- join-preserves-disjoint*/L S1 (s S2) SZ1 (size/+ SZ2)
+                                  D1 (disjoint/> D2 N6+1+N5=N0) J D3
+    <- disjoint-respects-eq (disjoint/< D3 N5+1+N1=N4) M113=M eq/ D3X.
+
+- : join-preserves-disjoint*/L (s S1) (s S2) (size/+ SZ1) (size/+ SZ2)
+                               (disjoint/> D1 N5+1+N4=N1)
+                               (disjoint/< D2 N6+1+N2=N4) JX D3X
+    <- plus-swap-succ N6+1+N2=N4 N6+N2+1=N4
+    <- plus-associative-converse N6+N2+1=N4 N5+1+N4=N1 N3 N5+1+N6=N3 N3+N2+1=N1
+    <- plus-swap-succ-converse N3+N2+1=N1 N3+1+N2=N1
+    <- join/>-inversion JX N3+1+N2=N1 _ J M=M223
+    <- eq-symmetric M=M223 M223=M
+    <- join-preserves-disjoint*/L _ _ (size/+ SZ1) SZ2
+                                  (disjoint/> D1 N5+1+N6=N3) D2 J D3
+    <- disjoint-respects-eq (disjoint/< D3 N6+1+N2=N4) M223=M eq/ D3X.
+
+%worlds () (join-preserves-disjoint*/L _ _ _ _ _ _ _ _).
+%total {S1 S2 D1} (join-preserves-disjoint*/L S1 S2 _ _ D1 _ _ _).
+
+%worlds () (join-preserves-disjoint* _ _ _ _).
+%total { } (join-preserves-disjoint* _ _ _ _).
+
+
+%theorem shift-left-preserves-join :
+	forall* {N} {D} {M1} {M2} {M3} {SM1}
+	forall {A:join M1 M2 M3} {S1:shift N M1 SM1}
+        exists {SA:join SM1 (map/+ N D M2) (map/+ N D M3)}
+        true.
+
+- : shift-left-preserves-join join/L shift/0 join/L.
+
+- : shift-left-preserves-join join/R shift/0 join/L.
+
+- : shift-left-preserves-join M111+M2=M3 (shift/+ N+1+N1=N1')
+                              (join/> M111+M2=M3 N1+1+N=N1')
+    <- plus-swap-succ N+1+N1=N1' N+N1+1=N1'
+    <- plus-commutative N+N1+1=N1' N1+1+N=N1'.
+
+%worlds () (shift-left-preserves-join _ _ _).
+%total { } (shift-left-preserves-join _ _ _).
+
+
+%theorem shift-left-preserves-join-converse :
+	forall* {N} {D} {M1} {M2} {SM1} {SM3}
+	forall {SA:join SM1 (map/+ N D M2) SM3} {S1:shift N M1 SM1}
+        exists {M3} {A:join M1 M2 M3} {E:eq (map/+ N D M3) SM3}
+	true.
+
+- : shift-left-preserves-join-converse join/L shift/0 _ join/L eq/.
+
+- : shift-left-preserves-join-converse M111+M222=SM3 (shift/+ N2+1+N3=N1) M3
+                                       M311+M2=M3 M223=SM3
+    <- plus-swap-succ N2+1+N3=N1 N2+N3+1=N1
+    <- plus-commutative N2+N3+1=N1 N3+1+N2=N1
+    <- join/>-inversion M111+M222=SM3 N3+1+N2=N1 M3 M311+M2=M3 SM3=M223
+    <- eq-symmetric SM3=M223 M223=SM3.
+
+%worlds () (shift-left-preserves-join-converse _ _ _ _ _).
+%total { } (shift-left-preserves-join-converse _ _ _ _ _).
+
+
+%theorem shift-right-preserves-join :
+	forall* {N} {D} {M1} {M2} {M3} {SM2}
+	forall {A:join M1 M2 M3} {S2:shift N M2 SM2}
+        exists {SA:join (map/+ N D M1) SM2 (map/+ N D M3)}
+	true.
+
+- : shift-right-preserves-join join/L shift/0 join/R.
+
+- : shift-right-preserves-join join/R shift/0 join/R.
+
+- : shift-right-preserves-join M1+M222=M3 (shift/+ N+1+N2=N2') 
+                               (join/< M1+M222=M3 N2+1+N=N2')
+    <- plus-swap-succ N+1+N2=N2' N+N2+1=N2'
+    <- plus-commutative N+N2+1=N2' N2+1+N=N2'.
+
+%worlds () (shift-right-preserves-join _ _ _).
+%total { } (shift-right-preserves-join _ _ _).
+
+
+%theorem shift-right-preserves-join-converse :
+	forall* {N} {D} {M1} {M2} {SM2} {SM3}
+	forall {SA:join (map/+ N D M1) SM2 SM3} {S2:shift N M2 SM2}
+        exists {M3} {A:join M1 M2 M3} {E:eq (map/+ N D M3) SM3}
+	true.
+
+- : shift-right-preserves-join-converse join/R shift/0 _ join/R eq/.
+
+- : shift-right-preserves-join-converse M111+M322=SM3 (shift/+ N1+1+N2=N3)
+                                        M3 M1+M222=M3 M133=SM3
+    <- plus-swap-succ N1+1+N2=N3 N1+N2+1=N3
+    <- plus-commutative N1+N2+1=N3 N2+1+N1=N3
+    <- join/<-inversion M111+M322=SM3 N2+1+N1=N3 M3 M1+M222=M3 SM3=M133
+    <- eq-symmetric SM3=M133 M133=SM3.
+
+%worlds () (shift-right-preserves-join-converse _ _ _ _ _).
+%total { } (shift-right-preserves-join-converse _ _ _ _ _).
+
+
+%theorem shift-preserves-join :
+	forall* {N} {M1} {M2} {M3} {SM1} {SM2} {SM3}
+	forall {A:join M1 M2 M3} 
+               {S1:shift N M1 SM1} {S2:shift N M2 SM2} {S3:shift N M3 SM3}
+	exists {SA:join SM1 SM2 SM3}
+	true.
+
+- : shift-preserves-join join/L shift/0 M2<<N=SM2 M2<<N=SM3 Z+SM2=SM3
+    <- shift-deterministic M2<<N=SM2 M2<<N=SM3 nat`eq/ eq/ SM2=SM3
+    <- join-respects-eq join/L eq/ eq/ SM2=SM3 Z+SM2=SM3.
+
+- : shift-preserves-join join/R M1<<N=SM1 shift/0 M1<<N=SM3 SM1+0=SM3
+    <- shift-deterministic M1<<N=SM1 M1<<N=SM3 nat`eq/ eq/ SM1=SM3
+    <- join-respects-eq join/R eq/ eq/ SM1=SM3 SM1+0=SM3.
+
+- : shift-preserves-join (join/= M1+M2=M3 D1+D2=D3 nat`eq/) 
+                         (shift/+ N+1+N1=N4) (shift/+ N+1+N1=N5) 
+                         (shift/+ N+1+N1=N6)
+                         M411+M522=M633
+    <- plus-deterministic N+1+N1=N4 N+1+N1=N5 nat`eq/ nat`eq/ N4=N5
+    <- plus-deterministic N+1+N1=N4 N+1+N1=N6 nat`eq/ nat`eq/ N4=N6
+    <- map/+-preserves-eq N4=N6 data`eq/ eq/ M433=M633
+    <- join-respects-eq (join/= M1+M2=M3 D1+D2=D3 N4=N5) eq/ eq/ M433=M633
+                        M411+M522=M633.
+
+- : shift-preserves-join (join/< M1+M022=M3 N0+1+N1=N2)
+                         (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) 
+                         (shift/+ N+1+N1=N6) M411+M522=M613
+    <- plus-deterministic N+1+N1=N4 N+1+N1=N6 nat`eq/ nat`eq/ N4=N6
+    <- plus-swap-succ N+1+N1=N4 N+N1+1=N4
+    <- plus-commutative N+N1+1=N4 N1+1+N=N4
+    <- plus-commutative N0+1+N1=N2 N1+N0+1=N2
+    <- plus-associative-converse* N1+N0+1=N2 N+1+N2=N5 N+1+N1=N4 N4+N0+1=N5
+    <- plus-commutative N4+N0+1=N5 N0+1+N4=N5
+    <- map/+-preserves-eq N4=N6 data`eq/ eq/ M433=M613
+    <- join-respects-eq (join/< M1+M022=M3 N0+1+N4=N5) eq/ eq/ M433=M613
+                        M411+M522=M613.
+
+- : shift-preserves-join (join/> M311+M2=M3 N3+1+N2=N1)
+                         (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) 
+                         (shift/+ N+1+N2=N6) M411+M522=M623
+    <- plus-deterministic N+1+N2=N5 N+1+N2=N6 nat`eq/ nat`eq/ N5=N6
+    <- plus-swap-succ N+1+N2=N5 N+N2+1=N5
+    <- plus-commutative N+N2+1=N5 N2+1+N=N5
+    <- plus-commutative N3+1+N2=N1 N2+N3+1=N1
+    <- plus-associative-converse* N2+N3+1=N1 N+1+N1=N4 N+1+N2=N5 N5+N3+1=N4
+    <- plus-commutative N5+N3+1=N4 N3+1+N5=N4
+    <- map/+-preserves-eq N5=N6 data`eq/ eq/ M523=M623
+    <- join-respects-eq (join/> M311+M2=M3 N3+1+N5=N4) eq/ eq/ M523=M623
+                        M411+M522=M623.
+
+%worlds () (shift-preserves-join _ _ _ _ _).
+%total { } (shift-preserves-join _ _ _ _ _).
+
+
+%theorem shift-preserves-join-converse :
+	forall* {N} {M1} {M2} {SM1} {SM2} {SM3}
+	forall {SA:join SM1 SM2 SM3}
+               {S1:shift N M1 SM1} {S2:shift N M2 SM2} 
+	exists {M3} {A:join M1 M2 M3} {S3:shift N M3 SM3}
+	true.
+
+- : shift-preserves-join-converse join/L shift/0 M2<<N=SM2 _ join/L M2<<N=SM2.
+
+- : shift-preserves-join-converse join/R M1<<N=SM1 shift/0 _ join/R M1<<N=SM1.
+
+- : shift-preserves-join-converse (join/= M1+M2=M3 D1+D2=D3 nat`eq/) 
+                                  (shift/+ N+1+N1=N4) (shift/+ N+1+N1'=N4)
+                                  (map/+ N1 D3 M3) M111+M122'=M133
+                                  (shift/+ N+1+N1=N4)
+    <- plus-left-cancels N+1+N1=N4 N+1+N1'=N4 nat`eq/ nat`eq/ N1=N1P
+    <- map/+-preserves-eq N1=N1P data`eq/ eq/ M122=M122'
+    <- join-respects-eq (join/= M1+M2=M3 D1+D2=D3 nat`eq/) eq/ M122=M122' eq/
+                        M111+M122'=M133.
+
+- : shift-preserves-join-converse (join/< M1+M055=M3 N0+1+N4=N5)
+                                  (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) _
+				  (join/< M1+M055=M3 N0+1+N1=N2)
+				  (shift/+ N+1+N1=N4)
+    <- plus-commutative N+1+N1=N4 N1+N+1=N4
+    <- plus-swap-succ-converse N1+N+1=N4 N1+1+N=N4
+    <- plus-associative-converse N1+N+1=N4 N0+1+N4=N5 N2' N0+1+N1=N2' N2'+N+1=N5
+    <- plus-commutative N+1+N2=N5 N2+N+1=N5
+    <- plus-right-cancels N2'+N+1=N5 N2+N+1=N5 nat`eq/ nat`eq/ N2'=N2
+    <- plus-respects-eq N0+1+N1=N2' nat`eq/ nat`eq/ N2'=N2 N0+1+N1=N2.
+                                  
+- : shift-preserves-join-converse (join/> M611+M2=M3 N6+1+N5=N4)
+                                  (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) _
+                                  (join/> M611+M2=M3 N6+1+N2=N1)
+                                  (shift/+ N+1+N2=N5)
+    <- plus-commutative N+1+N2=N5 N2+N+1=N5
+    <- plus-swap-succ-converse N2+N+1=N5 N2+1+N=N5
+    <- plus-associative-converse N2+N+1=N5 N6+1+N5=N4 N1' N6+1+N2=N1' N1'+N+1=N4
+    <- plus-commutative N+1+N1=N4 N1+N+1=N4
+    <- plus-right-cancels N1'+N+1=N4 N1+N+1=N4 nat`eq/ nat`eq/ N1'=N1
+    <- plus-respects-eq N6+1+N2=N1' nat`eq/ nat`eq/ N1'=N1 N6+1+N2=N1.
+
+%worlds () (shift-preserves-join-converse _ _ _ _ _ _).
+%total { } (shift-preserves-join-converse _ _ _ _ _ _).
+
+
+%{%
+#ifdef DATA_JOIN_COMMUTATIVE
+%}%
+
+%theorem join-commutative :
+	forall* {M1} {M2} {M3}
+	forall {A:join M1 M2 M3}
+	exists {AP:join M2 M1 M3}
+	true.
+
+- : join-commutative join/L join/R.
+
+- : join-commutative join/R join/L.
+
+- : join-commutative (join/= M1+M2=M3 D1+D2=D3 nat`eq/) 
+                     (join/= M2+M1=M3 D2+D1=D3 nat`eq/)
+    <- data`join-commutative D1+D2=D3 D2+D1=D3
+    <- join-commutative M1+M2=M3 M2+M1=M3.
+
+- : join-commutative (join/< M1+MT=M3 N0+1+N1=N2) (join/> MT+M1=M3 N0+1+N1=N2)
+    <- join-commutative M1+MT=M3 MT+M1=M3.
+
+- : join-commutative (join/> MT+M2=M3 N3+1+N2=N1) (join/< M2+MT=M3 N3+1+N2=N1)
+    <- join-commutative MT+M2=M3 M2+MT=M3.
+
+%worlds () (join-commutative _ _).
+%total (A) (join-commutative A _).
+
+%{%
+#endif /* DATA_JOIN_COMMUTATIVE */
+%}%
+
+
+%{%
+#ifdef DATA_JOIN_ASSOCIATIVE
+%}%
+
+%theorem join-associative :
+	forall* {M1} {M2} {M3} {M4} {M7}
+	forall {A12:join M1 M2 M3} {A34:join M3 M4 M7}
+	exists {M6} {A24:join M2 M4 M6} {A16:join M1 M6 M7}
+	true.
+
+%% a lemma
+
+%theorem join-associative-join/<-join/< :
+	forall* {N1} {D1} {M1} {N2} {D2} {M2} {N0} {N5} {N4} {D4} {M4} {M6} {M7}
+	forall {PLUS012:nat`plus (s N0) N1 N2}
+               {PLUS514:nat`plus (s N5) N1 N4}
+               {JOIN246:join (map/+ N0 D2 M2) (map/+ N5 D4 M4) M6}
+               {JOIN167:join M1 M6 M7}
+        exists {M} {JOIN24: join (map/+ N2 D2 M2) (map/+ N4 D4 M4) M}
+               {JOIN:join (map/+ N1 D1 M1) M (map/+ N1 D1 M7)}
+        true.
+               
+- : join-associative join/L A _ A join/L.
+
+- : join-associative A join/R _ join/R A.
+
+- : join-associative join/R A _ join/L A.
+
+- : join-associative (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                    (join/= M3+M4=M7 D3+D4=D7 nat`eq/) (map/+ _ D6 M6)
+                    (join/= M2+M4=M6 D2+D4=D6 nat`eq/)
+		    (join/= M1+M6=M7 D1+D6=D7 nat`eq/)
+    <- data`join-associative D1+D2=D3 D3+D4=D7 D6 D2+D4=D6 D1+D6=D7
+    <- join-associative M1+M2=M3 M3+M4=M7 M6 M2+M4=M6 M1+M6=M7.
+
+- : join-associative (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                    (join/< M3+M044=M7 N0+1+N3=N4) (map/+ _ _ M6) 
+                    (join/< M2+M044=M6 N0+1+N3=N4) 
+                    (join/= M1+M6=M7 D1+D2=D3 nat`eq/)
+    <- join-associative M1+M2=M3 M3+M044=M7 M6 M2+M044=M6 M1+M6=M7.
+
+- : join-associative (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+	            (join/> M533+M4=M7 N5+1+N4=N3) (map/+ _ _ M6)
+                    (join/> M522+M4=M6 N5+1+N4=N3)
+                    (join/> M511+M6=M7 N5+1+N4=N3)
+    <- join-associative (join/= M1+M2=M3 D1+D2=D3 nat`eq/) M533+M4=M7
+                       M6 M522+M4=M6 M511+M6=M7.
+
+- : join-associative (join/< M1+M022=M3 N0+1+N1=N2)
+                     (join/= M3+M4=M7 D1+D4=D7 nat`eq/) (map/+ _ _ M6)
+                     (join/> M022+M3=M6 N0+1+N1=N2)
+                     (join/= M1+M6=M7 D1+D4=D7 nat`eq/)
+    <- join-associative M1+M022=M3 M3+M4=M7 M6 M022+M3=M6 M1+M6=M7.
+
+%% the hardest of all 11 cases!
+
+- : {M111+M=M117: join (map/+ N1 D1 M1) M (map/+ N1 D1 M7)}
+    {M3+M544=M7: join M3 (map/+ N5 D4 M4) M7}
+    {M1+M022=M3: join M1 (map/+ N0 D2 M2) M3}
+    {M1+M6=M7: join M1 M6 M7}
+    join-associative (join/< M1+M022=M3 N0+1+N1=N2)
+       		     (join/< M3+M544=M7 N5+1+N1=N4) 
+		     M M222+M444=M M111+M=M117
+    <- join-associative M1+M022=M3 M3+M544=M7 M6 M022+M544=M6 M1+M6=M7
+    <- join-associative-join/<-join/< 
+       		N0+1+N1=N2 N5+1+N1=N4 M022+M544=M6 M1+M6=M7 
+       		M M222+M444=M M111+M=M117.
+
+- : join-associative-join/<-join/< N+1+N1=N2 N+1+N1=N4
+                                   (join/= M2+M4=M6 D2+D4=D6 nat`eq/) 
+                                   M1+M066=M7 (map/+ N2 D6 M6)
+                                   (join/= M2+M4=M6 D2+D4=D6 N2=N4)
+                                   (join/< M1+M066=M7 N+1+N1=N2)
+    <- nat`plus-deterministic N+1+N1=N2 N+1+N1=N4 nat`eq/ nat`eq/ N2=N4.
+
+- : join-associative-join/<-join/< N0+1+N1=N2 N5+1+N1=N4
+                                   (join/< M2+M744=M6 N7+1+N0=N5)
+                                   M1+M026=M7 (map/+ N2 D2 M6)
+     				   (join/< M2+M744=M6 N7+1+N2=N4)
+                                   (join/< M1+M026=M7 N0+1+N1=N2)
+    <- nat`plus-swap-succ N5+1+N1=N4 N5+N1+1=N4
+    <- nat`plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- nat`plus-associative* N7+1+N0=N5 N5+N1+1=N4 N0+N1+1=N2 N7+1+N2=N4.
+
+- : join-associative-join/<-join/< N0+1+N1=N2 N5+1+N1=N4
+                                   (join/> M722+M4=M6 N7+1+N5=N0)
+                                   M1+M546=M7 (map/+ N4 D4 M6)
+                                   (join/> M722+M4=M6 N7+1+N4=N2)
+                                   (join/< M1+M546=M7 N5+1+N1=N4)
+    <- nat`plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- nat`plus-swap-succ N5+1+N1=N4 N5+N1+1=N4
+    <- nat`plus-associative* N7+1+N5=N0 N0+N1+1=N2 N5+N1+1=N4 N7+1+N4=N2.
+
+%% and now we return to the main theorem
+
+- : join-associative (join/< M1+M022=M3 N0+1+N1=N2)
+		    (join/> M513+M4=M7 N5+1+N3=N1) (map/+ _ _ M6)
+                    (join/> M622+M4=M6 N6+1+N3=N2)
+                    (join/> M511+M6=M7 N5+1+N3=N1)
+    <- nat`plus-swap-succ N5+1+N3=N1 N5+N3+1=N1
+    <- nat`plus-associative-converse N5+N3+1=N1 N0+1+N1=N2 N6
+                                     N0+1+N5=N6 N6+N3+1=N2
+    <- nat`plus-swap-succ-converse N6+N3+1=N2 N6+1+N3=N2
+    <- join-associative (join/< M1+M022=M3 N0+1+N5=N6) M513+M4=M7 
+                       M6 M622+M4=M6 M511+M6=M7.
+
+- : join-associative (join/> M311+M2=M3 N3+1+N2=N1)
+                    (join/= M3+M4=M7 D2+D4=D7 nat`eq/) (map/+ _ _ M6)
+                    (join/= M2+M4=M6 D2+D4=D7 nat`eq/)
+                    (join/> M311+M6=M7 N3+1+N2=N1)
+    <- join-associative M311+M2=M3 M3+M4=M7 M6 M2+M4=M6 M311+M6=M7.
+
+- : join-associative (join/> M311+M2=M3 N3+1+N2=N1)
+                    (join/< M3+M044=M7 N0+1+N2=N4) (map/+ _ _ M6)
+                    (join/< M2+M044=M6 N0+1+N2=N4)
+                    (join/> M311+M6=M7 N3+1+N2=N1)
+    <- join-associative M311+M2=M3 M3+M044=M7 M6 M2+M044=M6 M311+M6=M7.
+
+- : join-associative (join/> M311+M2=M3 N3+1+N2=N1)
+                    (join/> M523+M4=M7 N5+1+N4=N2) (map/+ _ _ M6)
+		    (join/> M522+M4=M6 N5+1+N4=N2)
+                    (join/> M711+M6=M7 N7+1+N4=N1)
+    <- nat`plus-swap-succ N5+1+N4=N2 N5+N4+1=N2
+    <- nat`plus-associative-converse N5+N4+1=N2 N3+1+N2=N1 
+                                     N7 N3+1+N5=N7 N7+N4+1=N1
+    <- nat`plus-swap-succ-converse N7+N4+1=N1 N7+1+N4=N1
+    <- join-associative (join/> M311+M2=M3 N3+1+N5=N7) M523+M4=M7
+                       M6 M522+M4=M6 M711+M6=M7.
+
+%worlds () (join-associative-join/<-join/< _ _ _ _ _ _ _).
+%total {} (join-associative-join/<-join/< _ _ _ _ _ _ _).
+
+%worlds () (join-associative _ _ _ _ _).
+%total (J) (join-associative _ J _ _ _).
+
+%{%
+#if DATA_JOIN_DETERMINISTIC
+#define EQ eq
+#define OPN join
+#define OP(X,Y) X+Y
+BEGIN_ELF
+#include "OPN-assoc.i"
+END_ELF
+#undef OP
+#undef OPN
+#undef EQ
+#endif
+
+
+#endif /* DATA_JOIN_ASSOCIATIVE */
+
+
+#ifdef DATA_JOIN_LEFT_CANCELS
+#ifdef DATA_JOIN_NO_RIGHT_IDENTITY
+%}%
+
+%theorem join-right-identity-converse :
+	forall* {M1} {M2} {M3}
+	forall {J:join M1 M2 M3} {E:eq M1 M3}
+	exists {EP:eq M2 map/0}
+	true.
+
+- : join-right-identity-converse join/L eq/ eq/.
+
+- : join-right-identity-converse join/R eq/ eq/.
+
+- : join-right-identity-converse (join/= _ D1+D2=D1 _) eq/ E
+    <- data`join-no-right-identity D1+D2=D1 F
+    <- false-implies-eq F E.
+
+- : join-right-identity-converse (join/< M1+M022=M1 _) eq/ E
+    <- join-right-identity-converse M1+M022=M1 eq/ M022=M0
+    <- eq-symmetric M022=M0 M0=M022
+    <- eq-contradiction M0=M022 F
+    <- false-implies-eq F E.
+
+- : join-right-identity-converse (join/> _ N3+1+N=N) eq/ E
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+%worlds () (join-right-identity-converse _ _ _).
+%total (J) (join-right-identity-converse J _ _).
+
+
+%theorem join-left-cancels :
+	forall* {M1} {M2} {M3} {M1P} {M2P} {M3P}
+	forall {J:join M1 M2 M3} {JP:join M1P M2P M3P}
+	       {E1:eq M1 M1P} {E3:eq M3 M3P}
+	exists {E2:eq M2 M2P}
+	true.
+
+- : join-left-cancels join/L _ eq/ eq/ eq/.
+
+- : join-left-cancels join/R J eq/ eq/ M0=M2P
+    <- join-right-identity-converse J eq/ M2P=M0
+    <- eq-symmetric M2P=M0 M0=M2P.
+   
+- : join-left-cancels J join/R eq/ eq/ M2P=M0
+    <- join-right-identity-converse J eq/ M2P=M0.
+
+- : join-left-cancels (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                      (join/= M1+M2P=M3 D1+D2P=D3 nat`eq/) eq/ eq/
+                      M122=M122P
+    <- data`join-left-cancels D1+D2=D3 D1+D2P=D3 data`eq/ data`eq/ D2=D2P
+    <- join-left-cancels M1+M2=M3 M1+M2P=M3 eq/ eq/ M2=M2P
+    <- map/+-preserves-eq nat`eq/ D2=D2P M2=M2P M122=M122P.
+
+- : join-left-cancels (join/< M1+M022=M3 N0+1+N1=N2) 
+                      (join/< M1+M022P=M3 N0P+1+N1=N2P) eq/ eq/ M222=M222P
+    <- join-left-cancels M1+M022=M3 M1+M022P=M3 eq/ eq/ M022=M022P
+    <- map/+-preserves-eq-converse M022=M022P N0=N0P D2=D2P M2=M2P
+    <- nat`succ-deterministic N0=N0P N0+1=N0P+1
+    <- nat`plus-deterministic N0+1+N1=N2 N0P+1+N1=N2P N0+1=N0P+1 nat`eq/ N2=N2P
+    <- map/+-preserves-eq N2=N2P D2=D2P M2=M2P M222=M222P.
+
+- : join-left-cancels (join/> M311+M2=M3 N3+1+N2=N1)
+                      (join/> M3'11+M2'=M3 N3'+1+N2=N1) eq/ eq/ M222=M222'
+    <- nat`plus-right-cancels N3+1+N2=N1 N3'+1+N2=N1 nat`eq/ nat`eq/ N3+1=N3'+1
+    <- nat`succ-cancels N3+1=N3'+1 N3=N3P
+    <- map/+-preserves-eq N3=N3P data`eq/ eq/ M311=M3'11
+    <- join-left-cancels M311+M2=M3 M3'11+M2'=M3 M311=M3'11 eq/ M2=M2'
+    <- map/+-preserves-eq nat`eq/ data`eq/ M2=M2' M222=M222'.
+
+%% contradiction cases
+
+- : join-left-cancels (join/= _ D1+D2=D1 nat`eq/) (join/< _ _) eq/ eq/ E
+    <- data`join-no-right-identity D1+D2=D1 F
+    <- false-implies-eq F E.
+
+- : join-left-cancels (join/= _ _ nat`eq/) (join/> _ N3+1+N=N) eq/ eq/ E
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : join-left-cancels (join/< _ _) (join/= _ D1+D2=D1 nat`eq/) eq/ eq/ E
+    <- data`join-no-right-identity D1+D2=D1 F
+    <- false-implies-eq F E.
+
+- : join-left-cancels (join/< _ _) (join/> _ N3+1+N=N) eq/ eq/ E
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : join-left-cancels (join/> _ N3+1+N=N) (join/= _ _ nat`eq/) eq/ eq/ E
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+- : join-left-cancels (join/> _ N3+1+N=N) (join/< _ _) eq/ eq/ E
+    <- nat`plus-implies-gt N3+1+N=N nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-eq F E.
+
+%worlds () (join-left-cancels _ _ _ _ _).
+%total [J JP] (join-left-cancels J JP _ _ _).
+
+%{%
+/* Additionally if join is commutative, we define join-right-cancels */
+#ifdef DATA_JOIN_COMMUTATIVE
+%}%
+
+%theorem join-right-cancels :
+	forall* {M1} {M2} {M3} {M1P} {M2P} {M3P}
+	forall {J:join M1 M2 M3} {JP:join M1P M2P M3P}
+	       {E1:eq M2 M2P} {E3:eq M3 M3P}
+	exists {E2:eq M1 M1P}
+	true.
+
+- : join-right-cancels M1+M2=M3 M1P+M2P=M3P M2=M2P M3=M3P M1=M1P
+    <- join-commutative M1+M2=M3 M2+M1=M3
+    <- join-commutative M1P+M2P=M3P M2P+M1P=M3P
+    <- join-left-cancels M2+M1=M3 M2P+M1P=M3P M2=M2P M3=M3P M1=M1P.
+
+%worlds () (join-right-cancels _ _ _ _ _).
+%total { } (join-right-cancels _ _ _ _ _).
+
+%{%
+#endif
+#endif
+#endif
+%}%
+
+%theorem lookup-implies-join :
+	forall* {M} {N} {D}
+	forall {L:lookup M N D}
+	exists {M-} {F:fresh M- N}
+	       {A:join (map/+ N D map/0) M- M}
+	true.
+
+- : lookup-implies-join (lookup/= nat`eq/) _
+                        (fresh/0) (join/R).
+
+- : lookup-implies-join (lookup/= nat`eq/) _
+                        (fresh/< N2>N1) 
+                        (join/< join/L N0+1+N1=N2)
+    <- nat`plus-total N0+1+N1=N2
+    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1.
+
+- : lookup-implies-join (lookup/> L N0+1+N1=N2) _
+                        (fresh/> F N0+1+N1=N2)
+			(join/> A N0+1+N1=N2)
+    <- lookup-implies-join  L _ F A.
+
+%worlds () (lookup-implies-join _ _ _ _).
+%total (L) (lookup-implies-join L _ _ _).
+
+
+%theorem join-joins-lookup :
+	forall* {M1} {M2} {M3} {N} {D1} {D2}
+	forall {L1:lookup M1 N D1} {L2:lookup M2 N D2}
+               {A:join M1 M2 M3}
+	exists {D3} {J:data`join D1 D2 D3} {L3:lookup M3 N D3}
+	true.
+
+- : join-joins-lookup (lookup/= nat`eq/) (lookup/= nat`eq/) A
+                           _ AD L3
+    <- join/=-inversion A nat`eq/ _ _ AD _ M=M133
+    <- eq-symmetric M=M133 M133=M
+    <- lookup-respects-eq (lookup/= nat`eq/) M133=M nat`eq/ data`eq/ L3.
+
+- : join-joins-lookup (lookup/> L1 N0+1+N1=N2)
+                           (lookup/= nat`eq/) A _ AD L3P
+    <- join/<-inversion A N0+1+N1=N2 M3 M1+M022=M3 M=M113
+    <- join-joins-lookup L1 (lookup/= nat`eq/) M1+M022=M3 _ AD L3
+    <- eq-symmetric M=M113 M113=M
+    <- lookup-respects-eq (lookup/> L3 N0+1+N1=N2) M113=M  nat`eq/ data`eq/ L3P.
+
+- : join-joins-lookup (lookup/= nat`eq/) 
+                           (lookup/> L2 N3+1+N2=N1) A _ AD L3P
+    <- join/>-inversion A N3+1+N2=N1 M3 M311+M2=M3 M=M223
+    <- join-joins-lookup (lookup/= nat`eq/) L2 M311+M2=M3 _ AD L3
+    <- eq-symmetric M=M223 M223=M
+    <- lookup-respects-eq (lookup/> L3 N3+1+N2=N1) M223=M  nat`eq/ data`eq/ L3P.
+
+- : join-joins-lookup (lookup/> L1P N4+1+N1=N)
+                           (lookup/> L2 N5+1+N2=N)
+                           (join/= M1+M2=M3 _ nat`eq/) _ AD
+                           (lookup/> L N5+1+N2=N)
+    <- plus-right-cancels N4+1+N1=N N5+1+N2=N nat`eq/ nat`eq/ N4+1=N5+1
+    <- succ-cancels N4+1=N5+1 N4=N5
+    <- lookup-respects-eq L1P eq/ N4=N5 data`eq/ L1
+    <- join-joins-lookup L1 L2 M1+M2=M3 _ AD L.
+
+- : join-joins-lookup (lookup/> L1 N4+1+N1=N)
+                           (lookup/> L2 N5+1+N2=N)
+                           (join/< M1+M022=M3 N0+1+N1=N2) _ AD
+			   (lookup/> L3 N4+1+N1=N)
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-associative-converse N0+N1+1=N2 N5+1+N2=N N6 N5+1+N0=N6 N6+N1+1=N
+    <- plus-swap-succ N4+1+N1=N N4+N1+1=N
+    <- plus-right-cancels N6+N1+1=N N4+N1+1=N nat`eq/ nat`eq/ N6=N4
+    <- plus-respects-eq N5+1+N0=N6 nat`eq/ nat`eq/ N6=N4 N5+1+N0=N4
+    <- join-joins-lookup 
+       L1 (lookup/> L2 N5+1+N0=N4) M1+M022=M3 _ AD L3.
+
+- : join-joins-lookup (lookup/> L1 N4+1+N1=N)
+                           (lookup/> L2 N5+1+N2=N)
+                           (join/> M311+M2=M3 N3+1+N2=N1) _ AD
+                           (lookup/> L3 N5+1+N2=N)
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-associative-converse N3+N2+1=N1 N4+1+N1=N N6 N4+1+N3=N6 N6+N2+1=N
+    <- plus-swap-succ N5+1+N2=N N5+N2+1=N
+    <- plus-right-cancels N6+N2+1=N N5+N2+1=N nat`eq/ nat`eq/ N6=N5
+    <- plus-respects-eq N4+1+N3=N6 nat`eq/ nat`eq/ N6=N5 N4+1+N3=N5
+    <- join-joins-lookup
+       (lookup/> L1 N4+1+N3=N5) L2 M311+M2=M3 _ AD L3.
+
+%worlds () (join-joins-lookup _ _ _ _ _ _).
+%total (A) (join-joins-lookup _ _ A _ _ _).
+
+
+%theorem join-preserves-fresh* :
+	forall* {M1} {M2} {M3} {N}
+	forall {F1:fresh M1 N} {F2:fresh M2 N}
+               {A:join M1 M2 M3}
+	exists {F3:fresh M3 N}
+	true.
+	
+- : join-preserves-fresh* _ F join/L F.
+
+- : join-preserves-fresh* F _ join/R F.
+
+- : join-preserves-fresh* (fresh/< N<N1) (fresh/< _) (join/= _ _ _) 
+                          (fresh/< N<N1).
+
+- : join-preserves-fresh* (fresh/< N<N1) (fresh/< _) (join/< _ _) 
+                          (fresh/< N<N1).
+
+- : join-preserves-fresh* (fresh/< _) (fresh/< N<N2) (join/> _ _) 
+                          (fresh/< N<N2).
+
+- : join-preserves-fresh* (fresh/< N<N1) (fresh/> F2 N4+1+N2=N) AX F3X
+    <- gt-implies-plus N<N1 N0 N0+1+N=N1
+    <- plus-swap-succ N4+1+N2=N N4+N2+1=N
+    <- plus-associative-converse N4+N2+1=N N0+1+N=N1 N3 N0+1+N4=N3 N3+N2+1=N1
+    <- plus-swap-succ-converse N3+N2+1=N1 N3+1+N2=N1
+    <- join/>-inversion AX N3+1+N2=N1 M3 A M=M223
+    <- plus-implies-gt N0+1+N4=N3 nat`eq/ N4<N3
+    <- join-preserves-fresh* (fresh/< N4<N3) F2 A F3
+    <- eq-symmetric M=M223 M223=M
+    <- fresh-respects-eq (fresh/> F3 N4+1+N2=N) M223=M nat`eq/ F3X.
+
+- : join-preserves-fresh* (fresh/> F1 N3+1+N1=N) (fresh/< N<N2) AX F3X
+    <- gt-implies-plus N<N2 N4 N4+1+N=N2
+    <- plus-swap-succ N3+1+N1=N N2+N1+1=N
+    <- plus-associative-converse N2+N1+1=N N4+1+N=N2 N0 N4+1+N2=N0 N0+N1+1=N2
+    <- plus-swap-succ-converse N0+N1+1=N2 N0+1+N1=N2
+    <- join/<-inversion AX N0+1+N1=N2 M3 A M=M113
+    <- plus-implies-gt N4+1+N2=N0 nat`eq/ N2<N0
+    <- join-preserves-fresh* F1 (fresh/< N2<N0) A F3
+    <- eq-symmetric M=M113 M113=M
+    <- fresh-respects-eq (fresh/> F3 N3+1+N1=N) M113=M nat`eq/ F3X.
+
+- : join-preserves-fresh* (fresh/> F1 N3+1+N1=N) (fresh/> F2P N4+1+N2=N) 
+                          (join/= A _ N1=N2) (fresh/> F3 N3+1+N1=N)
+    <- plus-right-cancels N3+1+N1=N N4+1+N2=N N1=N2 nat`eq/ N3+1=N4+1
+    <- succ-cancels N3+1=N4+1 N3=N4
+    <- nat`eq-symmetric N3=N4 N4=N3
+    <- fresh-respects-eq F2P eq/ N4=N3 F2
+    <- join-preserves-fresh* F1 F2 A F3.
+
+- : join-preserves-fresh* (fresh/> F1 N3+1+N1=N) (fresh/> F2 N4+1+N2=N) 
+                          (join/< A N0+1+N1=N2) (fresh/> F3 N3+1+N1=N)
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-associative-converse N0+N1+1=N2 N4+1+N2=N N6 N4+1+N0=N6 N6+N1+1=N
+    <- plus-swap-succ N3+1+N1=N N3+N1+1=N
+    <- plus-right-cancels N6+N1+1=N N3+N1+1=N nat`eq/ nat`eq/ N6=N3
+    <- plus-respects-eq N4+1+N0=N6 nat`eq/ nat`eq/ N6=N3 N4+1+N0=N3
+    <- join-preserves-fresh* F1 (fresh/> F2 N4+1+N0=N3) A F3.
+
+- : join-preserves-fresh* (fresh/> F1 N3+1+N1=N) (fresh/> F2 N4+1+N2=N) 
+                          (join/> A N0+1+N2=N1) (fresh/> F3 N4+1+N2=N)
+    <- plus-swap-succ N0+1+N2=N1 N0+N2+1=N1
+    <- plus-associative-converse N0+N2+1=N1 N3+1+N1=N N6 N3+1+N0=N6 N6+N2+1=N
+    <- plus-swap-succ N4+1+N2=N N4+N2+1=N
+    <- plus-right-cancels N6+N2+1=N N4+N2+1=N nat`eq/ nat`eq/ N6=N4
+    <- plus-respects-eq N3+1+N0=N6 nat`eq/ nat`eq/ N6=N4 N3+1+N0=N4
+    <- join-preserves-fresh* (fresh/> F1 N3+1+N0=N4) F2 A F3.
+
+%worlds () (join-preserves-fresh* _ _ _ _).
+%total (A) (join-preserves-fresh* _ _ A _).
+
+
+%theorem fresh-join-left-preserves-lookup* :
+	forall* {M1} {M2} {M3} {N} {D}
+	forall {F1:fresh M1 N} {L2:lookup M2 N D} 
+               {A:join M1 M2 M3}
+	exists {L3:lookup M3 N D}
+	true.
+
+- : fresh-join-left-preserves-lookup* _ L join/L L.
+
+- : fresh-join-left-preserves-lookup* (fresh/< N2<N1) (lookup/= nat`eq/) AX L3X
+    <- gt-implies-plus N2<N1 N3 N3+1+N2=N1
+    <- join/>-inversion AX N3+1+N2=N1 M3 A M=M223
+    <- eq-symmetric M=M223 M223=M
+    <- lookup-respects-eq (lookup/= nat`eq/) M223=M nat`eq/ data`eq/ L3X.
+
+- : fresh-join-left-preserves-lookup* (fresh/< N<N1) (lookup/> L2 N4+1+N2=N)
+                                      AX L3X
+    <- gt-implies-plus N<N1 N0 N0+1+N=N1
+    <- plus-swap-succ N4+1+N2=N N4+N2+1=N
+    <- plus-associative-converse N4+N2+1=N N0+1+N=N1 N3 N0+1+N4=N3 N3+N2+1=N1
+    <- plus-swap-succ-converse N3+N2+1=N1 N3+1+N2=N1
+    <- join/>-inversion AX N3+1+N2=N1 M3 A M=M223
+    <- eq-symmetric M=M223 M223=M
+    <- plus-implies-gt N0+1+N4=N3 nat`eq/ N3>N4
+    <- fresh-join-left-preserves-lookup* (fresh/< N3>N4) L2 A L3
+    <- lookup-respects-eq (lookup/> L3 N4+1+N2=N) M223=M nat`eq/ data`eq/ L3X.
+ 
+- : fresh-join-left-preserves-lookup* (fresh/> F1 N0+1+N1=N2) 
+                                      (lookup/= nat`eq/) AX L3X
+    <- join/<-inversion AX N0+1+N1=N2 M3 A M=M113
+    <- eq-symmetric M=M113 M113=M
+    <- fresh-join-left-preserves-lookup* F1 (lookup/= nat`eq/) A L3
+    <- lookup-respects-eq (lookup/> L3 N0+1+N1=N2) M113=M nat`eq/ data`eq/ L3X.
+
+- : fresh-join-left-preserves-lookup* (fresh/> F1P N4+1+N1=N)
+                                      (lookup/> L2 N5+1+N1=N)
+                                      (join/= A _ nat`eq/) 
+                                      (lookup/> L3 N5+1+N1=N)
+    <- plus-right-cancels N4+1+N1=N N5+1+N1=N nat`eq/ nat`eq/ N4+1=N5+1
+    <- succ-cancels N4+1=N5+1 N4=N5
+    <- fresh-respects-eq F1P eq/ N4=N5 F1
+    <- fresh-join-left-preserves-lookup* F1 L2 A L3.
+
+- : fresh-join-left-preserves-lookup* (fresh/> F1 N4+1+N1=N)
+                                      (lookup/> L2 N5+1+N2=N)
+                                      (join/< A N0+1+N1=N2)
+                                      (lookup/> L3 N4+1+N1=N)
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-associative-converse N0+N1+1=N2 N5+1+N2=N N3 N5+1+N0=N3 N3+N1+1=N
+    <- plus-swap-succ N4+1+N1=N N4+N1+1=N
+    <- plus-right-cancels N3+N1+1=N N4+N1+1=N nat`eq/ nat`eq/ N3=N4
+    <- plus-respects-eq N5+1+N0=N3 nat`eq/ nat`eq/ N3=N4 N5+1+N0=N4
+    <- fresh-join-left-preserves-lookup* F1 (lookup/> L2 N5+1+N0=N4) A L3.
+
+- : fresh-join-left-preserves-lookup* (fresh/> F1 N4+1+N1=N)
+                                      (lookup/> L2 N5+1+N2=N)
+                                      (join/> A N3+1+N2=N1)
+                                      (lookup/> L3 N5+1+N2=N)
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-associative-converse N3+N2+1=N1 N4+1+N1=N N6 N4+1+N3=N6 N6+N2+1=N
+    <- plus-swap-succ N5+1+N2=N N5+N2+1=N
+    <- plus-right-cancels N6+N2+1=N N5+N2+1=N nat`eq/ nat`eq/ N6=N5
+    <- plus-respects-eq N4+1+N3=N6 nat`eq/ nat`eq/ N6=N5 N4+1+N3=N5
+    <- fresh-join-left-preserves-lookup* (fresh/> F1 N4+1+N3=N5) L2 A L3.
+
+%worlds () (fresh-join-left-preserves-lookup* _ _ _ _).
+%total (A) (fresh-join-left-preserves-lookup* _ _ A _).
+
+
+%theorem fresh-join-left-preserves-lookup-converse :
+	forall* {M1} {M2} {M3} {N} {D}
+	forall {F1:fresh M1 N} {L3:lookup M3 N D} 
+               {A:join M1 M2 M3}
+	exists {L2:lookup M2 N D}
+	true.
+
+%theorem fresh-join-left-preserves-lookup-converse/L :
+	forall* {M1} {M2} {M3} {N} {D} {B}
+	forall {F1:fresh M1 N} {L3:lookup M3 N D} 
+               {A:join M1 M2 M3}
+               {D?:domain? M2 N B}
+	exists {L2:lookup M2 N D}
+	true.
+
+- : fresh-join-left-preserves-lookup-converse F1 L3 A L2
+    <- domain?-total D?
+    <- fresh-join-left-preserves-lookup-converse/L F1 L3 A D? L2.
+
+- : fresh-join-left-preserves-lookup-converse/L 
+     F1 L3 A (domain?/in L2') L2
+    <- fresh-join-left-preserves-lookup* F1 L2' A L3'
+    <- lookup-deterministic L3' L3 eq/ nat`eq/ D'=D
+    <- lookup-respects-eq L2' eq/ nat`eq/ D'=D L2.
+
+- : fresh-join-left-preserves-lookup-converse/L
+     F1 L3 A (domain?/out F2) L2
+    <- join-preserves-fresh* F1 F2 A F3
+    <- fresh-lookup-not-equal F3 L3 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-lookup F L2.
+
+%worlds () (fresh-join-left-preserves-lookup-converse/L _ _ _ _ _).
+%total { } (fresh-join-left-preserves-lookup-converse/L _ _ _ _ _).
+
+%worlds () (fresh-join-left-preserves-lookup-converse _ _ _ _).
+%total { } (fresh-join-left-preserves-lookup-converse _ _ _ _).
+
+%{%
+#ifdef DATA_JOIN_COMMUTATIVE
+/* being lazy: don't want to do the hard work again */
+%}%
+
+%theorem fresh-join-right-preserves-lookup* :
+	forall* {M1} {M2} {M3} {N} {D}
+	forall {L1:lookup M1 N D} {F2:fresh M2 N}
+               {A:join M1 M2 M3}
+	exists {L3:lookup M3 N D}
+	true.
+
+- : fresh-join-right-preserves-lookup* L1 F2 A L3
+    <- join-commutative A Ac
+    <- fresh-join-left-preserves-lookup* F2 L1 Ac L3.
+
+%worlds () (fresh-join-right-preserves-lookup* _ _ _ _).
+%total { } (fresh-join-right-preserves-lookup* _ _ _ _).
+
+
+%theorem fresh-join-right-preserves-lookup-converse :
+	forall* {M1} {M2} {M3} {N} {D}
+	forall {L3:lookup M3 N D} {F2:fresh M2 N}
+               {A:join M1 M2 M3}
+	exists {L1:lookup M1 N D}
+	true.
+
+%theorem fresh-join-right-preserves-lookup-converse/L :
+	forall* {M1} {M2} {M3} {N} {D} {B}
+	forall {L3:lookup M3 N D} {F2:fresh M2 N}
+               {A:join M1 M2 M3}
+	       {D?:domain? M1 N B}
+	exists {L1:lookup M1 N D}
+	true.
+
+- : fresh-join-right-preserves-lookup-converse L3 F2 A L1
+    <- domain?-total D?
+    <- fresh-join-right-preserves-lookup-converse/L L3 F2 A D? L1.
+
+- : fresh-join-right-preserves-lookup-converse/L 
+     L3 F2 A (domain?/in L1') L1
+    <- fresh-join-right-preserves-lookup* L1' F2 A L3'
+    <- lookup-deterministic L3' L3 eq/ nat`eq/ D'=D
+    <- lookup-respects-eq L1' eq/ nat`eq/ D'=D L1.
+
+- : fresh-join-right-preserves-lookup-converse/L
+     L3 F2 A (domain?/out F1) L1
+    <- join-preserves-fresh* F1 F2 A F3
+    <- fresh-lookup-not-equal F3 L3 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-lookup F L1.
+
+%worlds () (fresh-join-right-preserves-lookup-converse/L _ _ _ _ _).
+%total { } (fresh-join-right-preserves-lookup-converse/L _ _ _ _ _).
+
+%worlds () (fresh-join-right-preserves-lookup-converse _ _ _ _).
+%total { } (fresh-join-right-preserves-lookup-converse _ _ _ _).
+
+%{%
+#ifdef DATA_JOIN_NO_RIGHT_IDENTITY
+%}%
+
+%theorem join-right-preserves-lookup-implies-fresh  :
+	forall* {M1} {M2} {M3} {N} {D}
+	forall {L1:lookup M1 N D}
+               {A:join M1 M2 M3}
+	       {L3:lookup M3 N D} 
+	exists {F2:fresh M2 N} 
+	true.
+
+%theorem join-right-preserves-lookup-implies-fresh/L  :
+	forall* {M1} {M2} {M3} {N} {D} {B}
+	forall {L1:lookup M1 N D}
+               {A:join M1 M2 M3}
+	       {L3:lookup M3 N D} 
+	       {D?:domain? M2 N B}
+	exists {F2:fresh M2 N} 
+	true.
+
+- : join-right-preserves-lookup-implies-fresh L1 A L3 F2
+    <- domain?-total D?
+    <- join-right-preserves-lookup-implies-fresh/L L1 A L3 D? F2.
+
+- : join-right-preserves-lookup-implies-fresh/L _ _ _ (domain?/out F2) F2.
+
+- : join-right-preserves-lookup-implies-fresh/L L1 A L3 (domain?/in L2) F2
+    <- join-joins-lookup L1 L2 A D12 D1+D2=D12 L12
+    <- lookup-deterministic L12 L3 eq/ nat`eq/ D12=D1
+    <- data`join-respects-eq D1+D2=D12 data`eq/ data`eq/ D12=D1 D1+D2=D1
+    <- data`join-no-right-identity D1+D2=D1 F
+    <- false-implies-fresh F F2.
+
+%worlds () (join-right-preserves-lookup-implies-fresh/L _ _ _ _ _).
+%total { } (join-right-preserves-lookup-implies-fresh/L _ _ _ _ _).
+
+%worlds () (join-right-preserves-lookup-implies-fresh _ _ _ _).
+%total { } (join-right-preserves-lookup-implies-fresh _ _ _ _).
+
+%{%
+#endif
+%}%
+
+%theorem join-preserves-fresh-converse* :
+	forall* {M1} {M2} {M3} {N}
+	forall {F3:fresh M3 N}
+               {A:join M1 M2 M3}
+	exists {F1:fresh M1 N} {F2:fresh M2 N}
+	true.
+
+%theorem join-preserves-fresh-converse/L :
+	forall* {M1} {M2} {M3} {N} {B1} {B2}
+	forall {F3:fresh M3 N}
+               {A:join M1 M2 M3}
+               {D1:domain? M1 N B1}
+               {D2:domain? M2 N B2}
+	exists {F1:fresh M1 N} {F2:fresh M2 N}
+	true.
+
+- : join-preserves-fresh-converse* F3 A F1 F2
+    <- domain?-total D1
+    <- domain?-total D2
+    <- join-preserves-fresh-converse/L F3 A D1 D2 F1 F2.
+
+- : join-preserves-fresh-converse/L _ _
+     (domain?/out F1) (domain?/out F2) F1 F2.
+
+- : join-preserves-fresh-converse/L F3 A
+     (domain?/out F1) (domain?/in L2) F1 F2
+    <- fresh-join-left-preserves-lookup* F1 L2 A L3
+    <- fresh-lookup-not-equal F3 L3 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-fresh F F2.
+
+- : join-preserves-fresh-converse/L F3 A
+     (domain?/in L1) (domain?/out F2) F1 F2
+    <- fresh-join-right-preserves-lookup* L1 F2 A L3
+    <- fresh-lookup-not-equal F3 L3 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-fresh F F1.
+
+- : join-preserves-fresh-converse/L F3 A
+     (domain?/in L1) (domain?/in L2) F1 F2
+    <- join-joins-lookup L1 L2 A _ _ L3
+    <- fresh-lookup-not-equal F3 L3 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-fresh F F1
+    <- false-implies-fresh F F2.
+
+%worlds () (join-preserves-fresh-converse/L _ _ _ _ _ _).
+%total { } (join-preserves-fresh-converse/L _ _ _ _ _ _).
+
+%worlds () (join-preserves-fresh-converse* _ _ _ _).
+%total { } (join-preserves-fresh-converse* _ _ _ _).
+
+%{%
+#endif /* DATA_JOIN_COMMUTATIVE */
+%}%
+
+%theorem disjoint-join-left-preserves-lookup* :
+	forall* {M1} {M2} {M3} {N} {D}
+	forall {L2:lookup M2 N D}
+               {X:disjoint M1 M2}
+               {A:join M1 M2 M3}
+	exists {L3:lookup M3 N D}
+	true.
+
+%theorem disjoint-join-left-preserves-lookup*/L :
+	forall* {M1} {M2} {M3} {N} {D} {B}
+	forall {L2:lookup M2 N D}
+               {X:disjoint M1 M2}
+               {A:join M1 M2 M3}
+               {D?:domain? M1 N B}
+	exists {L3:lookup M3 N D}
+	true.
+
+- : disjoint-join-left-preserves-lookup* L2 X A L3
+    <- domain?-total D?
+    <- disjoint-join-left-preserves-lookup*/L L2 X A D? L3.
+
+- : disjoint-join-left-preserves-lookup*/L L2 X A (domain?/in L1) L3
+    <- disjoint-lookup-contradiction X L1 L2 F
+    <- false-implies-lookup F L3.
+
+- : disjoint-join-left-preserves-lookup*/L L2 X A (domain?/out F1) L3
+    <- fresh-join-left-preserves-lookup* F1 L2 A L3.
+
+%worlds () (disjoint-join-left-preserves-lookup*/L _ _ _ _ _).
+%total { } (disjoint-join-left-preserves-lookup*/L _ _ _ _ _).
+
+%worlds () (disjoint-join-left-preserves-lookup* _ _ _ _).
+%total { } (disjoint-join-left-preserves-lookup* _ _ _ _).
+
+%{%
+#ifdef DATA_JOIN_COMMUTATIVE
+/* because of laziness above */
+%}%
+
+%theorem disjoint-join-right-preserves-lookup* :
+	forall* {M1} {M2} {M3} {N} {D}
+	forall {L1:lookup M1 N D}
+               {X:disjoint M1 M2}
+               {A:join M1 M2 M3}
+	exists {L3:lookup M3 N D}
+	true.
+
+%theorem disjoint-join-right-preserves-lookup*/L :
+	forall* {M1} {M2} {M3} {N} {D} {B}
+	forall {L1:lookup M1 N D}
+               {X:disjoint M1 M2}
+               {A:join M1 M2 M3}
+               {D?:domain? M2 N B}
+	exists {L3:lookup M3 N D}
+	true.
+
+- : disjoint-join-right-preserves-lookup* L1 X A L3
+    <- domain?-total D?
+    <- disjoint-join-right-preserves-lookup*/L L1 X A D? L3.
+
+- : disjoint-join-right-preserves-lookup*/L L1 X A (domain?/in L2) L3
+    <- disjoint-lookup-contradiction X L1 L2 F
+    <- false-implies-lookup F L3.
+
+- : disjoint-join-right-preserves-lookup*/L L1 X A (domain?/out F2) L3
+    <- fresh-join-right-preserves-lookup* L1 F2 A L3.
+
+%worlds () (disjoint-join-right-preserves-lookup*/L _ _ _ _ _).
+%total { } (disjoint-join-right-preserves-lookup*/L _ _ _ _ _).
+
+%worlds () (disjoint-join-right-preserves-lookup* _ _ _ _).
+%total { } (disjoint-join-right-preserves-lookup* _ _ _ _).
+
+%{%
+#endif /* DATA_JOIN_COMMUTATIVE */
+
+#ifdef DATA_JOIN_CROSS_COMPARABLE
+%}%
+
+%theorem join-cross-comparable :
+	forall* {C} {C1} {C2} {C3} {C4}
+	forall {A12:join C1 C2 C} {A34:join C3 C4 C}
+	exists {C13} {C14} {C23} {C24}
+	       {A1:join C13 C14 C1} {A2:join C23 C24 C2}
+	       {A3:join C13 C23 C3} {A4:join C14 C24 C4}
+	true.
+
+- : join-cross-comparable join/L C3+C4=C2 _ _ _ _ join/L C3+C4=C2 join/L join/L.
+
+- : join-cross-comparable join/R C3+C4=C1 _ _ _ _ C3+C4=C1 join/R join/R join/R.
+
+- : join-cross-comparable C1+C2=C4 join/L _ _ _ _ join/L join/L join/L C1+C2=C4.
+
+- : join-cross-comparable C1+C2=C3 join/R _ _ _ _ join/R join/R C1+C2=C3 join/R.
+
+- : join-cross-comparable (join/= C1+C2=C Q1+Q2=Q nat`eq/)
+                         (join/= C3+C4=C Q3+Q4=Q nat`eq/) _ _ _ _
+                         (join/= C13+C14=C1 Q13+Q14=Q1 nat`eq/)
+                         (join/= C23+C24=C2 Q23+Q24=Q2 nat`eq/)
+                         (join/= C13+C23=C3 Q13+Q23=Q3 nat`eq/)
+                         (join/= C14+C24=C4 Q14+Q24=Q4 nat`eq/)
+    <- join-cross-comparable C1+C2=C C3+C4=C _ _ _ _ 
+                            C13+C14=C1 C23+C24=C2 C13+C23=C3 C14+C24=C4
+    <- data`join-cross-comparable Q1+Q2=Q Q3+Q4=Q _ _ _ _ 
+                                Q13+Q14=Q1 Q23+Q24=Q2 Q13+Q23=Q3 Q14+Q24=Q4.
+
+- : join-cross-comparable (join/= C1+C2=C Q1+Q2=Q nat`eq/)
+                         (join/< C3+CX4=C N5+1+N3=N4) _ _ _ _
+                         CY1Y3+CY14=CY1
+                         CY2Y3+CY24=CY2
+			 (join/= C13+C23=C3 Q1+Q2=Q nat`eq/)
+			 CY14+CY24=C4
+    <- join-cross-comparable C1+C2=C C3+CX4=C C13 C1X4 C23 C2X4 
+                            C13+C1X4=C1 C23+C2X4=C2 C13+C23=C3 C1X4+C2X4=CX4
+    <- shift-total C1X4<<N=CY14
+    <- shift-total C2X4<<N=CY24
+    <- plus-swap-succ N5+1+N3=N4 N5+N3+1=N4
+    <- plus-commutative N5+N3+1=N4 N3+1+N5=N4
+    <- shift-right-preserves-join C13+C1X4=C1 C1X4<<N=CY14 CY1Y3+CY14=CY1
+    <- shift-right-preserves-join C23+C2X4=C2 C2X4<<N=CY24 CY2Y3+CY24=CY2
+    <- shift-preserves-join C1X4+C2X4=CX4 C1X4<<N=CY14 C2X4<<N=CY24 
+                           (shift/+ N3+1+N5=N4) CY14+CY24=C4.
+
+- : join-cross-comparable (join/= C1+C2=C Q1+Q2=Q nat`eq/)
+                         (join/> CX3+C4=C N5+1+N4=N3) _ _ _ _
+                         CY13+CY1Y4=CY1
+                         CY23+CY2Y4=CY2
+			 CY13+CY23=C3
+			 (join/= C14+C24=C4 Q1+Q2=Q nat`eq/)
+    <- join-cross-comparable C1+C2=C CX3+C4=C C1X3 C14 C2X3 C24 
+                            C1X3+C14=C1 C2X3+C24=C2 C1X3+C2X3=CX3 C14+C24=C4
+    <- shift-total C1X3<<N=CY13
+    <- shift-total C2X3<<N=CY23
+    <- plus-swap-succ N5+1+N4=N3 N5+N4+1=N3
+    <- plus-commutative N5+N4+1=N3 N4+1+N5=N3
+    <- shift-left-preserves-join C1X3+C14=C1 C1X3<<N=CY13 CY13+CY1Y4=CY1
+    <- shift-left-preserves-join C2X3+C24=C2 C2X3<<N=CY23 CY23+CY2Y4=CY2
+    <- shift-preserves-join C1X3+C2X3=CX3 C1X3<<N=CY13 C2X3<<N=CY23 
+                           (shift/+ N4+1+N5=N3) CY13+CY23=C3.
+
+
+- : join-cross-comparable (join/< C1+CX2=C N0+1+N1=N2)
+			 (join/= C3+C4=C Q3+Q4=Q nat`eq/) _ _ _ _
+			 (join/= C13+C14=C1 Q3+Q4=Q nat`eq/)
+                         C23+C24=C2
+                         CY1Y3+C2Y3=CY3
+                         CY1Y4+C2Y4=CY4
+    <- join-cross-comparable C1+CX2=C C3+C4=C C13 C14 CX23 CX24 
+                            C13+C14=C1 CX23+CX24=CX2 C13+CX23=C3 C14+CX24=C4
+    <- shift-total CX23<<N=C2Y3
+    <- shift-total CX24<<N=C2Y4
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
+    <- shift-right-preserves-join C13+CX23=C3 CX23<<N=C2Y3 CY1Y3+C2Y3=CY3
+    <- shift-right-preserves-join C14+CX24=C4 CX24<<N=C2Y4 CY1Y4+C2Y4=CY4
+    <- shift-preserves-join CX23+CX24=CX2 CX23<<N=C2Y3 CX24<<N=C2Y4 
+			   (shift/+ N1+1+N0=N2) C23+C24=C2.
+
+- : join-cross-comparable (join/> CX1+C2=C N0+1+N2=N1)
+			 (join/= C3+C4=C Q3+Q4=Q nat`eq/) _ _ _ _
+                         C13+C14=C1
+			 (join/= C23+C24=C2 Q3+Q4=Q nat`eq/)
+			 C1Y3+CY2Y3=CY3
+                         C1Y4+CY2Y4=CY4
+    <- join-cross-comparable CX1+C2=C C3+C4=C _ _ _ _ 
+                            CX13+CX14=CX1 C23+C24=C2 CX13+C23=C3 CX14+C24=C4
+    <- shift-total CX13<<N=C1Y3
+    <- shift-total CX14<<N=C1Y4
+    <- plus-swap-succ N0+1+N2=N1 N0+N2+1=N1
+    <- plus-commutative N0+N2+1=N1 N2+1+N0=N1
+    <- shift-left-preserves-join CX13+C23=C3 CX13<<N=C1Y3 C1Y3+CY2Y3=CY3
+    <- shift-left-preserves-join CX14+C24=C4 CX14<<N=C1Y4 C1Y4+CY2Y4=CY4
+    <- shift-preserves-join CX13+CX14=CX1 CX13<<N=C1Y3 CX14<<N=C1Y4 
+			   (shift/+ N2+1+N0=N1) C13+C14=C1.
+
+- : join-cross-comparable (join/< C1+CX2=C N0+1+N1=N2)
+                         (join/< C3+CX4=C N5+1+N3=N4) _ _ _ _ % NB N1=N3=N
+                         CY1Y3+CY14=CY1
+			 C2Y3+C24=C2
+			 CY1Y3+C2Y3=CY3
+			 CY14+C24=C4
+    <- join-cross-comparable C1+CX2=C C3+CX4=C C13 C1X4 CX23 CX2X4
+	C13+C1X4=C1 CX23+CX2X4=CX2 C13+CX23=C3 C1X4+CX2X4=CX4
+    <- shift-total C1X4<<N=CY14
+    <- shift-total CX23<<N=C2Y3
+    <- shift-total CX2X4<<N=C24
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
+    <- shift-right-preserves-join C13+C1X4=C1 C1X4<<N=CY14 CY1Y3+CY14=CY1
+    <- shift-preserves-join CX23+CX2X4=CX2 
+	CX23<<N=C2Y3 CX2X4<<N=C24 (shift/+ N1+1+N0=N2) C2Y3+C24=C2
+    <- shift-right-preserves-join C13+CX23=C3 CX23<<N=C2Y3 CY1Y3+C2Y3=CY3
+    <- plus-swap-succ N5+1+N3=N4 N5+N3+1=N4
+    <- plus-commutative N5+N3+1=N4 N3+1+N5=N4
+    <- shift-preserves-join C1X4+CX2X4=CX4
+	C1X4<<N=CY14 CX2X4<<N=C24 (shift/+ N3+1+N5=N4) CY14+C24=C4.
+
+- : join-cross-comparable (join/< C1+CX2=C N0+1+N1=N2)
+                         (join/> CX3+C4=C N5+1+N4=N3) _ _ _ _ % NB N1=N4=N
+                         CY13+CY1Y4=CY1
+			 C23+C2Y4=C2
+			 CY13+C23=C3
+			 CY1Y4+C2Y4=CY4
+    <- join-cross-comparable C1+CX2=C CX3+C4=C C1X3 C14 CX2X3 CX24
+	C1X3+C14=C1 CX2X3+CX24=CX2 C1X3+CX2X3=CX3 C14+CX24=C4
+    <- shift-total C1X3<<N=CY13
+    <- shift-total CX2X3<<N=C23
+    <- shift-total CX24<<N=C2Y4
+    <- shift-left-preserves-join C1X3+C14=C1 C1X3<<N=CY13 CY13+CY1Y4=CY1
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
+    <- shift-preserves-join CX2X3+CX24=CX2 
+	CX2X3<<N=C23 CX24<<N=C2Y4 (shift/+ N1+1+N0=N2) C23+C2Y4=C2
+    <- plus-swap-succ N5+1+N4=N3 N5+N4+1=N3
+    <- plus-commutative N5+N4+1=N3 N4+1+N5=N3
+    <- shift-preserves-join C1X3+CX2X3=CX3
+	C1X3<<N=CY13 CX2X3<<N=C23 (shift/+ N4+1+N5=N3) CY13+C23=C3
+    <- shift-right-preserves-join C14+CX24=C4 CX24<<N=C2Y4 CY1Y4+C2Y4=CY4.
+
+
+- : join-cross-comparable (join/> CX1+C2=C N0+1+N2=N1)
+                         (join/< C3+CX4=C N5+1+N3=N4) _ _ _ _ % NB N2=N3=N
+			 C1Y3+C14=C1
+                         CY2Y3+CY24=CY2
+			 C1Y3+CY2Y3=CY3
+			 C14+CY24=C4
+    <- join-cross-comparable CX1+C2=C C3+CX4=C CX13 CX1X4 C23 C2X4
+	CX13+CX1X4=CX1 C23+C2X4=C2 CX13+C23=C3 CX1X4+C2X4=CX4
+    <- shift-total CX13<<N=C1Y3
+    <- shift-total CX1X4<<N=C14
+    <- shift-total C2X4<<N=CY24
+    <- plus-swap-succ N0+1+N2=N1 N0+N2+1=N1
+    <- plus-commutative N0+N2+1=N1 N2+1+N0=N1
+    <- shift-preserves-join CX13+CX1X4=CX1 
+	CX13<<N=C1Y3 CX1X4<<N=C14 (shift/+ N2+1+N0=N1) C1Y3+C14=C1
+    <- shift-right-preserves-join C23+C2X4=C2 C2X4<<N=CY24 CY2Y3+CY24=CY2
+    <- shift-left-preserves-join CX13+C23=C3 CX13<<N=C1Y3 C1Y3+CY2Y3=CY3
+    <- plus-swap-succ N5+1+N3=N4 N5+N3+1=N4
+    <- plus-commutative N5+N3+1=N4 N3+1+N5=N4
+    <- shift-preserves-join CX1X4+C2X4=CX4
+	CX1X4<<N=C14 C2X4<<N=CY24 (shift/+ N3+1+N5=N4) C14+CY24=C4.
+
+- : join-cross-comparable (join/> CX1+C2=C N0+1+N2=N1)
+                         (join/> CX3+C4=C N5+1+N4=N3) _ _ _ _ % NB N2=N4=N
+			 C13+C1Y4=C1
+                         CY23+CY2Y4=CY2
+			 C13+CY23=C3
+			 C1Y4+CY2Y4=CY4
+    <- join-cross-comparable CX1+C2=C CX3+C4=C CX1X3 CX14 C2X3 C2C4
+	CX1X3+CX14=CX1 C2X3+C24=C2 CX1X3+C2X3=CX3 CX14+C24=C4
+    <- shift-total CX1X3<<N=C13
+    <- shift-total CX14<<N=C1Y4
+    <- shift-total C2X3<<N=CY23
+    <- plus-swap-succ N0+1+N2=N1 N0+N2+1=N1
+    <- plus-commutative N0+N2+1=N1 N2+1+N0=N1
+    <- shift-preserves-join CX1X3+CX14=CX1 
+	CX1X3<<N=C13 CX14<<N=C1Y4 (shift/+ N2+1+N0=N1) C13+C1Y4=C1
+    <- shift-left-preserves-join C2X3+C24=C2 C2X3<<N=CY23 CY23+CY2Y4=CY2
+    <- plus-swap-succ N5+1+N4=N3 N5+N4+1=N3
+    <- plus-commutative N5+N4+1=N3 N4+1+N5=N3
+    <- shift-preserves-join CX1X3+C2X3=CX3
+	CX1X3<<N=C13 C2X3<<N=CY23 (shift/+ N4+1+N5=N3) C13+CY23=C3
+    <- shift-left-preserves-join CX14+C24=C4 CX14<<N=C1Y4 C1Y4+CY2Y4=CY4.
+
+%worlds () (join-cross-comparable _ _ _ _ _ _ _ _ _ _).
+%total (A) (join-cross-comparable A _ _ _ _ _ _ _ _ _).
+
+%{%
+#endif /* DATA_JOIN_CROSS_COMPARABLE */
+%}%

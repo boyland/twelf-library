@@ -1,0 +1,50 @@
+%%%%% multiset-help.elf
+%%%%% Theorems needed to help 'multiset' use 'map.'
+%%%%% This file is part of the multiset.elf signature
+
+
+
+%%%% Renamings
+
+
+%{%
+   What follows is a series of renamings, to get
+   the existing nat min/max theorems named in the way
+   the map functor requires.
+%}%
+
+
+ %abbrev nat`leq = nat`le.
+ %abbrev nat`false-implies-leq = nat`false-implies-le.
+ %abbrev nat`leq-reflexive = nat`le-reflexive.
+ %abbrev nat`leq-transitive = nat`le-transitive.
+ %abbrev nat`leq-anti-symmetric = nat`le-anti-symmetric.
+ %abbrev nat`join = nat`max.
+ %abbrev nat`false-implies-join = nat`false-implies-max.
+ %abbrev nat`join-deterministic = nat`max-deterministic.
+ %abbrev nat`join-total* = nat`max-total*.
+ %abbrev nat`join-commutative = nat`max-commutative.
+ %abbrev nat`join-associative = nat`max-associative.
+ %abbrev nat`join-associative* = nat`max-associative*.
+ %abbrev nat`join-left-preserves-leq* = nat`max-left-preserves-le*.
+ %abbrev nat`join-preserves-leq = nat`max-preserves-le.
+ %abbrev nat`join-implies-leq* = [G] [L] nat`max-implies-ge G L IG.
+ %abbrev nat`join-implies-leq = nat`max-implies-ge.
+ %abbrev nat`join-is-lub = nat`max-is-lub.
+
+ %abbrev nat`meet = nat`min.
+ %abbrev nat`false-implies-meet = nat`false-implies-min.
+ %abbrev nat`meet-deterministic = nat`min-deterministic.
+ %abbrev nat`meet-total* = nat`min-total*.
+ %abbrev nat`meet-commutative = nat`min-commutative.
+ %abbrev nat`meet-associative = nat`min-associative.
+ %abbrev nat`meet-associative* = nat`min-associative*.
+ %abbrev nat`meet-implies-leq* = [M] [L] nat`min-implies-ge M L IG.
+ %abbrev nat`meet-left-preserves-leq* = nat`min-left-preserves-le*.
+
+ %abbrev nat`meet-is-glb = nat`min-is-glb.
+ %abbrev nat`meet-right-distributes-over-join = 
+         nat`min-right-distributes-over-max.
+ %abbrev nat`join-right-distributes-over-meet = 
+         nat`max-right-distributes-over-min.
+

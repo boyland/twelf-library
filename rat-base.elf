@@ -1,0 +1,1967 @@
+%%%%% rat-base.elf
+%%%%% Basic definitions, operations and theorems
+%%%%% This file is part of the rat.elf signature
+
+%%%% Imports
+
+
+ %abbrev eq = nat`eq.
+ %abbrev eq/ = nat`eq/.
+
+ %abbrev eq-symmetric = nat`eq-symmetric.
+ %abbrev eq-transitive = nat`eq-transitive.
+
+
+
+%%%% Definitions
+
+
+
+%%% Positive rationals:
+
+
+rat : type.
+
+
+whole : nat -> rat.       %% q = 1 + N
+
+frac : nat -> rat -> rat. %% q = N + 1/(1 + q_1)
+
+
+%% We define the three basic positive rationals:
+
+%abbrev one = whole z.
+
+%abbrev two = whole (s z).
+
+%abbrev half = frac z one.
+
+
+
+equ : rat -> rat -> type.
+
+
+equ/ : equ Q Q.
+
+
+
+
+%%%% Internal definitions
+
+
+
+%{%
+ Users of this package will never need to use "inc" 
+ (use "add one X" instead) and rarely need to use
+ "abs" and "rep", and then only to convert the continued
+ fraction representation to and from natural pairs.
+%}%
+
+
+inc : rat -> rat -> type.
+
+
+inc/whole : inc (whole N) (whole (s N)).
+
+inc/frac : inc (frac N R) (frac (s N) R).
+
+
+%{%
+ My apologies if my use of the terms "abs" and "rep"
+ do not conform with your expectation.  In particular
+ they are misnomers since users of this signature
+ can access the continued fraction representation directly.
+ Furthermore, their names seem swapped since the main
+ operations call abs first and then rep at the end,
+ the opposite of the normal ADT usage.  On the other
+ hand, the operations do not operate on the continued
+ fraction representation, and instead act like users
+ that only understand the NUM/DEN representation.
+%}%
+
+
+%% Give the numerator and denominator of a rational number.
+%% Both numerator and denominator will be positive (non-zero) naturals.
+
+abs : rat -> nat -> nat -> type.
+
+
+abs/whole : abs (whole N) (s N) (s z). %% recall that whole(N) means N+1
+
+abs/frac : abs (frac N R) NUM DEN
+    <- abs R X Y
+    <- plus X Y DEN
+    <- times N DEN Z
+    <- plus Z Y NUM.
+
+
+
+%% Given a numerator and denominator, return the rational.
+
+rep : nat -> nat -> rat -> type.
+
+
+rep/= : rep (s M) (s M) one.
+
+rep/> : rep (s M) (s N) R
+    <- minus (s M) (s N) D
+    <- rep D (s N) R'
+    <- inc R' R.
+
+rep/< : rep (s M) (s N) (frac z R')
+    <- minus (s N) (s M) D
+    <- rep D (s M) R'.
+
+
+
+
+%%%% Basic operations and relations
+
+
+%% The basic relations follow.
+%% Derived relations (sub, div, gre, neq, lst, lse) are defined later.
+
+
+grt : rat -> rat -> type.
+
+
+grt/ : grt Q1 Q2
+    <- abs Q1 M1 N1
+    <- abs Q2 M2 N2
+    <- times M1 N2 P12
+    <- times M2 N1 P21
+    <- gt P12 P21.
+
+
+
+cmp : rat -> rat -> comp -> type.
+
+
+cmp/= : cmp Q Q equal.
+
+cmp/< : cmp Q Q' less <- grt Q' Q.
+
+cmp/> : cmp Q Q' greater <- grt Q Q'.
+
+
+
+add : rat -> rat -> rat -> type.
+
+
+add/ : add Q1 Q2 Q3
+    <- abs Q1 M1 N1
+    <- abs Q2 M2 N2
+    <- times M1 N2 P12
+    <- times M2 N1 P21
+    <- times N1 N2 N12
+    <- plus P12 P21 P12+P21
+    <- rep P12+P21 N12 Q3.
+
+
+
+mul : rat -> rat -> rat -> type.
+
+
+mul/ : mul Q1 Q2 Q3
+    <- abs Q1 M1 N1
+    <- abs Q2 M2 N2
+    <- times M1 M2 M12
+    <- times N1 N2 N12
+    <- rep M12 N12 Q3.
+
+
+%{%
+/* Definitions for use with .i files: */
+#define TYPE rat
+#define EQ equ
+#define GT grt
+#define ADD(X,Y) X+Y
+#define ADDN add
+#define MUL(X,Y) X*Y
+#define MULN mul
+%}%
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about equ
+
+%{%
+#ifdef UNDEF
+			 /* We don't actually need this and clients
+			  * will rarely need to use induction over
+			  * the rationals. 
+			  */
+%% An artificial theorem used only for reduction.
+%theorem meta-equ : forall {Q1} {Q2} {E:equ Q1 Q2} true.
+- : meta-equ Q Q equ/.
+%worlds () (meta-equ _ _ _).
+%total {} (meta-equ _ _ _).
+%reduces Q1 = Q2 (meta-equ Q1 Q2 _).
+#endif
+%}%
+
+%theorem false-implies-equ:
+	forall* {Q} {Q'}
+	forall {F:void}
+        exists {E:equ Q Q'}
+	true.
+
+%worlds () (false-implies-equ _ %{=>}% Q1=Q2).
+%total {} (false-implies-equ _ _).
+
+
+%% trivial, but included for completeness
+%theorem equ-reflexive : forall {Q} exists {E:equ Q Q} true.
+
+- : equ-reflexive _ equ/.
+
+%worlds () (equ-reflexive Q %{=>}% Q=Q).
+%total {} (equ-reflexive _ _).
+
+
+%theorem equ-symmetric:
+	forall* {Q} {Q'}
+	forall {E1:equ Q Q'}
+	exists {E2:equ Q' Q}
+	true.
+
+- : equ-symmetric equ/ equ/.
+
+%worlds () (equ-symmetric Q=Q' %{=>}% Q'=Q).
+%total {} (equ-symmetric _ _).
+
+
+%theorem equ-transitive :
+	forall* {Q} {Q'} {Q''}
+	forall {E1:equ Q Q'} {E2:equ Q' Q''}
+	exists {E3:equ Q Q''}
+	true.
+
+- : equ-transitive equ/ equ/ equ/.
+
+%worlds () (equ-transitive Q=Q' Q'=Q'' %{=>}% Q=Q'').
+%total {} (equ-transitive _ _ _).
+
+
+%theorem whole-preserves-eq :
+	forall* {N} {N'}
+	forall {E1:nat`eq N N'}
+        exists {E3:equ (whole N) (whole N')}
+        true.
+
+- : whole-preserves-eq nat`eq/ equ/.
+
+%worlds () (whole-preserves-eq _ _).
+%total { } (whole-preserves-eq _ _).
+
+
+%theorem frac-preserves-equ :
+	forall* {Q} {Q'} {N} {N'}
+	forall {E1:eq N N'} {E2:equ Q Q'}
+        exists {E3:equ (frac N Q) (frac N' Q')}
+        true.
+
+- : frac-preserves-equ eq/ equ/ equ/.
+
+%worlds () (frac-preserves-equ _ _ _).
+%total {} (frac-preserves-equ _ _ _).
+
+
+
+%%% Theorems about inc
+
+
+%theorem inc-respects-equ:
+	forall* {Q1} {Q2} {Q1'} {Q2'}
+	forall {I1:inc Q1 Q2} {E1:equ Q1 Q1'} {E2:equ Q2 Q2'}
+        exists {I2:inc Q1' Q2'}
+        true.
+
+- : inc-respects-equ I equ/ equ/ I.
+
+%worlds () (inc-respects-equ Q1+1=Q2 Q1=Q1' Q2=Q2' %{=>}% Q1'+1=Q2').
+%total {} (inc-respects-equ _ _ _ _).
+
+
+%theorem inc-total*:
+	forall {R}
+        exists {R'} {I:inc R R'}
+        true.
+
+- : inc-total* (whole N) (whole (s N)) inc/whole.
+
+- : inc-total* (frac N R) (frac (s N) R) inc/frac.
+
+%worlds () (inc-total* R %{=>}% R' R+1=R').
+%total {} (inc-total* _ _ _).
+
+
+%abbrev inc-total = inc-total* _ _.
+
+
+%theorem inc-deterministic : 
+	forall* {Q1} {Q1'} {Q2} {Q2'}
+        forall {I1:inc Q1 Q2} {I2:inc Q1' Q2'} {E1:equ Q1 Q1'}
+        exists {E2:equ Q2 Q2'}
+        true.
+
+- : inc-deterministic inc/whole inc/whole equ/ equ/.
+
+- : inc-deterministic inc/frac inc/frac equ/ equ/.
+
+%worlds () (inc-deterministic Q1+1=Q2 Q1'+1=Q2' Q1=Q1' %{=>}% Q2=Q2').
+%total {} (inc-deterministic _ _ _ _ ).
+
+
+
+
+%%% Theorems about abs
+
+
+%theorem abs-respects-equ :
+	forall* {M} {N} {Q} {M'} {N'} {Q'}
+        forall {R1:abs Q M N}  {E3:equ Q Q'}
+               {E1:eq M M'} {E2:eq N N'}
+        exists {R2:abs Q' M' N'}
+        true.
+
+- : abs-respects-equ R equ/ eq/ eq/ R.
+
+%worlds () (abs-respects-equ Q<-M/N Q=Q' M=M' N=N' %{=>}% Q'<-M'/N').
+%total {} (abs-respects-equ _ _ _ _ _).
+
+
+%theorem abs-deterministic :
+	forall* {Q} {Q'} {M} {M'} {N} {N'}
+	forall {A:abs Q M N} {A':abs Q' M' N'} {E:equ Q Q'}
+        exists {EM:eq M M'} {EN:eq N N'}
+        true.
+
+- : abs-deterministic (abs/whole) (abs/whole) equ/ eq/ eq/.
+
+- : abs-deterministic (abs/frac P3 T2 P1 A) (abs/frac P3' T2' P1' A') equ/
+                      NUM=NUM' DEN=DEN'
+    <- abs-deterministic A A' equ/ X=X' Y=Y'
+    <- plus-deterministic P1 P1' X=X' Y=Y' DEN=DEN'
+    <- times-deterministic T2 T2' eq/ DEN=DEN' Z=Z'
+    <- plus-deterministic P3 P3' Z=Z' Y=Y' NUM=NUM'.
+
+%worlds () (abs-deterministic Q->M/N Q'->M'/N' Q=Q' %{=>}% M=M' N=N').
+%total A (abs-deterministic A _ _ _ _).
+
+
+%theorem abs-total* :
+	forall {Q}
+        exists {M} {N} {A:abs Q (s M) (s N)}
+        true.
+
+- : abs-total* (whole N) N z abs/whole.
+
+- : abs-total* (frac N Q') NUM- DEN- (abs/frac P3 T2 P1 A')
+    <- abs-total* Q' M' N' A'
+    <- plus-total* M' (s N') DEN- P1'
+    <- plus-left-increase P1' P1
+    <- times-total* N (s DEN-) Z T2
+    <- plus-total* Z N' NUM- P3'
+    <- plus-right-increase P3' P3.
+
+%worlds () (abs-total* Q %{=>}% M N Q<-M/N).
+%total Q (abs-total* Q _ _ _).
+
+
+%abbrev abs-total = abs-total* _ _ _.
+
+
+%theorem abs-yields-positive:
+	forall* {Q} {M} {N}
+        forall {A:abs Q M N} 
+        exists {M'} {EM:eq M (s M')} {N'} {EN:eq N (s N')}
+	true.
+
+- : abs-yields-positive A M' M+ N' N+
+    <- abs-total* Q M' N' A'
+    <- abs-deterministic A A' equ/ M+ N+.
+
+%worlds () (abs-yields-positive Q->M/N %{=>}% M-1 M=sM-1 N-1 N=sN-1).
+%total {} (abs-yields-positive _ _ _ _ _).
+
+
+
+%%% Theorems about rep
+
+
+%theorem false-implies-rep :
+	forall* {M} {N} {Q}
+	forall {F:void}
+	exists {R:rep M N Q}
+	true.
+
+%worlds () (false-implies-rep _ %{=>}% M/N->Q).
+%total {} (false-implies-rep _ _).
+
+
+%theorem rep-respects-equ :
+	forall* {M} {N} {Q} {M'} {N'} {Q'}
+        forall {R1:rep M N Q}
+               {E1:eq M M'} {E2:eq N N'} {E3:equ Q Q'}
+        exists {R2:rep M' N' Q'}
+        true.
+
+- : rep-respects-equ R eq/ eq/ equ/ R.
+
+%worlds () (rep-respects-equ M/N->Q M=M' N=N' Q=Q' %{=>}% M'/N'=Q').
+%total {} (rep-respects-equ _ _ _ _ _).
+%reduces R = R' (rep-respects-equ R _ _ _ R').
+
+
+%theorem rep-implies-positive :
+	forall* {M} {N} {Q}
+	forall {R:rep M N Q}
+	exists {M'} {EM:eq M (s M')} {N'} {EN:eq N (s N')}
+	true.
+
+- : rep-implies-positive rep/= _ eq/ _ eq/.
+
+- : rep-implies-positive (rep/> _ _ _) _ eq/ _ eq/.
+
+- : rep-implies-positive (rep/< _ _) _ eq/ _ eq/.
+
+%worlds () (rep-implies-positive M/N->Q %{=>}% M- M+ N- N+).
+%total {} (rep-implies-positive _ _ _ _ _).
+
+
+%theorem rep-inf-contradiction :
+	forall* {M} {N} {Q}
+	forall {R:rep M N Q} {E:eq N z}
+	exists {F:void}
+        true.
+
+%worlds () (rep-inf-contradiction M/N->Q N=0 %{=>}% _).
+%total {} (rep-inf-contradiction _ _ _).
+
+
+%theorem rep-zero-contradiction :
+	forall* {M} {N} {Q}
+        forall {R:rep M N Q} {E:eq M z}
+        exists {F:void}
+        true.
+
+%worlds () (rep-zero-contradiction M/N->Q M=0 %{=>}% _).
+%total {} (rep-zero-contradiction _ _ _).
+
+
+%theorem rep-deterministic :
+	forall* {M} {N} {Q} {M'} {N'} {Q'}
+	forall {R:rep M N Q} {R':rep M' N' Q'} 
+               {EM:eq M M'} {EN:eq N N'}
+        exists {E:equ Q Q'}
+        true.
+
+%% three normal cases
+- : rep-deterministic rep/= rep/= eq/ eq/ equ/.
+
+- : rep-deterministic (rep/> Q1+1=Q D/N->Q1 (plus/s D-+N=M-))
+                      (rep/> Q1'+1=Q' D'/N->Q1' M-N=D') eq/ eq/ Q=Q'
+    <- plus-right-cancels (plus/s D-+N=M-) M-N=D' eq/ eq/ SD-=D'
+    <- rep-deterministic D/N->Q1 D'/N->Q1' SD-=D' eq/ Q1=Q1'
+    <- inc-deterministic Q1+1=Q Q1'+1=Q' Q1=Q1' Q=Q'.
+
+- : rep-deterministic (rep/< D/M->Q1 (plus/s D-+M=N-))
+                      (rep/< D'/M->Q1' (plus/s D'-+M=N-)) eq/ eq/ Q=Q'
+    <- plus-right-cancels (plus/s D-+M=N-) (plus/s D'-+M=N-) eq/ eq/ D=D'
+    <- rep-deterministic D/M->Q1 D'/M->Q1' D=D' eq/ Q1=Q1'
+    <- frac-preserves-equ eq/ Q1=Q1' Q=Q'.
+
+%% all remaining cases are contradiction cases
+- : rep-deterministic rep/= (rep/> _ D'/M->Q' M-M=D') 
+                      eq/ eq/ Q=Q'
+    <- plus-right-cancels M-M=D' plus/z eq/ eq/ D'=0
+    <- rep-zero-contradiction D'/M->Q' D'=0 F
+    <- false-implies-equ F Q=Q'.
+
+- : rep-deterministic rep/= (rep/< D'/M->Q' D'+M=M) eq/ eq/ Q=Q'
+    <- plus-right-cancels D'+M=M plus/z eq/ eq/ D'=0
+    <- rep-zero-contradiction D'/M->Q' D'=0 F
+    <- false-implies-equ F Q=Q'.
+
+- : rep-deterministic (rep/> Q1+1=Q D/M->Q1 M-M=D) rep/= eq/ eq/ Q=Q'
+    <- plus-right-cancels M-M=D plus/z eq/ eq/ D=0
+    <- rep-zero-contradiction D/M->Q1 D=0 F
+    <- false-implies-equ F Q=Q'.
+
+- : rep-deterministic (rep/> _ _ D+N=M)
+                      (rep/< D'/M->Q1 D'+M=N) eq/ eq/ Q=Q'
+    <- plus-associative-converse D+N=M D'+M=N D'D D'+D=D'D D'D+N=N
+    <- plus-right-cancels D'D+N=N plus/z eq/ eq/ D'D=0
+    <- plus-is-zero-implies-zero D'+D=D'D D'D=0 D'=0 _
+    <- rep-zero-contradiction D'/M->Q1 D'=0 F
+    <- false-implies-equ F Q=Q'.
+
+- : rep-deterministic (rep/< D/M->Q1 D+M=M) rep/= eq/ eq/ Q=Q'
+    <- plus-right-cancels D+M=M plus/z eq/ eq/ D=0
+    <- rep-zero-contradiction D/M->Q1 D=0 F
+    <- false-implies-equ F Q=Q'.
+
+- : rep-deterministic (rep/< _ D+M=N) 
+                      (rep/> _ D'/M->Q1' D'+N=M) eq/ eq/ Q=Q'
+    <- plus-associative-converse D+M=N D'+N=M D'D D'+D=D'D D'D+M=M
+    <- plus-right-cancels D'D+M=M (plus/z) eq/ eq/ D'D=0
+    <- plus-is-zero-implies-zero D'+D=D'D D'D=0 D'=0 _
+    <- rep-zero-contradiction D'/M->Q1' D'=0 F
+    <- false-implies-equ F Q=Q'.
+
+%worlds () (rep-deterministic M/N->Q M'/N'->Q' M=M' N=N' %{=>}% Q=Q').
+%total R (rep-deterministic R _ _ _ _).
+
+
+%theorem rep-total**: 
+        forall {M} {N} {CMP} {C:compare (s M) (s N) CMP}
+        exists {Q} {R:rep (s M) (s N) Q}
+        true.
+
+- : rep-total** M M' equal C one R
+    <- equal-implies-eq C M=M'
+    <- rep-respects-equ rep/= eq/ M=M' equ/ R.
+
+- : rep-total** M N greater C Q (rep/> I R' P)
+    <- greater-implies-gt C G
+    <- gt-implies-plus G D (P:plus (s D) (s N) (s M))
+    <- plus-commutative P Pc
+    <- plus-implies-gt Pc eq/ (G':gt (s M) (s D))
+    <- succ-preserves-gt-converse G' G''
+    <- meta-gt M D G''
+    <- compare-total* (s D) (s N) CMP' C'
+    <- rep-total** D N CMP' C' Q' R'
+    <- inc-total* Q' Q I.
+
+- : rep-total** M N less C (frac z Q') (rep/< R' P)
+    <- less-implies-lt C G
+    <- gt-implies-plus G D (P:plus (s D) (s M) (s N))
+    <- plus-implies-gt P eq/ (G':gt (s N) (s M))
+    <- succ-preserves-gt-converse G' G''
+    <- meta-gt N M G''
+    <- compare-total* (s D) (s M) CMP' C'
+    <- rep-total** D M CMP' C' Q' R'.
+
+%worlds () (rep-total** M N M<=>N R<=> %{=>}% Q M+1/N+1=Q).
+%total {N M} (rep-total** M N _ _ _ _).
+
+
+%theorem rep-total* :
+	forall {M} {N}
+	exists {Q} {R:rep (s M) (s N) Q}
+	true.
+
+- : rep-total* M N Q M+1/N+1->Q
+    <- compare-total* (s M) (s N) CMP M<=>N
+    <- rep-total** M N CMP M<=>N Q M+1/N+1->Q.
+
+%worlds () (rep-total* M N Q M+1/N+1->Q).
+%total {} (rep-total* _ _ _ _).
+
+
+%abbrev rep-total = rep-total** _ _ _.
+
+
+%theorem rep-times-right :
+	forall* {M} {N} {Q} {X} {X'} {MX} {NX}
+	forall {RX:rep M N Q} {E:eq X (s X')} 
+               {TM:times M X MX} {TN:times N X NX}
+        exists {R:rep MX NX Q}
+        true.
+
+- : rep-times-right rep/=  eq/ M*X=MX M*X=NX MX/NX->1
+    <- times-preserves-positive M X MX- M*X=sMX-
+    <- times-deterministic M*X=sMX- M*X=MX eq/ eq/ SMX-=MX
+    <- times-deterministic M*X=sMX- M*X=NX eq/ eq/ SMX-=NX
+    <- rep-respects-equ rep/= SMX-=MX SMX-=NX equ/ MX/NX->1.
+
+- : rep-times-right (rep/> Q1+1=Q D/N->Q1 D+N=M)
+                    eq/ M*X=MX N*X=NX MX/NX->Q
+    <- times-preserves-positive M X MX- M*X=sMX-
+    <- times-preserves-positive N X NX- N*X=sNX-
+    <- times-deterministic M*X=sMX- M*X=MX eq/ eq/ SMX-=MX
+    <- times-deterministic N*X=sNX- N*X=NX eq/ eq/ SNX-=NX
+    <- times-total D*X=DX
+    <- times-right-distributes-over-plus* D+N=M M*X=sMX- D*X=DX N*X=sNX- 
+                                          DX+sNX-=sMX-
+    <- rep-times-right D/N->Q1 eq/ D*X=DX N*X=sNX- DX/sNX-->Q1
+    <- rep-respects-equ (rep/> Q1+1=Q DX/sNX-->Q1 DX+sNX-=sMX-) 
+                        SMX-=MX SNX-=NX equ/ MX/NX->Q.
+
+- : rep-times-right (rep/< D/M->Q1 D+M=N) 
+                    eq/ M*X=MX N*X=NX MX/NX->Q
+    <- times-preserves-positive M X MX- M*X=sMX-
+    <- times-preserves-positive N X NX- N*X=sNX-
+    <- times-deterministic M*X=sMX- M*X=MX eq/ eq/ SMX-=MX
+    <- times-deterministic N*X=sNX- N*X=NX eq/ eq/ SNX-=NX
+    <- times-total D*X=DX
+    <- times-right-distributes-over-plus* D+M=N N*X=sNX- D*X=DX M*X=sMX- 
+                                          DX+sMX-=sNX-
+    <- rep-times-right D/M->Q1 eq/ D*X=DX M*X=sMX- DX/sMX-->Q1
+    <- rep-respects-equ (rep/< DX/sMX-->Q1 DX+sMX-=sNX-) SMX-=MX SNX-=NX equ/
+                        MX/NX->Q.
+
+%worlds () (rep-times-right M/N->Q X+ M*X=MX N*X=NX %{=>}% MX/NX->Q).
+%total R (rep-times-right R _ _ _ _).
+
+
+%theorem rep-times-left :
+	forall* {M} {N} {Q} {X} {X'} {XM} {XN}
+	forall {RX:rep M N Q} {E:eq X (s X')} 
+	       {TM:times X M XM} {TN:times X N XN}
+        exists {RX:rep XM XN Q} 
+        true.
+
+- : rep-times-left M/N->Q X+ X*M=XM X*N=XN XM/XN->Q
+    <- times-commutative X*M=XM M*X=XM
+    <- times-commutative X*N=XN N*X=XN
+    <- rep-times-right M/N->Q X+ M*X=XM N*X=XN XM/XN->Q.
+
+%worlds () (rep-times-left M/N->Q X+ X*M=XM X*N=XN %{=>}% XM/XN->Q).
+%total {} (rep-times-left _ _ _ _ _).
+
+
+%theorem rep-right-cancels :
+	forall* {M} {N} {Q} {X} {MX} {NX}
+	forall {RX:rep MX NX Q} {TM:times M X MX} {TN:times N X NX}
+        exists {R:rep M N Q}
+        true.
+
+- : rep-right-cancels rep/= M*X=MX N*X=MX M/N->Q
+    <- times-right-cancels** M*X=MX N*X=MX eq/ eq/ M=N
+    <- rep-respects-equ rep/= eq/ M=N equ/ M/N->Q.
+
+- : rep-right-cancels (rep/> Q1+1=Q DX/NX->Q1 DX+NX=MX) 
+                      M*X=MX N*X=NX 
+		      (rep/> Q1+1=Q D/N->Q1 D+N=M)
+    <- times-right-factors-over-minus M*X=MX N*X=NX DX+NX=MX eq/ D
+                                      D+N=M D*X=DX
+    <- rep-right-cancels DX/NX->Q1 D*X=DX N*X=NX D/N->Q1.
+
+- : rep-right-cancels (rep/< DX/MX->Q1 DX+MX=NX)
+                      M*X=MX N*X=NX 
+     		      (rep/< D/M->Q1 D+M=N)
+    <- times-right-factors-over-minus N*X=NX M*X=MX DX+MX=NX eq/ D
+                                      D+M=N D*X=DX
+    <- rep-right-cancels DX/MX->Q1 D*X=DX M*X=MX D/M->Q1.
+
+%% contradiction case
+- : rep-right-cancels (R:rep (s _) (s _) _) M*0=sY _ R'
+    <- times-right-zero _ M*0=0
+    <- times-deterministic M*0=0 M*0=sY eq/ eq/ ZERO=sY
+    <- succ-implies-gt ZERO=sY ZERO>Y
+    <- gt-contradiction ZERO>Y F
+    <- false-implies-rep F R'.
+
+%worlds () (rep-right-cancels MX/NX->Q M*X=MX N*X=NX %{=>}% M/N->Q).
+%total R (rep-right-cancels R _ _ _).
+
+
+%theorem rep-left-cancels :
+	forall* {M} {N} {Q} {X} {XM} {XN}
+	forall {RX:rep XM XN Q} {TM:times X M XM} {TN:times X N XN}
+        exists {R:rep M N Q}
+        true.
+
+- : rep-left-cancels  XM/XN->Q X*M=XM X*N=XN M/N->Q
+    <- times-commutative X*M=XM M*X=XM
+    <- times-commutative X*N=XN N*X=XN
+    <- rep-right-cancels XM/XN->Q M*X=XM N*X=XN M/N->Q.
+
+%worlds () (rep-left-cancels XM/XN->Q X*M=XM X*N=XN %{=>}% M/N->Q).
+%total {} (rep-left-cancels _ _ _ _).
+
+
+
+%%% Lemmas for proving that abs and rep are inverses:
+
+
+%theorem rep-whole : forall {N}
+        exists {R:rep (s N) (s z) (whole N)}
+        true.
+
+- : rep-whole z rep/=.
+
+- : rep-whole (s N) (rep/> (inc/whole:inc (whole N) (whole (s N))) R SN+1=ssN)
+    <- plus-commutative (plus/s (plus/z:plus z (s N) (s N))) SN+1=ssN
+    <- rep-whole N (R:rep (s N) (s z) (whole N)).
+
+%worlds () (rep-whole _ _).
+%total N (rep-whole N _).
+
+
+%theorem rep-frac : 
+	forall* {X} {Y} {Z} {DEN} {NUM}
+        forall {N} {Q}
+               {R1:rep X Y Q}
+               {P1:plus X Y DEN}
+               {T2:times N DEN Z}
+               {P3:plus Z Y NUM}
+        exists {R2:rep NUM DEN (frac N Q)}
+	true.
+
+- : rep-frac z Q R1 P1 (times/z) (plus/z) (rep/< R1 P1).
+
+- : rep-frac (s N) Q R1 P1 (times/s N*DEN=T T+DEN=Z) Z+Y=NUM
+             (rep/> (inc/frac:inc (frac N Q) (frac (s N) Q)) R- P-)
+   <- plus-commutative T+DEN=Z DEN+T=Z
+   <- plus-associative DEN+T=Z Z+Y=NUM NUM- T+Y=NUM- DEN+NUM-=NUM
+   <- plus-commutative DEN+NUM-=NUM P-
+   <- rep-frac N Q R1 P1 N*DEN=T T+Y=NUM- R-.
+
+%worlds () (rep-frac _ _ _ _ _ _ _).
+%total N (rep-frac N _ _ _ _ _ _).
+
+
+%theorem rep-inverse-of-abs :
+	forall* {Q} {M} {N}
+        forall {A:abs Q M N}
+        exists {R:rep M N Q}
+        true.
+
+- : rep-inverse-of-abs (abs/whole: abs (whole N) (s N) (s z)) R
+    <- rep-whole N R.
+
+- : rep-inverse-of-abs (abs/frac P3 T2 P1 A') R
+    <- rep-inverse-of-abs A' R'
+    <- rep-frac _ _ R' P1 T2 P3 R.
+
+%worlds () (rep-inverse-of-abs Q->M/N %{=>}% M/N->Q).
+%total A (rep-inverse-of-abs A _).
+
+%% converse of this theorem is false because (rep 2 4 1/2) but (abs 1/2 1 2)
+
+
+%theorem abs-inverse-of-rep-mult* :
+	forall* {Q} {M} {N} {MX} {NX}
+	forall {R:rep MX NX Q} {A:abs Q M N}
+	exists {X} {TM:times M (s X) MX} {TN:times N (s X) NX}
+	true.
+
+- : abs-inverse-of-rep-mult* rep/= abs/whole X- ONE*X=X ONE*X=X
+    <- times-left-identity (s X-) ONE*X=X.
+
+- : abs-inverse-of-rep-mult* (rep/> inc/whole DX/NX->wM- DX+NX=SMX) 
+                             (abs/whole:abs (whole (s M-)) (s (s M-)) (s z))
+                             X- SM*X=SMX ONE*X=NX
+    <- abs-inverse-of-rep-mult* DX/NX->wM- 
+                                (abs/whole:abs (whole M-) (s M-) (s z))
+                                X- M*X=DX ONE*X=NX
+    <- times-left-identity (s X-) ONE*X=X
+    <- times-deterministic ONE*X=NX ONE*X=X eq/ eq/ NX=X
+    <- plus-respects-eq DX+NX=SMX eq/ NX=X eq/ DX+X=SMX
+    <- times-left-increase M*X=DX DX+X=SMX SM*X=SMX.
+
+- : abs-inverse-of-rep-mult* (rep/> inc/frac DV/NV->FF1Q1 DV+NV=MV)
+                             (abs/frac Z+Y=M F*N=Z X+Y=N Q1->X/Y)
+                             V- M*V=MV N*V=NV
+    <- times-left-decrease F*N=Z T F1*N=T T+N=Z
+    <- plus-total T+Y=M1
+    <- abs-inverse-of-rep-mult* DV/NV->FF1Q1
+                                (abs/frac T+Y=M1 F1*N=T X+Y=N Q1->X/Y)
+			        V- M1*V=DV N*V=NV
+    <- times-right-distributes-over-plus T+Y=M1 M1*V=DV TV YV T*V=TV Y*V=YV
+                                         TV+YV=DV
+    <- plus-commutative TV+YV=DV YV+TV=DV
+    <- plus-associative YV+TV=DV DV+NV=MV ZV TV+NV=ZV YV+ZV=MV
+    <- times-right-factors-over-plus* T*V=TV N*V=NV TV+NV=ZV T+N=Z Z*V=ZV
+    <- plus-commutative YV+ZV=MV ZV+YV=MV
+    <- times-right-factors-over-plus* Z*V=ZV Y*V=YV ZV+YV=MV Z+Y=M M*V=MV.
+
+- : abs-inverse-of-rep-mult* (rep/< DX/MX->Q1 DX+MX=NX) 
+                             (abs/frac plus/z times/z D+M=N Q1->D/M)
+                             X- M*X=MX N*X=NX
+    <- abs-inverse-of-rep-mult* DX/MX->Q1 Q1->D/M X- D*X=DX M*X=MX
+    <- times-right-factors-over-plus* D*X=DX M*X=MX DX+MX=NX D+M=N N*X=NX.
+
+%worlds () (abs-inverse-of-rep-mult* MX/NX->Q Q->M/N %{=>}% X- M*X=MX N*X=NX).
+%total R (abs-inverse-of-rep-mult* R _ _ _ _).
+
+
+%theorem abs-inverse-of-rep-mult :
+	forall* {Q} {M} {N} {MX} {NX}
+	forall {R:rep MX NX Q} {A:abs Q M N}
+	exists {X} {TM:times M X MX} {TN:times N X NX}
+	true.
+
+- : abs-inverse-of-rep-mult MX/NX->Q Q->M/N (s X-) M*X=MX N*X=NX
+    <- abs-inverse-of-rep-mult* MX/NX->Q Q->M/N X- M*X=MX N*X=NX.
+
+%worlds () (abs-inverse-of-rep-mult MX/NX->Q Q->M/N %{=>}% X M*X=MX N*X=NX).
+%total R (abs-inverse-of-rep-mult R _ _ _ _).
+
+
+%theorem reps-comparable :
+	forall* {Q} {M} {N} {Q'} {M'} {N'}
+	forall {R:rep M N Q} {R':rep M' N' Q'} {E:equ Q Q'}
+        exists {X} {T:times M N' X} {T':times M' N X}
+        true.
+
+- : reps-comparable M/N->Q M'/N'->Q equ/ X'' M*N'=X'' M'*N=X''
+    <- abs-total Q->M''/N''
+    <- abs-inverse-of-rep-mult M/N->Q Q->M''/N'' X M''*X=M N''*X=N
+    <- abs-inverse-of-rep-mult M'/N'->Q Q->M''/N'' X' M''*X'=M' N''*X'=N'
+    <- times-total M*N'=X''
+    <- times-total M''*N''=Y
+    <- times-total X*X'=Z
+    <- times-double-associative* M''*X=M   N''*X'=N'  M*N'=X''
+                                M''*N''=Y X*X'=Z     Y*Z=X''
+    <- times-commutative M''*N''=Y N''*M''=Y
+    <- times-double-associative* N''*M''=Y X*X'=Z     Y*Z=X'' 
+                                N''*X=N   M''*X'=M'  N*M'=X''
+    <- times-commutative N*M'=X'' M'*N=X''.
+
+%worlds () (reps-comparable M/N->Q M'/N'->Q' Q=Q' %{=>}% X M*N'=X M'*N=X).
+%total {} (reps-comparable _ _ _ _ _ _).
+
+
+
+%%% Theorems about grt
+
+
+%theorem false-implies-grt :
+	forall* {Q1} {Q2}
+	forall {F:void}
+	exists {G:grt Q1 Q2}
+	true.
+
+%worlds () (false-implies-grt _ %{=>}% Q1>Q2).
+%total {} (false-implies-grt _ _).
+
+
+%theorem grt-respects-equ :
+	forall* {Q1} {Q2} {Q1'} {Q2'}
+	forall {G:grt Q1 Q2} {E1:equ Q1 Q1'} {E2:equ Q2 Q2'}
+	exists {G':grt Q1' Q2'}
+	true.
+
+- : grt-respects-equ Q1>Q2 equ/ equ/ Q1>Q2.
+
+%worlds () (grt-respects-equ Q1>Q2 Q1=Q1' Q2=Q2' %{=>}% Q1'>Q2').
+%total {} (grt-respects-equ _ _ _ _).
+
+
+%theorem grt-anti-reflexive :
+	forall* {Q}
+	forall {G:grt Q Q}
+	exists {F:void}
+	true.
+
+- : grt-anti-reflexive (grt/ P11'>P1'1 T1'1 T11' A1' A1) F
+    <- abs-deterministic A1' A1 equ/ M1'=M1 N1'=N1
+    <- eq-symmetric N1'=N1 N1=N1'
+    <- times-deterministic T1'1 T11' M1'=M1 N1=N1' P1'1=P11'
+    <- gt-respects-eq P11'>P1'1 eq/ P1'1=P11' P11'>P11'
+    <- gt-anti-reflexive P11'>P11' F.
+
+%worlds () (grt-anti-reflexive Q>Q %{=>}% _).
+%total {} (grt-anti-reflexive _ _).
+
+
+%theorem grt-transitive:
+	forall* {Q1} {Q2} {Q3}
+	forall {G1:grt Q1 Q2} {G2:grt Q2 Q3}
+	exists {G3:grt Q1 Q3}
+	true.
+
+- : grt-transitive (grt/ P12>P21 T21 T12 A2 A1)
+                   (grt/ P23>P32 T32' T23' A3 A2')
+                   (grt/ P13>P31 T31 T13 A3 A1)
+    <- abs-deterministic A2' A2 equ/ M2'=M2 N2'=N2
+    <- times-respects-eq T23' M2'=M2 eq/ eq/ T23
+    <- times-respects-eq T32' eq/ N2'=N2 eq/ T32
+    <- times-total (TL:times P12 P23 P1223)
+    <- times-total (TR:times P32 P21 P3221)
+    <- times-commutative TR TRc
+    <- times-preserves-gt P12>P21 P23>P32 TL TRc P1223>P3221
+    <- times-total T13
+    <- times-total T31
+    <- times-total (T22c:times N2 M2 P22)
+    <- times-commutative T23 T23c
+    <- times-double-associative* T12 T23c TL T13 T22c P13*P22=P1223
+    <- times-commutative T21 T21c
+    <- times-double-associative* T32 T21c TR T31 T22c P31*P22=P3221
+    <- times-right-cancels-gt P13*P22=P1223 P31*P22=P3221 eq/ P1223>P3221 
+                              P13>P31.
+
+%worlds () (grt-transitive Q1>Q2 Q2>Q3 %{=>}% Q1>Q3).
+%total {} (grt-transitive _ _ _).
+
+
+%theorem grt-anti-symmetric :
+	forall* {Q1} {Q2}
+	forall {G1:grt Q1 Q2} {G2:grt Q2 Q1}
+        exists {F:void}
+	true.
+
+- : grt-anti-symmetric Q1>Q2 Q2>Q1 F
+    <- grt-transitive Q1>Q2 Q2>Q1 Q1>Q1
+    <- grt-anti-reflexive Q1>Q1 F.
+
+%worlds () (grt-anti-symmetric Q1>Q2 Q2>Q1 %{=>}% _).
+%total {} (grt-anti-symmetric _ _ _).
+    
+
+%theorem grt-implies-add :
+	forall* {Q1} {Q2}
+	forall {G:grt Q1 Q2}
+	exists {Q3} {A:add Q3 Q2 Q1}
+	true.
+
+- : {TN12:times N1 N2 N12} {R12:rep (s M12-) (s N12-) Q3}
+    {N3*X3=N12: times (s N3-) X3 N12}
+    grt-implies-add (grt/ P12>P21 T21 T12 A2 A1) Q3
+                    (add/ R1' PM32 TN32 T23 T32 A2 A3)
+    <- gt-implies-plus P12>P21 M12- M12+P21=P12  %% M12 equiv (s M12-)
+    <- abs-yields-positive A1 _ M1+ _ N1+
+    <- abs-yields-positive A2 _ M2+ _ N2+
+    <- times-total* N1 N2 N12 TN12
+    <- times-preserves-positive* TN12 N1+ N2+ N12- N12+
+    <- rep-total* M12- N12- Q3 R12
+    <- abs-total* Q3 M3- N3- A3 %% M3 equiv (s M3-), N3 equiv (s N3-)
+    <- abs-inverse-of-rep-mult R12 A3 X3 M3*X3=M12 N3*X3=sN12-
+    <- eq-symmetric N12+ SN12-=N12
+    <- times-respects-eq N3*X3=sN12- eq/ eq/ SN12-=N12 N3*X3=N12
+%% naming of "23" and "32" variables *X3 here reflects forward thinking.
+%% we have not shown they have this value yet.
+    <- times-total P12*N2=M32*X3
+    <- times-right-distributes-over-plus M12+P21=P12 P12*N2=M32*X3 P32*X3 P23*X3
+                                         M12*N2=P32*X3 P21*N2=P23*X3
+					 P32*X3+P23*X3=M32*X3
+%% first for P32*X3:
+    <- times-commutative M3*X3=M12 X3*M3=M12
+    <- times-associative X3*M3=M12 M12*N2=P32*X3 P32 T32 T32-3c
+    <- times-commutative T32-3c (T32-3:times P32 X3 P32*X3)
+%% now for P23*X3:
+    <- times-associative* T21 P21*N2=P23*X3 TN12 M2*N12=P23*X3
+    <- times-associative-converse N3*X3=N12 M2*N12=P23*X3 P23 T23 T23-3
+%% now for M32*X3
+    <- times-right-factors-over-plus T32-3 T23-3 P32*X3+P23*X3=M32*X3
+                                     M32 PM32 (T-3:times M32 X3 M32*X3)
+%% Now we create TN32
+    <- times-total N12*N2=N32*X3
+    <- times-commutative N3*X3=N12 X3*N3=N12
+    <- times-associative X3*N3=N12 N12*N2=N32*X3 N32 TN32 TN32-3c
+    <- times-commutative TN32-3c (TN32-3:times N32 X3 N32*X3)
+%% Now we show that M32 and N32 are connected to M1 N1:
+    <- times-associative T12 P12*N2=M32*X3 N22 TN22 M1*N22=M32*X3
+    <- times-associative* TN12 N12*N2=N32*X3 TN22 N1*N22=N32*X3
+%% now we convert A1 -> R1 to R1':
+    <- rep-inverse-of-abs A1 R1
+    <- times-preserves-positive* TN22 N2+ N2+ _ N22+
+    <- rep-times-right R1 N22+ M1*N22=M32*X3 N1*N22=N32*X3 R1a
+    <- rep-right-cancels R1a T-3 TN32-3 R1'.
+
+%worlds () (grt-implies-add Q1>Q2 %{=>}% Q3 Q3+Q2=Q1).
+%total {} (grt-implies-add _ _ _).
+
+
+
+%%% Theorems about cmp
+
+
+%theorem false-implies-cmp :
+	forall* {Q1} {Q2} {R}
+	forall {F:void}
+	exists {CMP:cmp Q1 Q2 R}
+	true.
+
+%worlds () (false-implies-cmp _ %{=>}% Q1<=>Q2).
+%total {} (false-implies-cmp _ _).
+
+
+%theorem cmp-respects-equ :
+	forall* {Q1} {Q2} {R} {Q1'} {Q2'}
+	forall {CMP:cmp Q1 Q2 R} {E1:equ Q1 Q1'} {E2:equ Q2 Q2'}
+	exists {CMP:cmp Q1' Q2' R}
+	true.
+
+- : cmp-respects-equ C equ/ equ/ C.
+
+%worlds () (cmp-respects-equ Q1<=>Q2 Q1=Q1' Q2=Q2' %{=>}% Q1'<=>Q2').
+%total {} (cmp-respects-equ _ _ _ _).
+
+
+%theorem cmp-total** :
+	forall* {Q1} {Q2} {M1} {N1} {M2} {N2} {P12} {P21}
+	forall {A1:abs Q1 M1 N1} {A2:abs Q2 M2 N2}
+               {T12:times M1 N2 P12} {T21:times M2 N1 P21}
+               {R} {COMP:compare P12 P21 R}
+	exists {CMP:cmp Q1 Q2 R}
+	true.
+
+- : cmp-total** A1 A2 T12 T21 greater COMP 
+                (cmp/> (grt/ P12>P21 T21 T12 A2 A1))
+    <- greater-implies-gt COMP P12>P21.
+
+- : cmp-total** A1 A2 T12 T21 less COMP 
+                (cmp/< (grt/ P21>P12 T12 T21 A1 A2))
+    <- less-implies-lt COMP P21>P12.
+
+- : cmp-total** A1 A2 T12 T21 equal COMP CMP
+    <- abs-yields-positive A1 _ M1+ _ N1+
+    <- abs-yields-positive A2 _ M2+ _ N2+
+    <- equal-implies-eq COMP P12=P21
+    <- rep-inverse-of-abs A1 R1
+    <- rep-inverse-of-abs A2 R2
+    <- times-total TM12
+    <- times-commutative T21 T21c
+    <- rep-times-right R1 M2+ TM12 T21c R1*M2
+    <- times-respects-eq T12 eq/ eq/ P12=P21 T12'
+    <- rep-left-cancels R1*M2 TM12 T12' R1'
+    <- rep-deterministic R1' R2 eq/ eq/ Q1=Q2
+    <- cmp-respects-equ cmp/= equ/ Q1=Q2 CMP.
+
+%worlds () (cmp-total** _ _ _ _ _ _ _).
+%total {} (cmp-total** _ _ _ _ _ _ _).
+
+
+%theorem cmp-total* :
+	forall {Q1} {Q2} 
+	exists {R} {CMP:cmp Q1 Q2 R}
+	true.
+
+- : cmp-total* Q1 Q2 _ Q1<=>Q2
+    <- abs-total* Q1 M1- N1- A1
+    <- abs-total* Q2 M2- N2- A2
+    <- times-total T12
+    <- times-total T21
+    <- compare-total COMP
+    <- cmp-total** A1 A2 T12 T21 _ COMP Q1<=>Q2.
+
+%worlds () (cmp-total* Q1 Q2 %{=>}% R Q1<R>Q2).
+%total {} (cmp-total* _ _ _ _).
+
+
+%abbrev cmp-total = cmp-total* _ _ _.
+
+
+%theorem greater-implies-grt :
+	forall* {Q1} {Q2}
+	forall {CMP:cmp Q1 Q2 greater}
+        exists {G:grt Q1 Q2}
+	true.
+
+- : greater-implies-grt (cmp/> Q1>Q2) Q1>Q2.
+
+%worlds () (greater-implies-grt _ _).
+%total {} (greater-implies-grt _ _).
+
+
+%theorem less-implies-lst :
+	forall* {Q1} {Q2}
+	forall {CMP:cmp Q1 Q2 less}
+        exists {G:grt Q2 Q1}
+	true.
+
+- : less-implies-lst (cmp/< Q1<Q2) Q1<Q2.
+
+%worlds () (less-implies-lst _ _).
+%total {} (less-implies-lst _ _).
+
+
+%theorem equal-implies-equ :
+	forall* {Q1} {Q2}
+	forall {CMP:cmp Q1 Q2 equal}
+        exists {E:equ Q1 Q2}
+	true.
+
+- : equal-implies-equ cmp/= equ/.
+
+%worlds () (equal-implies-equ _ _).
+%total {} (equal-implies-equ _ _).
+
+
+
+%%% Theorems about add
+
+%{%
+#define OPN add
+#define OP(X,Y) X+Y
+#define OP_CANCELS 1
+#define OP_TOTAL 1
+#define OP_COMMUTATIVE 1
+%}%
+
+%theorem false-implies-add:
+	forall* {X} {Y} {Z}
+	forall {F:void}
+	exists {A:add X Y Z}
+	true.
+
+%worlds () (false-implies-add _ %{=>}% X+Y=Z).
+%total {} (false-implies-add _ _).
+
+
+%theorem add-respects-equ :
+	forall* {Q1} {Q2} {Q3} {Q1'} {Q2'} {Q3'}
+	forall {A:add Q1 Q2 Q3} {E1:equ Q1 Q1'} {E2:equ Q2 Q2'} {E3:equ Q3 Q3'}
+        exists {A':add Q1' Q2' Q3'}
+        true.
+
+- : add-respects-equ A equ/ equ/ equ/ A.
+
+%worlds () (add-respects-equ Q1+Q2=Q3 Q1=R1 Q2=R2 Q3=R3 %{=>}% R1+R2=R3).
+%total {} (add-respects-equ _ _ _ _ _).
+
+
+%theorem add-total* :
+	forall {Q1} {Q2}
+	exists {Q3} {A:add Q1 Q2 Q3}
+        true.
+
+- : add-total* Q1 Q2 Q3 (add/ R7 (plus/s P6-) T5 T4 T3 A2 A1)
+    <- abs-total* Q1 M1- N1- A1
+    <- abs-total* Q2 M2- N2- A2
+    <- times-preserves-positive M1- N2- P12- T3
+    <- times-preserves-positive M2- N1- P21- T4
+    <- times-preserves-positive N1- N2- N12- T5
+    <- plus-total* P12- (s P21-) P12-+P21 P6-
+    <- rep-total* P12-+P21 N12- _ R7.
+
+%worlds () (add-total* Q1 Q2 %{=>}% Q3 Q1+Q2=Q3).
+%total {} (add-total* _ _ _ _).
+
+
+%abbrev add-total = add-total* _ _ _.
+
+
+%theorem add-deterministic :
+	forall* {Q1} {Q2} {Q3} {Q1'} {Q2'} {Q3'}
+	forall {A:add Q1 Q2 Q3} {A':add Q1' Q2' Q3'}
+               {E1:equ Q1 Q1'} {E2:equ Q2 Q2'}
+	exists {E3:equ Q3 Q3'}
+	true.
+
+- : add-deterministic (add/ R  PM12  TN12  T21  T12  A2  A1)
+                      (add/ R' PM12' TN12' T21' T12' A2' A1') 
+                      equ/ equ/ Q3=Q3'
+    <- abs-deterministic A1 A1' equ/ M1=M1' N1=N1'
+    <- abs-deterministic A2 A2' equ/ M2=M2' N2=N2'
+    <- times-deterministic T12 T12' M1=M1' N2=N2' P12=P12'
+    <- times-deterministic T21 T21' M2=M2' N1=N1' P21=P21'
+    <- times-deterministic TN12 TN12' N1=N1' N2=N2' N12=N12'
+    <- plus-deterministic PM12 PM12' P12=P12' P21=P21' M12=M12'
+    <- rep-deterministic R R' M12=M12' N12=N12' Q3=Q3'.
+
+%worlds () (add-deterministic Q1+Q2=Q3 Q1'+Q2'=Q3' Q1=Q1' Q2=Q2' %{=>}% Q3=Q3').
+%total {} (add-deterministic _ _ _ _ _).
+
+
+%theorem add-commutative :
+	forall* {Q1} {Q2} {Q3}
+        forall {A1:add Q1 Q2 Q3}
+	exists {A2:add Q2 Q1 Q3}
+        true.
+
+- : add-commutative (add/ (R:rep M3 N12 Q3) 
+		          (PM12:plus P12 P21 M3) (TN12:times N1 N2 N12) 
+                          (T21:times M2 N1 P21) (T12:times M1 N2 P12) 
+                          (A2:abs Q2 M2 N2) (A1:abs Q1 M1 N1) )
+                    (add/ R PM21 TN21 T12 T21 A1 A2)
+    <- times-commutative TN12 TN21
+    <- plus-commutative PM12 PM21.
+
+%worlds () (add-commutative Q1+Q2=Q3 %{=>}% Q2+Q1=Q3).
+%total {} (add-commutative _ _).
+
+
+%theorem add-associative :
+	forall* {Q1} {Q2} {Q12} {Q3} {Q123}
+        forall {A12:add Q1 Q2 Q12} {A12-3:add Q12 Q3 Q123} 
+        exists {Q23} {A23:add Q2 Q3 Q23} {A1-23:add Q1 Q23 Q123}
+        true.
+
+%% add Q1 + Q2 to get Q3 and then add Q3 + Q4 to get Q7.
+%% replace with Q2 + Q4 = Q6 and Q1+Q6=Q7.
+- : {PM24:plus P24 P42 M24} {TN24:times N2 N4 N24} 
+    {T-5:times X3 N34 N34*X3} {T-6:times M34 X3 M34*X3}
+    {A3:abs Q3 M3 N3}
+    add-associative (add/ R12 PM12 TN12 T21 T12 A2 A1)
+                    (add/ R34 PM34 TN34 T43 T34 A4 A3)
+                    Q6
+                    (add/ R24 PM24 TN24 T42 T24 A4 A2)
+                    (add/ R16 PM16 TN16 T61 T16 A6 A1)
+    <- abs-inverse-of-rep-mult R12 A3 X3 M3*X3=M12 N3*X3=N12
+%% we start by getting the new add/ for Q2+Q4 into place:
+%% P34 = M3*N4  M3*X3=M12 M12=P12+P21.  We need to move the X3 inside:
+    <- times-total* X3 P34 P34*X3 T-1
+    <- times-commutative M3*X3=M12 X3*M3=M12
+    <- times-associative-converse* T34 T-1 X3*M3=M12 (T-1a:times M12 N4 P34*X3)
+    <- times-right-distributes-over-plus PM12 T-1a P12*N4 P21*N4 T-2 T-3
+                                         (P-1:plus P12*N4 P21*N4 P34*X3)
+    <- times-associative T12 T-2 N24 TN24 (T-2a:times M1 N24 P12*N4)
+    <- times-commutative T21 T21c
+    <- times-associative T21c T-3 P24 T24 (T-3a:times N1 P24 P21*N4)
+    <- times-commutative T-3a T-3ac
+    <- times-total* P43 X3 P43*X3 T-4
+    <- times-associative* T43 T-4 N3*X3=N12 (T-4a:times M4 N12 P43*X3)
+    <- times-commutative TN12 TN21
+    <- times-associative-converse TN21 T-4a P42 T42 (T-4b:times P42 N1 P43*X3)
+    <- plus-total* P21*N4 P43*X3 P24-1 P24-1f
+    <- times-right-factors-over-plus T-3ac T-4b P24-1f M24 PM24 T24-1
+    <- times-total* X3 N34 N34*X3 T-5
+    <- times-commutative N3*X3=N12 X3*N3=N12
+    <- times-associative-converse* TN34 T-5 X3*N3=N12 (T-5a:times N12 N4 N34*X3)
+    <- times-associative* TN12 T-5a TN24 (T-5b:times N1 N24 N34*X3)
+%% now we have to prove that PM24 and N24 are greater than zero and create Q6
+    <- abs-yields-positive A2 _ M2+ _ N2+
+    <- abs-yields-positive A4 _ M4+ _ N4+
+    <- times-preserves-positive* T24 M2+ N4+ _ P24+
+    <- plus-left-preserves-positive PM24 P24+ M24- M24+
+    <- times-preserves-positive* TN24 N2+ N4+ N24- N24+
+    <- rep-total* M24- N24- Q6 R24'
+    <- eq-symmetric M24+ SM24-=M24
+    <- eq-symmetric N24+ SN24-=N24
+    <- rep-respects-equ R24' SM24-=M24 SN24-=N24 equ/ R24
+%% now we start doing the new add/ for Q1+Q6
+    <- abs-total* Q6 M6- N6- A6
+%% NB: "M6" and "N6" are actually (s M6-) and (s N6-)
+    <- abs-inverse-of-rep-mult R24 A6 X6 M6*X6=M24 N6*X6=N24
+    <- times-associative-converse N6*X6=N24 T-2a P16 T16 P16*X6=P12*N4
+    <- times-commutative M6*X6=M24 X6*M6=M24
+    <- times-associative X6*M6=M24 T24-1 P61 T61 X6*P61=P24-1
+    <- times-commutative X6*P61=P24-1 P61*X6=P24-1
+    <- times-associative-converse N6*X6=N24 T-5b N16 TN16 N16*X6=N34*X3
+    <- times-commutative T-1 T-1c
+    <- plus-total* P34*X3 P43*X3 M34*X3 P-6
+    <- times-right-factors-over-plus* T-1c T-4 P-6 PM34 
+                                      (T-6:times M34 X3 M34*X3)
+    <- plus-associative* P-1 P-6 P24-1f (P-6a:plus P12*N4 P24-1 M34*X3)
+    <- times-right-factors-over-plus P16*X6=P12*N4 P61*X6=P24-1 P-6a M16 PM16
+                                     (T-7:times M16 X6 M34*X3)
+%% Now use rep for 34 to transfer to 16
+    <- rep-implies-positive R12 _ M12+ _ N12+
+    <- times-positive-implies-positive M3*X3=M12 M12+ _ M3+ _ X3+
+    <- times-commutative T-5 T-5c
+    <- rep-times-right R34 X3+ T-6 T-5c R34*X3
+    <- rep-right-cancels R34*X3 T-7 N16*X6=N34*X3 R16
+    .
+
+%worlds () (add-associative Q1+Q2=Q12 Q12+Q3=Q123 %{=>}% Q23 Q2+Q3=Q23 Q1+Q23=Q123).
+%total {} (add-associative _ _ _ _ _).
+
+%{%
+BEGIN_ELF
+#include "OPN-assoc.i"
+END_ELF
+%}%
+
+%theorem add-left-cancels : 
+	forall* {Q1} {R1} {S1} {Q2} {R2} {S2}
+	forall {A1:add Q1 R1 S1} {A2:add Q2 R2 S2}
+               {E:equ Q1 Q2} {ES:equ S1 S2}
+	exists {ER:equ R1 R2}
+	true.
+
+- : add-left-cancels (add/ R12 PM12 TN12 T21 T12 A2 A1)
+                     (add/ R12' PM12' TN12'' T21'' T12'' A2' A1') equ/ equ/
+                     Q2=Q2'
+    <- abs-deterministic A1' A1 equ/ M1'=M1 N1'=N1
+    <- times-respects-eq T12'' M1'=M1 eq/ eq/ T12'
+    <- times-respects-eq T21'' eq/ N1'=N1 eq/ T21'
+    <- times-respects-eq TN12'' N1'=N1 eq/ eq/ TN12'
+    <- reps-comparable R12 R12' equ/ X M12*N12'=X M12'*N12=X
+    <- times-right-distributes-over-plus PM12 M12*N12'=X X1a X1b
+                                         P12*N12'=X1a P21*N12'=X1b X1a+X1b=X
+    <- times-right-distributes-over-plus PM12' M12'*N12=X X2a X2b
+					 P12'*N12=X2a P21'*N12=X2b X2a+X2b=X
+    <- times-total T11
+    <- times-total TN22'
+    <- times-double-associative* T12 TN12' P12*N12'=X1a 
+                                T11 TN22' P11*N22'=X1a
+    <- times-commutative TN22' TN2'2
+    <- times-double-associative* T12' TN12 P12'*N12=X2a
+				T11 TN2'2 P11*N22'=X2a
+    <- times-deterministic P11*N22'=X2a P11*N22'=X1a eq/ eq/ X2a=X1a
+    <- plus-left-cancels X2a+X2b=X X1a+X1b=X X2a=X1a eq/ X2b=X1b
+    <- times-total T22'
+    <- times-total T2'2
+    <- times-total TN11
+    <- times-commutative TN12' TN2'1
+    <- times-double-associative* T21 TN2'1 P21*N12'=X1b
+                                T22' TN11 P22'*N11=X1b
+    <- times-commutative TN12 TN21
+    <- times-double-associative* T21' TN21 P21'*N12=X2b
+                                T2'2 TN11 P2'2*N11=X2b
+    <- abs-yields-positive A1 _ _ _ N1+
+    <- times-preserves-positive* TN11 N1+ N1+ _ N11+
+    <- times-right-cancels* P2'2*N11=X2b P22'*N11=X1b N11+ X2b=X1b P2'2=P22'
+    <- abs-yields-positive A2 _ M2+ _ N2+
+    <- times-total M2*N2=P22
+    <- times-commutative M2*N2=P22 N2*M2=P22
+    <- times-preserves-positive* M2*N2=P22 M2+ N2+ _ P22+
+    <- rep-inverse-of-abs A2 R2
+    <- rep-inverse-of-abs A2' R2'
+    <- times-total M2'*P22=M4
+    <- times-total N2'*P22=N4
+    <- rep-times-right R2' P22+ M2'*P22=M4 N2'*P22=N4 M4/N4->Q2'
+    <- times-commutative T22' N2'*M2=P22'
+    <- times-associative-converse* N2*M2=P22 M2'*P22=M4 T2'2 P2'2*M2=M4
+    <- times-associative-converse* M2*N2=P22 N2'*P22=N4 N2'*M2=P22' P22'*N2=N4
+    <- times-respects-eq P2'2*M2=M4 P2'2=P22' eq/ eq/ P22'*M2=M4
+    <- rep-left-cancels M4/N4->Q2' P22'*M2=M4 P22'*N2=N4 M2/N2->Q2'
+    <- rep-deterministic R2 M2/N2->Q2' eq/ eq/ Q2=Q2'.
+
+%worlds () (add-left-cancels Q1+Q2=Q3 Q1'+Q2'=Q3' Q1=Q1' Q3=Q3' %{=>}% Q2=Q2').
+%total {} (add-left-cancels _ _ _ _ _).
+
+
+%theorem add-right-cancels : 
+	forall* {Q1} {R1} {S1} {Q2} {R2} {S2}
+	forall {A1:add Q1 R1 S1} {A2:add Q2 R2 S2}
+               {ER:equ R1 R2} {ES:equ S1 S2}
+	exists {E:equ Q1 Q2}
+	true.
+
+- : add-right-cancels Q1+Q2=Q3 Q1'+Q2'=Q3' Q2=Q2' Q3=Q3' Q1=Q1'
+    <- add-commutative Q1+Q2=Q3 Q2+Q1=Q3
+    <- add-commutative Q1'+Q2'=Q3' Q2'+Q1'=Q3'
+    <- add-left-cancels Q2+Q1=Q3 Q2'+Q1'=Q3'  Q2=Q2' Q3=Q3' Q1=Q1'.
+
+%worlds () (add-right-cancels Q1+Q2=Q3 Q1'+Q2'=Q3' Q2=Q2' Q3=Q3' %{=>}% Q1=Q1').
+%total {} (add-right-cancels _ _ _ _ _).
+
+
+%theorem add-implies-grt* :
+	forall* {Q1} {Q2} {Q3}
+	forall {A:add Q1 Q2 Q3}
+        exists {G1:grt Q3 Q1}
+        true.
+
+- : {TN12:times N1 N2 N12} {TN21:times N2 N1 N12}
+    {A2:abs Q2 M2 N2} {A1:abs Q1 M1 N1}
+    {P12*N1=P13*X:times P12 N1 P13*X}
+    add-implies-grt* (add/ R12 PM12 TN12 T21 T12 A2 A1)
+                     (grt/ P31>P13 T13 T31 A1 A3)
+    <- abs-total A3
+    <- abs-inverse-of-rep-mult R12 A3 X M3*X=M12 N3*X=N12
+    <- times-total M12*N1=P31*X
+    <- times-commutative M3*X=M12 X*M3=M12
+    <- times-associative X*M3=M12 M12*N1=P31*X P31 T31 T31-Xc
+    <- times-commutative T31-Xc (T31-X:times P31 X P31*X)
+    <- times-total M1*N12=P13*X
+    <- times-associative-converse N3*X=N12 M1*N12=P13*X P13 T13 
+                                  (T13-X:times P13 X P13*X)
+    <- times-commutative TN12 TN21
+    <- times-associative-converse* TN21 M1*N12=P13*X T12 P12*N1=P13*X
+    <- times-total P21*N1=Y
+    <- times-right-distributes-over-plus* PM12 M12*N1=P31*X
+                                          P12*N1=P13*X P21*N1=Y P13*X+Y=P31*X
+    <- abs-yields-positive A1 _ M1+ _ N1+
+    <- abs-yields-positive A2 _ M2+ _ N2+
+    <- times-preserves-positive* T21 M2+ N1+ _ P21+
+    <- times-preserves-positive* P21*N1=Y P21+ N1+ _ Y+
+    <- plus-commutative P13*X+Y=P31*X Y+P13*X=P31*X
+    <- plus-implies-gt Y+P13*X=P31*X Y+ P31*X>P13*X
+    <- times-right-cancels-gt T31-X T13-X eq/ P31*X>P13*X P31>P13.
+
+%worlds () (add-implies-grt* Q1+Q2=Q3 %{=>}% Q3>Q1).
+%total {} (add-implies-grt* _ _).
+
+
+%theorem add-implies-grt :
+	forall* {Q1} {Q2} {Q3}
+	forall {A:add Q1 Q2 Q3}
+        exists {G1:grt Q3 Q1} {G2:grt Q3 Q2}
+        true.
+
+- : add-implies-grt Q1+Q2=Q3 Q3>Q1 Q3>Q2
+    <- add-implies-grt* Q1+Q2=Q3 Q3>Q1
+    <- add-commutative Q1+Q2=Q3 Q2+Q1=Q3
+    <- add-implies-grt* Q2+Q1=Q3 Q3>Q2.
+
+%worlds () (add-implies-grt Q1+Q2=Q3 %{=>}% Q3>Q1 Q3>Q2).
+%total {} (add-implies-grt _ _ _).
+
+
+%theorem add-no-left-identity :
+	forall* {Q1} {Q2}
+	forall {A:add Q1 Q2 Q2}
+	exists {F:void}
+	true.
+
+- : add-no-left-identity Q1+Q2=Q2 F
+    <- add-implies-grt Q1+Q2=Q2 _ Q2>Q2
+    <- grt-anti-reflexive Q2>Q2 F.
+
+%worlds () (add-no-left-identity Q1+Q2=Q2 %{=>}% _).
+%total {} (add-no-left-identity _ _).
+
+
+%theorem add-no-right-identity :
+	forall* {Q1} {Q2}
+	forall {A:add Q1 Q2 Q1}
+	exists {F:void}
+	true.
+
+- : add-no-right-identity Q1+Q2=Q1 F
+    <- add-implies-grt* Q1+Q2=Q1 Q1>Q1
+    <- grt-anti-reflexive Q1>Q1 F.
+
+%worlds () (add-no-right-identity Q1+Q2=Q1 %{=>}% _).
+%total {} (add-no-right-identity _ _).
+
+
+%theorem add-left-preserves-grt* :
+	forall* {Q1} {Q2} {Q3} {Q4} {Q5}
+        forall {G:grt Q2 Q4}
+               {A1:add Q1 Q2 Q3} {A2:add Q1 Q4 Q5}
+        exists {G':grt Q3 Q5}
+	true.
+
+- : {T24:times M2 N4 P24} {T42:times M4 N2 P42} {P24>P42: gt P24 P42}
+    add-left-preserves-grt* (grt/ P24>P42 T42 T24 A4 A2)
+                            (add/ R12 PM12 TN12' T21' T12' A2' A1)
+                            (add/ R14 PM14 TN14'' T41'' T14'' A4' A1')
+                            (grt/ P35>P53 T53 T35 A5 A3)
+%% use determinism to force equality:
+    <- abs-deterministic A1' A1 equ/ M1'=M1 N1'=N1
+    <- abs-deterministic A2' A2 equ/ M2'=M2 N2'=N2
+    <- abs-deterministic A4' A4 equ/ M4'=M4 N4'=N4
+    <- times-respects-eq T12' eq/ N2'=N2 eq/ T12
+    <- times-respects-eq T21' M2'=M2 eq/ eq/ T21
+    <- times-respects-eq TN12' eq/ N2'=N2 eq/ TN12
+    <- times-respects-eq T14'' M1'=M1 N4'=N4 eq/ T14
+    <- times-respects-eq T41'' M4'=M4 N1'=N1 eq/ T41
+    <- times-respects-eq TN14'' N1'=N1 N4'=N4 eq/ TN14
+%% Now connext 1+2=3, 1+4=5
+    <- abs-total A3 <- abs-inverse-of-rep-mult R12 A3 X3 M3*X3=M12 N3*X3=N12
+    <- abs-total A5 <- abs-inverse-of-rep-mult R14 A5 X5 M5*X5=M14 N5*X5=N14
+%% Create T35
+    <- times-total* M12 N14 P35*X35 M12*N14=P35*X35
+    <- times-total T35
+    <- times-total TX35
+    <- times-double-associative* M3*X3=M12 N5*X5=N14 M12*N14=P35*X35 T35 TX35 
+                                (T35-X:times P35 X35 P35*X35)
+    <- times-right-distributes-over-plus PM12 M12*N14=P35*X35 Y1a Y1b
+                                         P12*N14=Y1a P21*N14=Y1b Y1a+Y1b=P35*X35
+    <- times-total T11 <- times-total TN24 <- times-total TN11
+    <- times-double-associative* T12 TN14 P12*N14=Y1a T11 TN24 P11*N24=Y1a
+    <- times-commutative TN14 TN41
+    <- times-double-associative* T21 TN41 P21*N14=Y1b T24 TN11 P24*N11=Y1b
+%% Create T53
+    <- times-total* M14 N12 P53*X35 M14*N12=P53*X35
+    <- times-total T53
+    <- times-commutative TX35 TX53 
+    <- times-double-associative* M5*X5=M14 N3*X3=N12 M14*N12=P53*X35 T53 TX53
+                                (T53-X:times P53 X35 P53*X35)
+    <- times-commutative TN24 TN42
+    <- times-double-associative* T11 TN42 P11*N24=Y1a T14 TN12 P14*N12=Y1a
+    <- times-total P41*N12=Y2b
+    <- times-right-distributes-over-plus* PM14 M14*N12=P53*X35
+                                        P14*N12=Y1a P41*N12=Y2b Y1a+Y2b=P53*X35
+    <- times-commutative TN12 TN21
+    <- times-double-associative* T41 TN21 P41*N12=Y2b T42 TN11 P42*N11=Y2b
+%% now cancel, simplify to get the desired result
+    <- abs-yields-positive A1 _ M1+ _ N1+
+    <- times-preserves-positive* TN11 N1+ N1+ _ N11+
+    <- times-right-preserves-gt* P24>P42 P24*N11=Y1b P42*N11=Y2b N11+ Y1b>Y2b
+    <- plus-left-preserves-gt* Y1b>Y2b Y1a+Y1b=P35*X35 Y1a+Y2b=P53*X35
+                               P35*X35>P53*X35
+    <- times-right-cancels-gt T35-X T53-X eq/ P35*X35>P53*X35 P35>P53.
+%worlds () (add-left-preserves-grt* Q2>Q4 Q1+Q2=Q3 Q1+Q4=Q5 %{=>}% Q3>Q5).
+%total {} (add-left-preserves-grt* _ _ _ _).
+
+
+%theorem add-left-cancels-grt :
+	forall* {Q1} {Q2} {Q3} {Q1'} {Q2'} {Q3'}
+	forall {A:add Q1 Q2 Q3} {A':add Q1' Q2' Q3'}
+               {E:equ Q1 Q1'} {G:grt Q3 Q3'}
+        exists {G':grt Q2 Q2'}
+	true.
+
+- : {TN14:times N1 N4 N14} 
+    {T11:times M1 N1 P11} {TN11:times N1 N1 N11}
+    add-left-cancels-grt (add/ R12 PM12 TN12 T21 T12 A2 A1)
+                         (add/ R14 PM14 TN14' T41' T14' A4 A1') equ/
+                         (grt/ P35>P53 T53 T35 A5 A3)
+                         (grt/ P24>P42 T42 T24 A4 A2)
+%% use determinism to force equality:
+    <- abs-deterministic A1' A1 equ/ M1'=M1 N1'=N1
+    <- times-respects-eq T14' M1'=M1 eq/ eq/ T14
+    <- times-respects-eq T41' eq/ N1'=N1 eq/ T41
+    <- times-respects-eq TN14' N1'=N1 eq/ eq/ TN14
+%% now connect 1+2=3, 1+4=5
+    <- abs-inverse-of-rep-mult* R12 A3 X3- M3*X3=M12 N3*X3=N12
+    <- abs-inverse-of-rep-mult* R14 A5 X5- M5*X5=M14 N5*X5=N14
+%% Now create T24
+    <- times-total TX35
+    <- times-total P35*X35=X
+    <- times-double-associative* T35 TX35 P35*X35=X M3*X3=M12 N5*X5=N14
+                                M12*N14=X
+    <- times-right-distributes-over-plus PM12 M12*N14=X X1 X2
+                                         P12*N14=X1 P21*N14=X2 X1+X2=X
+    <- times-total T11 <- times-total TN24 
+    <- times-total T24 <- times-total TN11
+    <- times-double-associative* T12 TN14 P12*N14=X1 T11 TN24 P11*N24=X1
+    <- times-commutative TN14 TN41
+    <- times-double-associative* T21 TN41 P21*N14=X2 T24 TN11 P24*N11=X2
+%% Next T42
+    <- times-total P53*X35=Y
+    <- times-commutative TX35 TX53
+    <- times-double-associative* T53 TX53 P53*X35=Y M5*X5=M14 N3*X3=N12
+                                M14*N12=Y
+    <- times-commutative TN24 TN42
+    <- times-double-associative* T11 TN42 P11*N24=X1 T14 TN12 P14*N12=X1
+    <- times-total P41*N12=Y2
+    <- times-right-distributes-over-plus* PM14 M14*N12=Y P14*N12=X1 P41*N12=Y2
+                                          X1+Y2=Y
+    <- times-total T42
+    <- times-commutative TN12 TN21
+    <- times-double-associative* T41 TN21 P41*N12=Y2 T42 TN11 P42*N11=Y2
+%% now prove that X35 is positive
+    <- rep-implies-positive R12 _ M12+ _ N12+
+    <- rep-implies-positive R14 _ M14+ _ N14+
+    <- times-preserves-positive* TX35 eq/ eq/ _ X35+
+%% now put the pieces together
+    <- times-right-preserves-gt* P35>P53 P35*X35=X P53*X35=Y X35+ X>Y
+    <- plus-left-cancels-gt X1+X2=X X1+Y2=Y eq/ X>Y X2>Y2
+    <- times-right-cancels-gt P24*N11=X2 P42*N11=Y2 eq/ X2>Y2 P24>P42.
+
+%worlds () (add-left-cancels-grt Q1+Q2=Q3 Q1'+Q2'=Q3' Q1=Q1' Q3>Q3' %{=>}%
+                                 Q2>Q2').
+%total {} (add-left-cancels-grt _ _ _ _ _).
+
+%{%
+#define CMP(X,Y) X>Y
+#define CMPN grt
+#define CMP_TRANSITIVE 1
+BEGIN_ELF
+#include "OPN-preserves-CMPN.i"
+END_ELF
+#undef CMP_TRANSITIVE
+#undef CMPN
+#undef CMP
+
+#undef OP
+#undef OPN
+#undef OP_CANCELS
+#undef OP_TOTAL
+#undef OP_COMMUTATIVE
+%}%
+
+
+%%% Theorems about mul
+
+%{%
+#define OP(X,Y) X*Y
+#define OPN mul
+#define OP_CANCELS 1
+#define OP_TOTAL 1
+#define OP_COMMUTATIVE 1
+%}%
+
+%theorem false-implies-mul:
+	forall* {X} {Y} {Z}
+	forall {F:void}
+	exists {M:mul X Y Z}
+	true.
+
+%worlds () (false-implies-mul _ %{=>}% Q1*Q2=Q3).
+%total {} (false-implies-mul _ _).
+
+
+%theorem mul-respects-equ :
+	forall* {Q1} {Q2} {Q3} {Q1'} {Q2'} {Q3'}
+	forall {M:mul Q1 Q2 Q3} {E1:equ Q1 Q1'} {E2:equ Q2 Q2'} {E3:equ Q3 Q3'}
+        exists {M':mul Q1' Q2' Q3'}
+        true.
+
+- : mul-respects-equ A equ/ equ/ equ/ A.
+
+%worlds () (mul-respects-equ Q1*Q2=Q3 Q1=Q1' Q2=Q2' Q3=Q3' %{=>}% Q1'*Q2'=Q3').
+%total {} (mul-respects-equ _ _ _ _ _).
+
+
+%theorem mul-total* :
+	forall {Q1} {Q2}
+	exists {Q3} {M:mul Q1 Q2 Q3}
+        true.
+
+- : mul-total* Q1 Q2 Q3 (mul/ R12 TN12 TM12 A2 A1)
+    <- abs-total* Q1 M1- N1- A1
+    <- abs-total* Q2 M2- N2- A2
+    <- times-preserves-positive M1- M2- M12- TM12
+    <- times-preserves-positive N1- N2- N12- TN12
+    <- rep-total* M12- N12- _ R12.
+
+%worlds () (mul-total* Q1 Q2 %{=>}% Q3 Q1*Q2=Q3).
+%total {} (mul-total* _ _ _ _).
+
+
+%abbrev mul-total = mul-total* _ _ _.
+
+
+%theorem mul-deterministic :
+	forall* {Q1} {Q2} {Q3} {Q1'} {Q2'} {Q3'}
+	forall {M:mul Q1 Q2 Q3} {M':mul Q1' Q2' Q3'}
+               {E1:equ Q1 Q1'} {E2:equ Q2 Q2'}
+	exists {E3:equ Q3 Q3'}
+	true.
+
+- : mul-deterministic (mul/ R12  TN12  TM12  A2  A1)
+                      (mul/ R12' TN12' TM12' A2' A1') 
+                      equ/ equ/ Q3=Q3'
+    <- abs-deterministic A1 A1' equ/ M1=M1' N1=N1'
+    <- abs-deterministic A2 A2' equ/ M2=M2' N2=N2'
+    <- times-deterministic TM12 TM12' M1=M1' M2=M2' M12=M12'
+    <- times-deterministic TN12 TN12' N1=N1' N2=N2' N12=N12'
+    <- rep-deterministic R12 R12' M12=M12' N12=N12' Q3=Q3'.
+
+%worlds () (mul-deterministic Q1*Q2=Q3 Q1'*Q2'=Q3' Q1=Q1' Q2=Q2' %{=>}% Q3=Q3').
+%total {} (mul-deterministic _ _ _ _ _).
+
+
+%theorem mul-commutative :
+	forall* {Q1} {Q2} {Q3}
+        forall {M1:mul Q1 Q2 Q3}
+	exists {M2:mul Q2 Q1 Q3}
+        true.
+
+- : mul-commutative (mul/ R TN12 TM12 A2 A1)
+                    (mul/ R TN21 TM21 A1 A2)
+    <- times-commutative TM12 TM21
+    <- times-commutative TN12 TN21.
+
+%worlds () (mul-commutative Q1*Q2=Q3 %{=>}% Q2*Q1=Q3).
+%total {} (mul-commutative _ _).
+
+
+%theorem mul-left-identity :
+	forall {Q}
+	exists {M:mul one Q Q}
+	true.
+
+- : mul-left-identity Q (mul/ R12 TN12 TM12 A2 (abs/whole))
+    <- abs-total A2
+    <- times-left-identity _ TM12
+    <- times-left-identity _ TN12
+    <- rep-inverse-of-abs A2 R12.
+
+%worlds () (mul-left-identity Q %{=>}% ONE*Q=Q).
+%total {} (mul-left-identity _ _).
+
+
+%theorem mul-right-identity :
+	forall {Q}
+	exists {M:mul Q one Q}
+        true.
+
+- : mul-right-identity Q Q*1=Q
+    <- mul-left-identity Q ONE*Q=Q
+    <- mul-commutative ONE*Q=Q Q*1=Q.
+
+%worlds () (mul-right-identity Q %{=>}% Q*1=Q).
+%total {} (mul-right-identity _ _).
+
+
+%theorem mul-associative :
+	forall* {Q1} {Q2} {Q12} {Q3} {Q123}
+        forall {M12:mul Q1 Q2 Q12} {M12-3:mul Q12 Q3 Q123} 
+        exists {Q23} {M23:mul Q2 Q3 Q23} {M1-23:mul Q1 Q23 Q123}
+        true.
+
+- : mul-associative (mul/ R12 TN12 TM12 A2 A1)
+                    (mul/ R34 TN34 TM34 A4 A3) Q6
+                    (mul/ R24 TN24 TM24 A4 A2)
+		    (mul/ R16 TN16 TM16 A6 A1)
+    <- abs-yields-positive A1 _ M1+ _ N1+
+    <- abs-yields-positive A2 _ M2+ _ N2+
+    <- abs-yields-positive A4 _ M4+ _ N4+
+    <- abs-inverse-of-rep-mult* R12 A3 X3- M3*X3=M12 N3*X3=N12
+%%
+    <- times-total* (s X3-) M34 X3*M34 T-1
+    <- times-commutative M3*X3=M12 X3*M3=M12
+    <- times-associative-converse* TM34 T-1 X3*M3=M12 M12*M4=X3*M34
+    <- times-associative TM12 M12*M4=X3*M34 M24 TM24 M1*M24=X3*M34
+    <- times-preserves-positive* TM24 M2+ M4+ M24- M24+
+%%
+    <- times-total* (s X3-) N34 X3*N34 T-2
+    <- times-commutative N3*X3=N12 X3*N3=N12
+    <- times-associative-converse* TN34 T-2 X3*N3=N12 N12*N4=X3*N34
+    <- times-associative TN12 N12*N4=X3*N34 N24 TN24 N1*N24=X3*N34
+    <- times-preserves-positive* TN24 N2+ N4+ N24- N24+
+%%
+    <- rep-total* M24- N24- Q6 R24'
+    <- eq-symmetric M24+ SM24-=M24
+    <- eq-symmetric N24+ SN24-=N24
+    <- rep-respects-equ R24' SM24-=M24 SN24-=N24 equ/ R24
+    <- abs-total* Q6 M6- N6- A6
+    <- abs-inverse-of-rep-mult R24 A6 X6 M6*X6=M24 N6*X6=N24
+%%
+    <- times-associative-converse M6*X6=M24 M1*M24=X3*M34 M16 TM16 M16*X6=X3*M34
+    <- times-associative-converse N6*X6=N24 N1*N24=X3*N34 N16 TN16 N16*X6=X3*N34
+    <- rep-times-left R34 eq/ T-1 T-2 RX34
+    <- rep-right-cancels RX34 M16*X6=X3*M34 N16*X6=X3*N34 R16.
+%worlds () (mul-associative Q1*Q2=Q1Q2 Q12*Q3=Q123 %{=>}% Q23 Q2*Q3=Q23 Q1*Q23=Q123).
+%total {} (mul-associative _ _ _ _ _).
+
+%{%
+BEGIN_ELF  
+#include "OPN-assoc.i"
+END_ELF
+%}%
+
+%theorem mul-right-distributes-over-add :
+	forall* {Q1} {Q2} {Q3} {Q4} {Q7}
+        forall {A12:add Q1 Q2 Q3} {M34:mul Q3 Q4 Q7}
+        exists {Q5} {Q6} {M14:mul Q1 Q4 Q5} {M24:mul Q2 Q4 Q6}
+               {A56:add Q5 Q6 Q7}
+	true.
+
+- : {TN14:times N1 N4 N14} {TN24:times N2 N4 N24}
+    mul-right-distributes-over-add (add/ R12 PM12 TN12 T21 T12 A2 A1)
+                                   (mul/ R34 TN34 TM34 A4 A3) Q5 Q6
+                                   (mul/ R14 TN14 TM14 A4 A1)
+                                   (mul/ R24 TN24 TM24 A4 A2)
+                                   (add/ R56 PM56 TN56 T65 T56 A6 A5)
+%% connect R12 and A3:
+    <- abs-inverse-of-rep-mult* R12 A3 X3- M3*X3=M12 N3*X3=N12
+%% work TM34 forward to using M12
+    <- times-total* (s X3-) M34 XM34 T-1
+    <- times-commutative M3*X3=M12 X3*M3=M12
+    <- times-associative-converse* TM34 T-1 X3*M3=M12 M12*M4=XM34
+%% work forward from TN34
+    <- times-total* (s X3-) N34 XN34 T-2
+    <- times-commutative N3*X3=N12 X3*N3=N12
+    <- times-associative-converse* TN34 T-2 X3*N3=N12 N12*N4=XN34
+%% get Q1*Q4 and Q2*Q4:
+    <- abs-yields-positive A1 _ M1+ _ N1+
+    <- abs-yields-positive A2 _ M2+ _ N2+
+    <- abs-yields-positive A4 _ M4+ _ N4+
+    <- times-total TM14 <- times-total TN14
+    <- times-preserves-positive* TM14 M1+ M4+ M14- M14+
+    <- times-preserves-positive* TN14 N1+ N4+ N14- N14+
+    <- rep-total* M14- N14- Q5 R14'
+    <- eq-symmetric M14+ SM14-=M14 <- eq-symmetric N14+ SN14-=N14
+    <- rep-respects-equ R14' SM14-=M14 SN14-=N14 equ/ R14
+    <- times-total TM24 <- times-total TN24
+    <- times-preserves-positive* TM24 M2+ M4+ M24- M24+
+    <- times-preserves-positive* TN24 N2+ N4+ N24- N24+
+    <- rep-total* M24- N24- Q6 R24'
+    <- eq-symmetric M24+ SM24-=M24 <- eq-symmetric N24+ SN24-=N24
+    <- rep-respects-equ R24' SM24-=M24 SN24-=N24 equ/ R24
+%% rephrase in terms of 5 and 6:
+    <- abs-total A5 <- abs-inverse-of-rep-mult R14 A5 X5 M5*X5=M14 N5*X5=N14
+    <- abs-total A6 <- abs-inverse-of-rep-mult R24 A6 X6 M6*X6=M24 N6*X6=N24
+%% work T56 back to T12
+    <- times-total TX56
+    <- times-total T56 
+    <- times-total T56-XX
+    <- times-double-associative* T56 TX56 T56-XX M5*X5=M14 N6*X6=N24 
+                                M14*N24=P56XX
+    <- times-total T44
+    <- times-double-associative* TM14 TN24 M14*N24=P56XX T12 T44 P12*P44=P56XX
+%% work T65 back to T21
+    <- times-total T65
+    <- times-total T65-XX
+    <- times-commutative TX56 TX65
+    <- times-double-associative* T65 TX65 T65-XX M6*X6=M24 N5*X5=N14
+                                M24*N14=P65XX
+    <- times-double-associative* TM24 TN14 M24*N14=P65XX T21 T44 P21*P44=P65XX
+%% work TN56 back to TN12
+    <- times-total TN56
+    <- times-total TN56-XX
+    <- times-total TN44
+    <- times-double-associative* TN56 TX56 TN56-XX N5*X5=N14 N6*X6=N24
+                                N21*N24=N56XX
+    <- times-double-associative* TN14 TN24 N21*N24=N56XX TN12 TN44 N12*N44=N56XX
+%% work PM56 back to PM12
+    <- plus-total (PM56:plus P56 P65 M56)
+    <- times-total (PM56-XX:times M56 X56 M56XX)
+    <- times-right-distributes-over-plus* PM56 PM56-XX T56-XX T65-XX 
+                                          (P-1:plus P56XX P65XX M56XX)
+    <- times-right-factors-over-plus* P12*P44=P56XX P21*P44=P65XX P-1
+                                      PM12 M12*P44=M56XX 
+%% connect with earlier facts:
+    <- times-associative-converse* T44 M12*P44=M56XX M12*M4=XM34
+                                   XM34*N4=M56XX
+    <- times-associative-converse* TN44 N12*N44=N56XX N12*N4=XN34
+                                   XN34*N4=N56XX
+    <- rep-times-left R34 eq/ T-1 T-2 XR34
+    <- rep-times-right XR34 N4+ XM34*N4=M56XX XN34*N4=N56XX R56XX
+    <- rep-right-cancels R56XX PM56-XX TN56-XX R56.
+%worlds () (mul-right-distributes-over-add Q1+Q2=Q3 Q3*Q4=Q7 
+                                    %{=>}% Q5 Q6 Q1*Q4=Q5 Q2*Q4=Q6 Q5+Q6=Q7).
+%total {} (mul-right-distributes-over-add _ _ _ _ _ _ _).
+
+%{%
+#define MUL_COMMUTATIVE 1
+#define ADD_TOTAL 1
+BEGIN_ELF
+#include "distrib.i"
+END_ELF
+#undef ADD_TOTAL
+#undef MUL_COMMUTATIVE
+%}%
+
+%theorem mul-left-cancels :
+	forall* {Q1} {Q2} {Q3} {Q1'} {Q2'} {Q3'}
+	forall {M:mul Q1 Q2 Q3} {M':mul Q1' Q2' Q3'}
+               {E1:equ Q1 Q1'} {E3: equ Q3 Q3'}
+        exists {E2:equ Q2 Q2'}
+	true.
+
+- : {A1:abs Q1 M1 N1} {A2:abs Q2 M2 N2} {TM12:times M1 M2 M12}
+    {T24:times M2 N4 P24} {T42:times M4 N2 P42} {A4:abs Q4 M4 N4}
+    {TM24:times M2 M4 M24} {TM42:times M4 M2 M24} {R2':rep M2 N2 Q4}
+    {T11:times M1 N1 P11}
+    mul-left-cancels (mul/ R12 TN12 TM12 A2 A1) 
+                     (mul/ R14 TN14' TM14' A4 A1') equ/ equ/ Q2=Q4
+    <- abs-deterministic A1' A1 equ/ M1'=M1 N1'=N1
+    <- times-respects-eq TM14' M1'=M1 eq/ eq/ TM14
+    <- times-respects-eq TN14' N1'=N1 eq/ eq/ TN14
+    <- reps-comparable R12 R14 equ/ X M12*N14=X M14*N12=X
+    <- times-total T11 <- times-total T24
+    <- times-double-associative* TM12 TN14 M12*N14=X T11 T24 P11*P24=X
+    <- times-total T42
+    <- times-double-associative* TM14 TN12 M14*N12=X T11 T42 P11*P42=X
+    <- abs-yields-positive A1 M1- M1+ N1- N1+
+    <- times-preserves-positive* T11 M1+ N1+ _ P11+
+    <- times-left-cancels* P11*P24=X P11*P42=X P11+ eq/ P24=P42
+    <- rep-inverse-of-abs A4 R4
+    <- abs-yields-positive A2 M2- M2+ N2- N2+
+    <- times-total TM24
+    <- rep-times-left R4 M2+ TM24 T24 M2*R4
+    <- rep-respects-equ M2*R4 eq/ P24=P42 equ/ R4'
+    <- times-commutative TM24 TM42
+    <- rep-left-cancels R4' TM42 T42 R2'
+    <- rep-inverse-of-abs A2 R2
+    <- rep-deterministic R2 R2' eq/ eq/ Q2=Q4.
+
+%worlds () (mul-left-cancels Q1*Q2=Q3 Q1'*Q2'=Q3' Q1=Q1' Q3=Q3' %{=>}% Q2=Q2').
+%total {} (mul-left-cancels _ _ _ _ _).
+
+
+%theorem mul-right-cancels :
+	forall* {Q1} {Q2} {Q3} {Q1'} {Q2'} {Q3'}
+	forall {M:mul Q1 Q2 Q3} {M':mul Q1' Q2' Q3'}
+               {E1:equ Q2 Q2'} {E3: equ Q3 Q3'}
+        exists {E2:equ Q1 Q1'}
+	true.
+
+- : mul-right-cancels Q1*Q2=Q3 Q1'*Q2'=Q3' Q2=Q2' Q3=Q3' Q1=Q1'
+    <- mul-commutative Q1*Q2=Q3 Q2*Q1=Q3
+    <- mul-commutative Q1'*Q2'=Q3' Q2'*Q1'=Q3'
+    <- mul-left-cancels Q2*Q1=Q3 Q2'*Q1'=Q3' Q2=Q2' Q3=Q3' Q1=Q1'.
+
+%worlds () (mul-right-cancels Q1*Q2=Q3 Q1'*Q2'=Q3' Q2=Q2' Q3=Q3' %{=>}% Q1=Q1').
+%total {} (mul-right-cancels _ _ _ _ _).
+
+
+%theorem mul-left-preserves-grt* :
+	forall* {Q1} {Q2} {Q3} {Q4} {Q5}
+        forall {G:grt Q2 Q4}
+               {A1:mul Q1 Q2 Q3} {A2:mul Q1 Q4 Q5}
+        exists {G':grt Q3 Q5}
+	true.
+
+- : mul-left-preserves-grt* (grt/ P24>P42 T42 T24 A4 A2)
+			    (mul/ R12 TN12' TM12' A2' A1)
+			    (mul/ R14 TN14' TM14' A4' A1')
+			    (grt/ P35>P53 T53 T35 A5 A3)
+%% use determinism to force equality:
+    <- abs-deterministic A1' A1 equ/ M1'=M1 N1'=N1
+    <- abs-deterministic A2' A2 equ/ M2'=M2 N2'=N2
+    <- abs-deterministic A4' A4 equ/ M4'=M4 N4'=N4
+    <- times-respects-eq TM12' eq/ M2'=M2 eq/ TM12
+    <- times-respects-eq TN12' eq/ N2'=N2 eq/ TN12
+    <- times-respects-eq TM14' M1'=M1 M4'=M4 eq/ TM14
+    <- times-respects-eq TN14' N1'=N1 N4'=N4 eq/ TN14
+%% Now connext 1*2=3, 1*4=5
+    <- abs-total A3 <- abs-inverse-of-rep-mult* R12 A3 X3- M3*X3=M12 N3*X3=N12
+    <- abs-total A5 <- abs-inverse-of-rep-mult* R14 A5 X5- M5*X5=M14 N5*X5=N14
+%% Create T35
+    <- times-total* M12 N14 P35*X35 T1214
+    <- times-total T35
+    <- times-preserves-positive X3- X5- X35- TX35
+    <- times-double-associative* M3*X3=M12 N5*X5=N14 T1214 T35 TX35 
+                                (T35-X:times P35 (s X35-) P35*X35)
+    <- times-total T11
+    <- times-double-associative* TM12 TN14 T1214 T11 T24 P11*P24=P35*X35
+%% Create T53
+    <- times-total* M14 N12 P53*X35 T1412
+    <- times-total T53
+    <- times-commutative TX35 TX53
+    <- times-double-associative* M5*X5=M14 N3*X3=N12 T1412 T53 TX53
+                                (T53-X:times P53 (s X35-) P53*X35)
+    <- times-double-associative* TM14 TN12 T1412 T11 T42 P11*P42=P53*X35
+%% connect and preserve gt
+    <- abs-yields-positive A1 M1- M1+ N1- N1+
+    <- times-preserves-positive* T11 M1+ N1+ _ P11+
+    <- times-left-preserves-gt* P24>P42 P11*P24=P35*X35 P11*P42=P53*X35 P11+
+                                P35*X35>P53*X35
+    <- times-right-cancels-gt T35-X T53-X eq/ P35*X35>P53*X35 P35>P53.
+
+%worlds () (mul-left-preserves-grt* Q2>Q4 Q1*Q2=Q3 Q1*Q4=Q5 %{=>}% Q3>Q5).
+%total {} (mul-left-preserves-grt* _ _ _ _).
+
+
+%theorem mul-left-cancels-grt :
+	forall* {Q1} {Q2} {Q3} {Q1'} {Q2'} {Q3'}
+        forall {M1:mul Q1 Q2 Q3} {M2:mul Q1' Q2' Q3'}
+               {E1:equ Q1 Q1'} {G1:grt Q3 Q3'}
+        exists {G2:grt Q2 Q2'}
+	true.
+
+- : {TM14:times M1 M4 M14} {TN14:times N1 N4 N14}
+    {TM12:times M1 M2 M12} {TN12:times N1 N2 N12}
+    mul-left-cancels-grt (mul/ R12 TN12 TM12 A2 A1)
+                        (mul/ R14 TN14' TM14' A4 A1') equ/
+                        (grt/ P35>P53 T53 T35 A5 A3)
+                        (grt/ P24>P42 T42 T24 A4 A2)
+    <- abs-deterministic A1' A1 equ/ M1=M1' N1=N1'
+    <- times-respects-eq TM14' M1=M1' eq/ eq/ TM14
+    <- times-respects-eq TN14' N1=N1' eq/ eq/ TN14
+    <- abs-inverse-of-rep-mult* R12 A3 X3- M3*X3=M12 N3*X3=N12
+    <- abs-inverse-of-rep-mult* R14 A5 X5- M5*X5=M14 N5*X5=N14
+    <- times-preserves-positive X3- X5- X35- TX35
+    <- times-total* P35 (s X35-) P35*X35 T35-X
+    <- times-total* P53 (s X35-) P53*X35 T53-X
+    <- times-right-preserves-gt P35>P53 T35-X T53-X P35*X35>P53*X35
+    <- times-double-associative* T35 TX35 T35-X M3*X3=M12 N5*X5=N14 M12*N14=P35*X35
+    <- times-commutative TX35 TX53
+    <- times-double-associative* T53 TX53 T53-X M5*X5=M14 N3*X3=N12 M14*N12=P53*X35
+    <- times-total T24 <- times-total T42 <- times-total T11
+    <- times-double-associative* TM12 TN14 M12*N14=P35*X35
+                                T11 T24 P11*P24=P35*X35
+    <- times-double-associative* TM14 TN12 M14*N12=P53*X35
+                                T11 T42 P11*P42=P53*X35
+    <- times-left-cancels-gt P11*P24=P35*X35 P11*P42=P53*X35 eq/ P35*X35>P53*X35
+                             P24>P42.
+
+%worlds () (mul-left-cancels-grt Q1*Q2=Q3 Q1'*Q2'=Q3' Q1=Q1' Q3>Q3' %{=>}% Q2>Q2').
+%total {} (mul-left-cancels-grt _ _ _ _ _).
+
+%{%
+#define CMP(X,Y) X>Y
+#define CMPN grt
+#define CMP_TRANSITIVE
+BEGIN_ELF
+#include "OPN-preserves-CMPN.i"
+END_ELF
+#undef CMP_TRANSITIVE
+#undef CMPN
+#undef CMP
+
+#undef OP
+#undef OPN
+#undef OP_CANCELS
+#undef OP_TOTAL
+#undef OP_COMMUTATIVE
+
+#undef ADD
+#undef ADDN
+#undef MUL
+#undef MULN
+%}%
+
+
+
+

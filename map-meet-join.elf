@@ -1,0 +1,361 @@
+%{%
+#ifdef DATA_MEET_RIGHT_DISTRIBUTES_OVER_JOIN
+%}%
+
+%theorem meet-right-distributes-over-join :
+	forall* {M1} {M2} {M3} {M4} {M7}
+        forall {J12:join M1 M2 M3} {A34:meet M3 M4 M7}
+        exists {M5} {M6} {A14:meet M1 M4 M5} {A24:meet M2 M4 M6}
+               {J56:join M5 M6 M7}
+	true.
+
+- : meet-right-distributes-over-join join/L A24 _ _ meet/L A24 join/L.
+
+- : meet-right-distributes-over-join join/R A14 _ _ A14 meet/L join/R.
+
+- : meet-right-distributes-over-join _ meet/R _ _ meet/R meet/R join/L.
+
+- : meet-right-distributes-over-join (join/= M1+M2=M3 D1+D2=D3 nat`eq/) meet/R
+                                     _ _ meet/R meet/R join/L.
+
+- : meet-right-distributes-over-join (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                                     (meet/= M3*M4=M7 D3*D4=D7 nat`eq/) _ _
+                                     (meet/= M1*M4=M5 D1*D4=D5 nat`eq/) 
+                                     (meet/= M2*M4=M6 D2*D4=D6 nat`eq/) 
+                                     (join/= M5+M6=M7 D5+D6=D7 nat`eq/)
+    <- meet-right-distributes-over-join M1+M2=M3 M3*M4=M7 _ _
+                                        M1*M4=M5 M2*M4=M6 M5+M6=M7
+    <- data`meet-right-distributes-over-join D1+D2=D3 D3*D4=D7 _ _
+                                             D1*D4=D5 D2*D4=D6 D5+D6=D7.
+
+- : meet-right-distributes-over-join (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                                     (meet/< M7<<N1=S1M7 M3*M744=M7 N7+1+N1=N4)
+                                 _ _ (meet/< M5<<N1=S1M5 M1*M744=M5 N7+1+N1=N4)
+                                     (meet/< M6<<N1=S1M6 M2*M744=M6 N7+1+N1=N4)
+                                     S1M5+S1M6=S1M7
+    <- meet-right-distributes-over-join M1+M2=M3 M3*M744=M7 _ _
+                                        M1*M744=M5 M2*M744=M6 M5+M6=M7
+    <- shift-total M5<<N1=S1M5
+    <- shift-total M6<<N1=S1M6
+    <- shift-preserves-join M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7 
+                            S1M5+S1M6=S1M7.
+
+- : meet-right-distributes-over-join (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                                     (meet/> M7<<N2=S2M7 M733*M4=M7 N7+1+N4=N1)
+                                 _ _ (meet/> M5<<N2=S2M5 M711*M4=M5 N7+1+N4=N1)
+                                     (meet/> M6<<N2=S2M6 M722*M4=M6 N7+1+N4=N1)
+                                     S2M5+S2M6=S2M7
+    <- meet-right-distributes-over-join (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                                        M733*M4=M7 _ _ M711*M4=M5 M722*M4=M6
+                                        M5+M6=M7
+    <- shift-total M5<<N2=S2M5
+    <- shift-total M6<<N2=S2M6
+    <- shift-preserves-join M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7 
+                            S2M5+S2M6=S2M7.
+
+- : meet-right-distributes-over-join (join/< M1+M022=M3 N0+1+N1=N2)
+                                     (meet/= M3*M4=M7 D1*D4=D7 nat`eq/)
+                                 _ _ (meet/= M1*M4=M5 D1*D4=D7 nat`eq/)
+                                     (meet/> M6<<N1=S1M6 M022*M4=M6 N0+1+N1=N2)
+                                     M175+S1M6=M177
+    <- meet-right-distributes-over-join M1+M022=M3 M3*M4=M7 _ _
+                                        M1*M4=M5 M022*M4=M6 M5+M6=M7
+    <- shift-total M6<<N1=S1M6
+    <- shift-right-preserves-join M5+M6=M7 M6<<N1=S1M6 M175+S1M6=M177.
+
+- : meet-right-distributes-over-join (join/< M1+M022=M3 N0+1+N1=N2)
+                                     (meet/< M7<<N1=S1M7 M3*M544=M7 N5+1+N1=N4)
+                                 _ _ (meet/< M5<<N1=S1M5 M1*M544=M5 N5+1+N1=N4)
+                                     M222*M444=S1M6 S1M5+S1M6=S1M7
+    <- meet-right-distributes-over-join M1+M022=M3 M3*M544=M7 _ _
+                                        M1*M544=M5 M022*M544=M6 M5+M6=M7
+    <- shift-total M5<<N1=S1M5
+    <- shift-total M6<<N1=S1M6
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
+    <- plus-swap-succ N5+1+N1=N4 N5+N1+1=N4
+    <- plus-commutative N5+N1+1=N4 N1+1+N5=N4
+    <- shift-preserves-meet M022*M544=M6 (shift/+ N1+1+N0=N2) 
+                            (shift/+ N1+1+N5=N4) M6<<N1=S1M6 M222*M444=S1M6
+    <- shift-preserves-join M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7
+                            S1M5+S1M6=S1M7.
+
+- : meet-right-distributes-over-join (join/< M1+M022=M3 N0+1+N1=N2)
+                                     (meet/> M7<<N4=S4M7 M513*M4=M7 N5+1+N4=N1)
+                                 _ _ (meet/> M5<<N4=S4M5 M511*M4=M5 N5+1+N4=N1)
+                                     (meet/> M6<<N4=S4M6 M622*M4=M6 N6+1+N4=N2)
+                                     S4M5+S4M6=S4M7
+    <- plus-swap-succ N5+1+N4=N1 N5+N4+1=N1
+    <- plus-associative-converse N5+N4+1=N1 N0+1+N1=N2 N6 N0+1+N5=N6 N6+N4+1=N2
+    <- plus-swap-succ-converse N6+N4+1=N2 N6+1+N4=N2
+    <- plus-swap-succ N0+1+N5=N6 N0+N5+1=N6
+    <- plus-commutative N0+N5+1=N6 N5+1+N0=N6
+    <- shift-right-preserves-join M1+M022=M3 (shift/+ N5+1+N0=N6) M511*M622=M513
+    <- meet-right-distributes-over-join M511*M622=M513 M513*M4=M7 _ _
+                                        M511*M4=M5 M622*M4=M6 M5+M6=M7
+    <- shift-total M5<<N4=S4M5
+    <- shift-total M6<<N4=S4M6
+    <- shift-preserves-join M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
+                            S4M5+S4M6=S4M7.
+
+- : meet-right-distributes-over-join (join/> M311+M2=M3 N3+1+N2=N1)
+                                     (meet/= M3*M4=M7 D2*D4=D7 nat`eq/)
+                                 _ _ (meet/> M5<<N2=S2M5 M311*M4=M5 N3+1+N2=N1)
+                                     (meet/= M2*M4=M6 D2*D4=D7 nat`eq/)
+                                     S2M5+M276=M277
+    <- meet-right-distributes-over-join M311+M2=M3 M3*M4=M7 _ _
+                                        M311*M4=M5 M2*M4=M6 M5+M6=M7
+    <- shift-total M5<<N2=S2M5
+    <- shift-left-preserves-join M5+M6=M7 M5<<N2=S2M5 S2M5+M276=M277.
+
+- : meet-right-distributes-over-join (join/> M311+M2=M3 N3+1+N2=N1)
+                                     (meet/< M7<<N2=S2M7 M3*M644=M7 N6+1+N2=N4)
+                                 _ _ M111*M444=S2M5
+                                     (meet/< M6<<N2=S2M6 M2*M644=M6 N6+1+N2=N4)
+                                     S2M5+S2M6=S2M7
+    <- meet-right-distributes-over-join M311+M2=M3 M3*M644=M7 _ _
+                                        M311*M644=M5 M2*M644=M6 M5+M6=M7
+    <- shift-total M5<<N2=S2M5
+    <- shift-total M6<<N2=S2M6    
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
+    <- plus-swap-succ N6+1+N2=N4 N6+N2+1=N4
+    <- plus-commutative N6+N2+1=N4 N2+1+N6=N4
+    <- shift-preserves-meet M311*M644=M5 (shift/+ N2+1+N3=N1) 
+                            (shift/+ N2+1+N6=N4) M5<<N2=S2M5 M111*M444=S2M5
+    <- shift-preserves-join M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7
+                            S2M5+S2M6=S2M7.
+
+- : meet-right-distributes-over-join (join/> M311+M2=M3 N3+1+N2=N1)
+                                     (meet/> M7<<N4=S4M7 M623*M4=M7 N6+1+N4=N2)
+                                 _ _ (meet/> M5<<N4=S4M5 M511*M4=M5 N5+1+N4=N1)
+                                     (meet/> M6<<N4=S4M6 M622*M4=M6 N6+1+N4=N2)
+                                     S4M5+S4M6=S4M7
+    <- plus-swap-succ N6+1+N4=N2 N6+N4+1=N2
+    <- plus-associative-converse N6+N4+1=N2 N3+1+N2=N1 N5 N3+1+N6=N5 N5+N4+1=N1
+    <- plus-swap-succ-converse N5+N4+1=N1 N5+1+N4=N1
+    <- plus-swap-succ N3+1+N6=N5 N3+N6+1=N5
+    <- plus-commutative N3+N6+1=N5 N6+1+N3=N5
+    <- shift-left-preserves-join M311+M2=M3 (shift/+ N6+1+N3=N5) M511+M622=M623
+    <- meet-right-distributes-over-join M511+M622=M623 M623*M4=M7 _ _
+                                        M511*M4=M5 M622*M4=M6 M5+M6=M7
+    <- shift-total M5<<N4=S4M5
+    <- shift-total M6<<N4=S4M6
+    <- shift-preserves-join M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
+                            S4M5+S4M6=S4M7.
+
+%worlds () (meet-right-distributes-over-join _ _ _ _ _ _ _).
+%total (A) (meet-right-distributes-over-join _ A _ _ _ _ _).
+
+%{%
+#ifdef DATA_MEET_COMMUTATIVE
+#define MUL_COMMUTATIVE 1
+#endif
+#ifdef DATA_JOIN_TOTAL
+#define ADD_TOTAL 1
+#endif
+#define ADD(X,Y) X+Y
+#define ADDN join
+#define MUL(X,Y) X*Y
+#define MULN meet
+#define EQ eq
+BEGIN_ELF
+#include "distrib.i"
+END_ELF
+#undef EQ
+#undef ADD
+#undef ADDN
+#undef MUL
+#undef MULN
+#undef ADD_TOTAL
+#undef MUL_COMMUTATIVE
+
+
+#endif /* DATA_MEET_RIGHT_DISTRIBUTES_OVER_JOIN */
+
+
+/* and now try the other direction! */
+
+
+#ifdef DATA_JOIN_RIGHT_DISTRIBUTES_OVER_MEET
+%}%
+
+%stop
+
+This theorem is not proved. The very first case requires
+that we prove if X1 + X2 = X3 then X2 * X3 = X2 which 
+works for sets etc, but not in general.
+
+%theorem join-right-distributes-over-meet :
+	forall* {M1} {M2} {M3} {M4} {M7}
+        forall {J12:meet M1 M2 M3} {A34:join M3 M4 M7}
+        exists {M5} {M6} {A14:join M1 M4 M5} {A24:join M2 M4 M6}
+               {J56:meet M5 M6 M7}
+	true.
+
+- : join-right-distributes-over-meet meet/L join/L _ _ join/L J24 
+                                     M4*M24=M4.
+    <- X.
+
+- : join-right-distributes-over-meet A12 join/R _ _ join/R join/R A12.
+
+- : join-right-distributes-over-meet _ join/R _ _ join/R join/R meet/L.
+
+- : join-right-distributes-over-meet (meet/= M1+M2=M3 D1+D2=D3 nat`eq/) join/R
+                                     _ _ join/R join/R meet/L.
+
+- : join-right-distributes-over-meet (meet/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                                     (join/= M3*M4=M7 D3*D4=D7 nat`eq/) _ _
+                                     (join/= M1*M4=M5 D1*D4=D5 nat`eq/) 
+                                     (join/= M2*M4=M6 D2*D4=D6 nat`eq/) 
+                                     (meet/= M5+M6=M7 D5+D6=D7 nat`eq/)
+    <- join-right-distributes-over-meet M1+M2=M3 M3*M4=M7 _ _
+                                        M1*M4=M5 M2*M4=M6 M5+M6=M7
+    <- data`join-right-distributes-over-meet D1+D2=D3 D3*D4=D7 _ _
+                                             D1*D4=D5 D2*D4=D6 D5+D6=D7.
+
+- : join-right-distributes-over-meet (meet/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                                     (join/< M7<<N1=S1M7 M3*M744=M7 N7+1+N1=N4)
+                                 _ _ (join/< M5<<N1=S1M5 M1*M744=M5 N7+1+N1=N4)
+                                     (join/< M6<<N1=S1M6 M2*M744=M6 N7+1+N1=N4)
+                                     S1M5+S1M6=S1M7
+    <- join-right-distributes-over-meet M1+M2=M3 M3*M744=M7 _ _
+                                        M1*M744=M5 M2*M744=M6 M5+M6=M7
+    <- shift-total M5<<N1=S1M5
+    <- shift-total M6<<N1=S1M6
+    <- shift-preserves-meet M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7 
+                            S1M5+S1M6=S1M7.
+
+- : join-right-distributes-over-meet (meet/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                                     (join/> M7<<N2=S2M7 M733*M4=M7 N7+1+N4=N1)
+                                 _ _ (join/> M5<<N2=S2M5 M711*M4=M5 N7+1+N4=N1)
+                                     (join/> M6<<N2=S2M6 M722*M4=M6 N7+1+N4=N1)
+                                     S2M5+S2M6=S2M7
+    <- join-right-distributes-over-meet (meet/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                                        M733*M4=M7 _ _ M711*M4=M5 M722*M4=M6
+                                        M5+M6=M7
+    <- shift-total M5<<N2=S2M5
+    <- shift-total M6<<N2=S2M6
+    <- shift-preserves-meet M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7 
+                            S2M5+S2M6=S2M7.
+
+- : join-right-distributes-over-meet (meet/< M1+M022=M3 N0+1+N1=N2)
+                                     (join/= M3*M4=M7 D1*D4=D7 nat`eq/)
+                                 _ _ (join/= M1*M4=M5 D1*D4=D7 nat`eq/)
+                                     (join/> M6<<N1=S1M6 M022*M4=M6 N0+1+N1=N2)
+                                     M175+S1M6=M177
+    <- join-right-distributes-over-meet M1+M022=M3 M3*M4=M7 _ _
+                                        M1*M4=M5 M022*M4=M6 M5+M6=M7
+    <- shift-total M6<<N1=S1M6
+    <- shift-right-preserves-meet M5+M6=M7 M6<<N1=S1M6 M175+S1M6=M177.
+
+- : join-right-distributes-over-meet (meet/< M1+M022=M3 N0+1+N1=N2)
+                                     (join/< M7<<N1=S1M7 M3*M544=M7 N5+1+N1=N4)
+                                 _ _ (join/< M5<<N1=S1M5 M1*M544=M5 N5+1+N1=N4)
+                                     M222*M444=S1M6 S1M5+S1M6=S1M7
+    <- join-right-distributes-over-meet M1+M022=M3 M3*M544=M7 _ _
+                                        M1*M544=M5 M022*M544=M6 M5+M6=M7
+    <- shift-total M5<<N1=S1M5
+    <- shift-total M6<<N1=S1M6
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
+    <- plus-swap-succ N5+1+N1=N4 N5+N1+1=N4
+    <- plus-commutative N5+N1+1=N4 N1+1+N5=N4
+    <- shift-preserves-join M022*M544=M6 (shift/+ N1+1+N0=N2) 
+                            (shift/+ N1+1+N5=N4) M6<<N1=S1M6 M222*M444=S1M6
+    <- shift-preserves-meet M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7
+                            S1M5+S1M6=S1M7.
+
+- : join-right-distributes-over-meet (meet/< M1+M022=M3 N0+1+N1=N2)
+                                     (join/> M7<<N4=S4M7 M513*M4=M7 N5+1+N4=N1)
+                                 _ _ (join/> M5<<N4=S4M5 M511*M4=M5 N5+1+N4=N1)
+                                     (join/> M6<<N4=S4M6 M622*M4=M6 N6+1+N4=N2)
+                                     S4M5+S4M6=S4M7
+    <- plus-swap-succ N5+1+N4=N1 N5+N4+1=N1
+    <- plus-associative-converse N5+N4+1=N1 N0+1+N1=N2 N6 N0+1+N5=N6 N6+N4+1=N2
+    <- plus-swap-succ-converse N6+N4+1=N2 N6+1+N4=N2
+    <- plus-swap-succ N0+1+N5=N6 N0+N5+1=N6
+    <- plus-commutative N0+N5+1=N6 N5+1+N0=N6
+    <- shift-right-preserves-meet M1+M022=M3 (shift/+ N5+1+N0=N6) M511*M622=M513
+    <- join-right-distributes-over-meet M511*M622=M513 M513*M4=M7 _ _
+                                        M511*M4=M5 M622*M4=M6 M5+M6=M7
+    <- shift-total M5<<N4=S4M5
+    <- shift-total M6<<N4=S4M6
+    <- shift-preserves-meet M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
+                            S4M5+S4M6=S4M7.
+
+- : join-right-distributes-over-meet (meet/> M311+M2=M3 N3+1+N2=N1)
+                                     (join/= M3*M4=M7 D2*D4=D7 nat`eq/)
+                                 _ _ (join/> M5<<N2=S2M5 M311*M4=M5 N3+1+N2=N1)
+                                     (join/= M2*M4=M6 D2*D4=D7 nat`eq/)
+                                     S2M5+M276=M277
+    <- join-right-distributes-over-meet M311+M2=M3 M3*M4=M7 _ _
+                                        M311*M4=M5 M2*M4=M6 M5+M6=M7
+    <- shift-total M5<<N2=S2M5
+    <- shift-left-preserves-meet M5+M6=M7 M5<<N2=S2M5 S2M5+M276=M277.
+
+- : join-right-distributes-over-meet (meet/> M311+M2=M3 N3+1+N2=N1)
+                                     (join/< M7<<N2=S2M7 M3*M644=M7 N6+1+N2=N4)
+                                 _ _ M111*M444=S2M5
+                                     (join/< M6<<N2=S2M6 M2*M644=M6 N6+1+N2=N4)
+                                     S2M5+S2M6=S2M7
+    <- join-right-distributes-over-meet M311+M2=M3 M3*M644=M7 _ _
+                                        M311*M644=M5 M2*M644=M6 M5+M6=M7
+    <- shift-total M5<<N2=S2M5
+    <- shift-total M6<<N2=S2M6    
+    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
+    <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
+    <- plus-swap-succ N6+1+N2=N4 N6+N2+1=N4
+    <- plus-commutative N6+N2+1=N4 N2+1+N6=N4
+    <- shift-preserves-join M311*M644=M5 (shift/+ N2+1+N3=N1) 
+                            (shift/+ N2+1+N6=N4) M5<<N2=S2M5 M111*M444=S2M5
+    <- shift-preserves-meet M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7
+                            S2M5+S2M6=S2M7.
+
+- : join-right-distributes-over-meet (meet/> M311+M2=M3 N3+1+N2=N1)
+                                     (join/> M7<<N4=S4M7 M623*M4=M7 N6+1+N4=N2)
+                                 _ _ (join/> M5<<N4=S4M5 M511*M4=M5 N5+1+N4=N1)
+                                     (join/> M6<<N4=S4M6 M622*M4=M6 N6+1+N4=N2)
+                                     S4M5+S4M6=S4M7
+    <- plus-swap-succ N6+1+N4=N2 N6+N4+1=N2
+    <- plus-associative-converse N6+N4+1=N2 N3+1+N2=N1 N5 N3+1+N6=N5 N5+N4+1=N1
+    <- plus-swap-succ-converse N5+N4+1=N1 N5+1+N4=N1
+    <- plus-swap-succ N3+1+N6=N5 N3+N6+1=N5
+    <- plus-commutative N3+N6+1=N5 N6+1+N3=N5
+    <- shift-left-preserves-meet M311+M2=M3 (shift/+ N6+1+N3=N5) M511+M622=M623
+    <- join-right-distributes-over-meet M511+M622=M623 M623*M4=M7 _ _
+                                        M511*M4=M5 M622*M4=M6 M5+M6=M7
+    <- shift-total M5<<N4=S4M5
+    <- shift-total M6<<N4=S4M6
+    <- shift-preserves-meet M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
+                            S4M5+S4M6=S4M7.
+
+%worlds () (join-right-distributes-over-meet _ _ _ _ _ _ _).
+%total (A) (join-right-distributes-over-meet _ A _ _ _ _ _).
+%{%
+
+#ifdef DATA_JOIN_COMMUTATIVE
+#define MUL_COMMUTATIVE 1
+#endif
+#ifdef DATA_MEET_TOTAL
+#define ADD_TOTAL 1
+#endif
+#define ADD(X,Y) X*Y
+#define ADDN meet
+#define MUL(X,Y) X+Y
+#define MULN join
+#define EQ eq
+BEGIN_ELF
+#include "distrib.i"
+END_ELF
+#undef EQ
+#undef ADD
+#undef ADDN
+#undef MUL
+#undef MULN
+#undef ADD_TOTAL
+#undef MUL_COMMUTATIVE
+
+
+#endif
+%}%

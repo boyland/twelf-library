@@ -1,0 +1,24 @@
+%%%%%% Multisets of natural numbers
+%%%%%% John Boyland
+%%%%%% You may freely use, modify and distribute this file without restrictions.
+
+%%%%% This file requires the "nat.elf" signature
+
+%{%
+ This signature implements (finite) multisets of natural numbers.
+ They can be seen as maps from natural numbers o natural numbers
+ wherea only a finite subset of the domain maps to non-zero.
+ The representation is "adequate" in that every multiset
+ has a unique representation.  In other words, equality of the terms
+ is the same as semantic equality.
+%}%
+
+%{%
+  This signature was created using "map" and is not "optimally" concise.
+  The proofs of the theorems are more general than necessary and
+  use many trivial lemmas.
+%}%
+
+%{%
+  This file follows the same theorem naming convention as nat.elf (q.v.)
+%}%
