@@ -1,0 +1,164 @@
+%theorem scale-distributes-over-join* :
+        forall* {M1} {M2} {M3} {S} {SM1} {SM2} {SM3}
+	forall {J:join M1 M2 M3} {SC3:scale S M3 SM3}
+	       {SC1:scale S M1 SM1} {SC2:scale S M2 SM2}
+	exists {SJ:join SM1 SM2 SM3}
+	true.
+
+- : scale-distributes-over-join* join/L S*M2=SM3 scale/0 S*M2=SM2 Z+SM2=SM3
+    <- scale-deterministic S*M2=SM3 S*M2=SM2 scalar`eq/ eq/ SM3=SM2
+    <- join-respects-eq join/L eq/ SM3=SM2 eq/ Z+SM2=SM3.
+
+- : scale-distributes-over-join* join/R S*M1=SM3 S*M1=SM1 scale/0 SM1+0=SM3
+    <- scale-deterministic S*M1=SM3 S*M1=SM1 scalar`eq/ eq/ SM3=SM1
+    <- join-respects-eq join/R SM3=SM1 eq/ eq/ SM1+0=SM3.
+
+- : scale-distributes-over-join* (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
+                                 (scale/+ S*M3=SM3 S*D3=SD3)
+                                 (scale/+ S*M1=SM1 S*D1=SD1)
+                                 (scale/+ S*M2=SM2 S*D2=SD2)
+                                 (join/= SM1+SM2=SM3 SD1+SD2=SD3 nat`eq/)
+    <- data`scale-distributes-over-join* D1+D2=D3 S*D3=SD3 S*D1=SD1 S*D2=SD2
+                                         SD1+SD2=SD3
+    <- scale-distributes-over-join* M1+M2=M3 S*M3=SM3 S*M1=SM1 S*M2=SM2
+                                    SM1+SM2=SM3.
+
+- : scale-distributes-over-join* (join/< M1+M022=M3 P)
+                                 (scale/+ S*M3=M7 S*D1=D7)
+                                 (scale/+ S*M1=M5 S*D1=D5)
+                                 (scale/+ S*M2=M6 S*D2=D6)
+                                 M155+M266=M177
+    <- scale-distributes-over-join* M1+M022=M3 S*M3=M7 S*M1=M5
+                                    (scale/+ S*M2=M6 S*D2=D6) M5+M066=M7
+    <- data`scale-deterministic S*D1=D5 S*D1=D7 scalar`eq/ data`eq/ D5=D7
+    <- map/+-preserves-eq nat`eq/ D5=D7 eq/ M157=M177 
+    <- join-respects-eq (join/< M5+M066=M7 P) eq/ eq/ M157=M177 M155+M266=M177.
+
+- : scale-distributes-over-join* (join/> M311+M2=M3 P)
+                                 (scale/+ S*M3=M7 S*D2=D7)
+                                 (scale/+ S*M1=M5 S*D1=D5)
+                                 (scale/+ S*M2=M6 S*D2=D6)
+				 M155+M266=M277
+    <- scale-distributes-over-join* M311+M2=M3 S*M3=M7 (scale/+ S*M1=M5 S*D1=D5)
+                                    S*M2=M6 M355+M6=M7
+    <- data`scale-deterministic S*D2=D6 S*D2=D7 scalar`eq/ data`eq/ D6=D7
+    <- map/+-preserves-eq nat`eq/ D6=D7 eq/ M267=M277
+    <- join-respects-eq (join/> M355+M6=M7 P) eq/ eq/ M267=M277 M155+M266=M277.
+
+%worlds () (scale-distributes-over-join* _ _ _ _ _).
+%total (J) (scale-distributes-over-join* J _ _ _ _).
+
+%{%
+#ifdef DATA_SCALE_TOTAL_STAR
+%}%
+
+%theorem scale-distributes-over-join :
+        forall* {M1} {M2} {M3} {S} {SM3}
+	forall {J:join M1 M2 M3} {SC3:scale S M3 SM3}
+	exists {SM1} {SM2} {SC1:scale S M1 SM1} {SC2:scale S M2 SM2}
+	       {SJ:join SM1 SM2 SM3}
+	true.
+
+- : scale-distributes-over-join J SC3 _ _ SC1 SC2 SJ
+    <- scale-total SC1 
+    <- scale-total SC2
+    <- scale-distributes-over-join* J SC3 SC1 SC2 SJ.
+
+%worlds () (scale-distributes-over-join _ _ _ _ _ _ _).
+%total { } (scale-distributes-over-join _ _ _ _ _ _ _).
+
+%{%
+#ifdef DATA_JOIN_DETERMINISTIC
+%}%
+
+%theorem scale-factors-over-join* :
+	forall* {X1} {X2} {X3} {X4} {X5} {X6} {X7}
+	forall {M12:scale X1 X2 X3} {M14:scale X1 X4 X5} 
+               {A35:join X3 X5 X7} {A24:join X2 X4 X6} 
+        exists {M16:scale X1 X6 X7}
+        true.
+
+- : scale-factors-over-join* X1*X2=X3 X1*X4=X5 X3+X5=X7 X2+X4=X6 X1*X6=X7
+    <- scale-total X1*X6=Y7
+    <- scale-distributes-over-join* X2+X4=X6 X1*X6=Y7 X1*X2=X3 X1*X4=X5
+                                      X3+X5=Y7
+    <- join-deterministic X3+X5=Y7 X3+X5=X7 eq/ eq/ Y7=X7
+    <- scale-respects-eq X1*X6=Y7 scalar`eq/ eq/ Y7=X7 X1*X6=X7.
+
+%worlds () (scale-factors-over-join* X1*X2=X3 X1*X4=X5 X3+X5=X7 X2+X4=X6 
+                              %{=>}% X1*X6=X7).
+%total { } (scale-factors-over-join* _ _ _ _ _).
+
+%{%
+#ifdef DATA_JOIN_TOTAL_STAR
+%}%
+
+%theorem scale-factors-over-join :
+	forall* {X1} {X2} {X3} {X4} {X5} {X7}
+	forall {M12:scale X1 X2 X3} {M14:scale X1 X4 X5} {A35:join X3 X5 X7} 
+        exists {X6} 
+               {A24:join X2 X4 X6} 
+               {M16:scale X1 X6 X7}
+        true.
+
+- : scale-factors-over-join X1*X2=X3 X1*X4=X5 X3+X5=X7 _ X2+X4=X6 X1*X6=X7
+    <- join-total X2+X4=X6
+    <- scale-factors-over-join* X1*X2=X3 X1*X4=X5 X3+X5=X7 X2+X4=X6 X1*X6=X7.
+
+%worlds () (scale-factors-over-join _ _ _ _ _ _).
+%total { } (scale-factors-over-join _ _ _ _ _ _).
+
+%{%
+#define SCALE_FACTORS_OVER_JOIN_IMPLEMENTED 1
+#endif
+#endif
+#endif
+
+#ifndef SCALE_FACTORS_OVER_JOIN_IMPLEMENTED
+/* Do it the hard way */
+%}%
+
+%theorem scale-factors-over-join :
+	forall* {X1} {X2} {X3} {X4} {X5} {X7}
+	forall {M12:scale X1 X2 X3} {M14:scale X1 X4 X5} 
+	       {A35:join X3 X5 X7} 
+        exists {X6} 
+               {A24:join X2 X4 X6} 
+               {M16:scale X1 X6 X7}
+        true.
+
+- : scale-factors-over-join scale/0 scale/0 A _ join/L scale/0.
+
+- : scale-factors-over-join scale/0 S join/L _ join/L S.
+
+- : scale-factors-over-join S scale/0 join/R _ join/R S.
+
+- : scale-factors-over-join 
+     (scale/+ S1*M2=M3 S1*D2=D3) (scale/+ S1*M4=M5 S1*D4=D5)
+     (join/= M3+M5=M7 D3+D5=D7 nat`eq/) _
+     (join/= M2+M4=M6 D2+D4=D6 nat`eq/) (scale/+ S1*M6=M7 S1*D6=D7)
+   <- data`scale-factors-over-join
+       S1*D2=D3 S1*D4=D5 D3+D5=D7 D6 D2+D4=D6 S1*D6=D7
+   <- scale-factors-over-join
+       S1*M2=M3 S1*M4=M5 M3+M5=M7 _ M2+M4=M6 S1*M6=M7.
+
+- : scale-factors-over-join 
+     (scale/+ S1*M2=M3 S1*D2=D3) (scale/+ S1*M4=M5 S1*D4=D5)
+     (join/< M3+M755=M7 N7+1+N3=N5) _
+     (join/< M2+M744=M6 N7+1+N3=N5) (scale/+ S1*M6=M7 S1*D2=D3)
+    <- scale-factors-over-join
+       S1*M2=M3 (scale/+ S1*M4=M5 S1*D4=D5) M3+M755=M7 _ M2+M744=M6 S1*M6=M7.
+
+- :  scale-factors-over-join 
+     (scale/+ S1*M2=M3 S1*D2=D3) (scale/+ S1*M4=M5 S1*D4=D5)
+     (join/> M733+M5=M7 N7+1+N5=N3) _
+     (join/> M722+M4=M6 N7+1+N5=N3) (scale/+ S1*M6=M7 S1*D4=D5)
+    <- scale-factors-over-join
+       (scale/+ S1*M2=M3 S1*D2=D3) S1*M4=M5 M733+M5=M7 _ M722+M4=M6 S1*M6=M7.
+
+%worlds () (scale-factors-over-join _ _ _ _ _ _).
+%total (A) (scale-factors-over-join _ _ A _ _ _).
+
+%{%
+#endif
+%}%

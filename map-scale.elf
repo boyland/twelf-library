@@ -1,0 +1,501 @@
+%%%%% map-scale.elf
+%%%%% Applying a "multiplication" uniformly to all data in a map.
+%%%%% This file is part of the 'map' functor.
+
+
+
+%%%% Definitions
+
+
+scale : scalar -> map -> map -> type.
+
+scale/0 : scale _ map/0 map/0.
+
+scale/+ : scale S (map/+ N D M) (map/+ N D' M')
+     <- data`scale S D D'
+     <- scale S M M'.
+
+
+
+%%%% Theorems
+
+
+%%% Theorems about scale
+
+
+%theorem false-implies-scale :
+	forall* {S} {M} {M'}
+	forall {F:void}
+	exists {SC:scale S M M'}
+	true.
+
+%worlds () (false-implies-scale _ _).
+%total { } (false-implies-scale _ _).
+
+
+%theorem scale-respects-eq :
+	forall* {S1} {M1} {SM1} {S2} {M2} {SM2}
+        forall {SC1:scale S1 M1 SM1} 
+               {ES:scalar`eq S1 S2} {E:eq M1 M2} {SE:eq SM1 SM2}
+	exists {SC2:scale S2 M2 SM2}
+	true.
+
+- : scale-respects-eq SC scalar`eq/ eq/ eq/ SC.
+
+%worlds () (scale-respects-eq _ _ _ _ _).
+%total { } (scale-respects-eq _ _ _ _ _).
+
+
+%theorem scale-deterministic :
+	forall* {S1} {M1} {SM1} {S2} {M2} {SM2}
+        forall {SC1:scale S1 M1 SM1} {SC2:scale S2 M2 SM2}
+               {ES:scalar`eq S1 S2} {E:eq M1 M2}
+	exists {SE:eq SM1 SM2}
+	true.
+
+- : scale-deterministic scale/0 scale/0 scalar`eq/ eq/ eq/.
+
+- : scale-deterministic (scale/+ S*M=SM1 S*D=D1) (scale/+ S*M=SM2 S*D=D2)
+                        scalar`eq/ eq/ E
+    <- scale-deterministic S*M=SM1 S*M=SM2 scalar`eq/ eq/ SM1=SM2
+    <- data`scale-deterministic S*D=D1 S*D=D2 scalar`eq/ data`eq/ D1=D2
+    <- map/+-preserves-eq nat`eq/ D1=D2 SM1=SM2 E.
+
+%worlds () (scale-deterministic _ _ _ _ _).
+%total (S) (scale-deterministic S _ _ _ _).
+
+%{%
+#ifdef DATA_SCALE_TOTAL_STAR
+%}%
+
+%theorem scale-total* :
+	forall {S:scalar} {M1}
+        exists {M2} {SC:scale S M1 M2}
+	true.
+
+- : scale-total* _ map/0 _ scale/0.
+
+- : scale-total* S (map/+ N D1 M1) _ (scale/+ S*M1=M2 S*D1=D2)
+    <- data`scale-total* S D1 D2 S*D1=D2
+    <- scale-total* S M1 M2 S*M1=M2.
+
+%worlds () (scale-total* _ _ _ _).
+%total (M) (scale-total* _ M _ _).
+
+
+%abbrev scale-total = scale-total* _ _ _.
+
+%{%
+#endif /* DATA_SCALE_TOTAL_STAR */
+
+#ifdef DATA_COMBINE_SCALAR
+%}%
+
+%theorem scale-associates* :
+	forall* {S1} {S2} {S3} {M4} {M6} {M7}
+	forall {C:data`combine-scalar S1 S2 S3}
+	       {SC34:scale S3 M4 M7}
+               {SC24:scale S2 M4 M6}
+        exists {SC16:scale S1 M6 M7}
+	true.
+
+- : scale-associates* _ scale/0 scale/0 scale/0.
+
+- : scale-associates* S1*S2=S3 (scale/+ S3*M=M3 S3*D=D3)
+                               (scale/+ S2*M=M2 S2*D=D2)
+                               (scale/+ S1*M2=M3 S1*D2=D3)
+    <- data`scale-associates* S1*S2=S3 S3*D=D3 S2*D=D2 S1*D2=D3
+    <- scale-associates* S1*S2=S3 S3*M=M3 S2*M=M2 S1*M2=M3.
+
+%worlds () (scale-associates* _ _ _ _).
+%total (S) (scale-associates* _ S _ _).
+
+%{%
+#ifdef DATA_SCALE_TOTAL_STAR
+%}%
+
+%theorem scale-associates :
+	forall* {S1} {S2} {S3} {M4} {M7}
+	forall {C:data`combine-scalar S1 S2 S3}
+	       {SC34:scale S3 M4 M7}
+        exists {M6} {SC24:scale S2 M4 M6} {SC16:scale S1 M6 M7}
+	true.
+
+- : scale-associates S1*S2=S3 S3*M4=M7 M6 S2*M4=M6 S1*M6=M7
+    <- scale-total S2*M4=M6
+    <- scale-associates* S1*S2=S3 S3*M4=M7 S2*M4=M6 S1*M6=M7.
+
+%worlds () (scale-associates _ _ _ _ _).
+%total { } (scale-associates _ _ _ _ _).
+
+
+%theorem scale-associates-converse* :
+	forall* {S1} {S2} {S3} {M4} {M6} {M7}
+	forall {SC24:scale S2 M4 M6} {SC16:scale S1 M6 M7} 
+               {C:data`combine-scalar S1 S2 S3}
+	exists {SC34:scale S3 M4 M7}
+	true.
+
+- : scale-associates-converse* S2*M4=M6 S1*M6=M7 S1*S2=S3 S3*M4=M7
+    <- scale-total S3*M4=M7P
+    <- scale-associates* S1*S2=S3 S3*M4=M7P S2*M4=M6 S1*M6=M7P
+    <- scale-deterministic S1*M6=M7P S1*M6=M7 scalar`eq/ eq/ M7P=M7
+    <- scale-respects-eq S3*M4=M7P scalar`eq/ eq/ M7P=M7 S3*M4=M7.
+
+%worlds () (scale-associates-converse* _ _ _ _).
+%total { } (scale-associates-converse* _ _ _ _).
+
+%{%
+#endif
+#endif
+
+#ifdef DATA_SCALE_CANCELS
+%}%
+
+%theorem scale-cancels :
+	forall* {S1} {S2} {M1} {M2} {SM1} {SM2}
+	forall {SC1:scale S1 M1 SM1}
+	       {SC2:scale S2 M2 SM2}
+	       {ES:scalar`eq S1 S2}
+	       {ER:eq SM1 SM2}
+	exists {EM:eq M1 M2}
+	true.
+
+- : scale-cancels (scale/0) (scale/0) _ _ eq/.
+
+- : scale-cancels (scale/+ SC1 S*D1=SD) (scale/+ SC2 S*D2=SD)
+	scalar`eq/ eq/ ME
+    <- scale-cancels SC1 SC2 scalar`eq/ eq/ M1=M2
+    <- data`scale-cancels S*D1=SD S*D2=SD scalar`eq/ data`eq/ D1=D2
+    <- map/+-preserves-eq nat`eq/ D1=D2 M1=M2 ME.
+
+%worlds () (scale-cancels _ _ _ _ _).
+%total (S) (scale-cancels S _ _ _ _).
+
+%{%
+#endif
+
+#ifdef DATA_SCALE_IDENTITY
+%}%
+
+%theorem scale-identity :
+	forall {M}
+	exists {S:scale scalar`one M M}
+	true.
+
+- : scale-identity _ scale/0.
+
+- : scale-identity _ (scale/+ ONE*M=M ONE*D=D)
+    <- data`scale-identity _ ONE*D=D
+    <- scale-identity _ ONE*M=M.
+
+%worlds () (scale-identity _ _).
+%total (M) (scale-identity M _).
+
+%{%
+#endif /* DATA_SCALE_IDENTITY */
+%}%
+
+%theorem scale-affects-lookup :
+	forall* {S} {M1} {M2} {N} {D1}
+	forall {L1:lookup M1 N D1} {SC:scale S M1 M2}
+	exists {D2} {DS:data`scale S D1 D2} {L2:lookup M2 N D2}
+	true.
+
+- : scale-affects-lookup (lookup/= nat`eq/) (scale/+ _ S*D1=D2) _
+                         S*D1=D2 (lookup/= nat`eq/).
+
+- : scale-affects-lookup (lookup/> M1^N0=D1 P) (scale/+ S*M1=M2 _) _
+                         S*D1=D2 (lookup/> M2^N0=D2 P)
+    <- scale-affects-lookup M1^N0=D1 S*M1=M2 _ S*D1=D2 M2^N0=D2.
+
+%worlds () (scale-affects-lookup _ _ _ _ _).
+%total (L) (scale-affects-lookup L _ _ _ _).
+
+
+%theorem scale-affects-lookup-converse :
+	forall* {S} {M1} {M2} {N} {D2}
+	forall {L1:lookup M2 N D2} {SC:scale S M1 M2}
+	exists {D1} {DS:data`scale S D1 D2} {L2:lookup M1 N D1}
+	true.
+
+- : scale-affects-lookup-converse 
+     (lookup/= nat`eq/) (scale/+ _ S*D1=D2) _ S*D1=D2 (lookup/= nat`eq/).
+
+- : scale-affects-lookup-converse 
+     (lookup/> M1^N0=D1 P) (scale/+ S*M1=M2 _) _
+     S*D1=D2 (lookup/> M2^N0=D2 P)
+    <- scale-affects-lookup-converse M1^N0=D1 S*M1=M2 _ S*D1=D2 M2^N0=D2.
+
+%worlds () (scale-affects-lookup-converse _ _ _ _ _).
+%total (L) (scale-affects-lookup-converse L _ _ _ _).
+
+
+%theorem scale-preserves-fresh :
+	forall* {S} {M1} {M2} {N}
+	forall {F1:fresh M1 N} {SC:scale S M1 M2}
+	exists {F2:fresh M2 N}
+	true.
+
+- : scale-preserves-fresh fresh/0 scale/0 fresh/0.
+
+- : scale-preserves-fresh (fresh/< M>N) (scale/+ _ _) (fresh/< M>N).
+
+- : scale-preserves-fresh (fresh/> M1-N0 P) (scale/+ S _) (fresh/> M2-N0 P)
+    <- scale-preserves-fresh M1-N0 S M2-N0.
+
+%worlds () (scale-preserves-fresh _ _ _).
+%total (F) (scale-preserves-fresh F _ _).
+
+
+%theorem scale-preserves-fresh-converse :
+	forall* {S} {M1} {M2} {N}
+	forall {F1:fresh M2 N} {SC:scale S M1 M2}
+	exists {F2:fresh M1 N}
+	true.
+
+- : scale-preserves-fresh-converse fresh/0 scale/0 fresh/0.
+
+- : scale-preserves-fresh-converse (fresh/< M>N) (scale/+ _ _) (fresh/< M>N).
+
+- : scale-preserves-fresh-converse (fresh/> M1-N0 P) (scale/+ S _) (fresh/> M2-N0 P)
+    <- scale-preserves-fresh-converse M1-N0 S M2-N0.
+
+%worlds () (scale-preserves-fresh-converse _ _ _).
+%total (F) (scale-preserves-fresh-converse F _ _).
+
+
+%theorem scale-preserves-domain? :
+	forall* {S} {M1} {M2} {N} {B}
+	forall {D1:domain? M1 N B} {SC:scale S M1 M2}
+	exists {D2:domain? M2 N B}
+	true.
+
+- : scale-preserves-domain? (domain?/in M^N=D1) S*M1=M2 (domain?/in M^N=D2)
+    <- scale-affects-lookup M^N=D1 S*M1=M2 _ _ M^N=D2.
+
+- : scale-preserves-domain? (domain?/out M1-N) S*M1=M2 (domain?/out M2-N)
+    <- scale-preserves-fresh M1-N S*M1=M2 M2-N.
+
+%worlds () (scale-preserves-domain? _ _ _).
+%total { } (scale-preserves-domain? _ _ _).
+
+
+%theorem scale-preserves-domain?-converse :
+	forall* {S} {M1} {M2} {N} {B}
+	forall {D1:domain? M2 N B} {SC:scale S M1 M2}
+	exists {D2:domain? M1 N B}
+	true.
+
+- : scale-preserves-domain?-converse (domain?/in M^N=D1) S*M1=M2 (domain?/in M^N=D2)
+    <- scale-affects-lookup-converse M^N=D1 S*M1=M2 _ _ M^N=D2.
+
+- : scale-preserves-domain?-converse (domain?/out M1-N) S*M1=M2 (domain?/out M2-N)
+    <- scale-preserves-fresh-converse M1-N S*M1=M2 M2-N.
+
+%worlds () (scale-preserves-domain?-converse _ _ _).
+%total { } (scale-preserves-domain?-converse _ _ _).
+
+
+%theorem scale-preserves-size :
+	forall* {S} {M1} {M2} {N}
+	forall {SZ1:size M1 N} {SC:scale S M1 M2}
+	exists {SZ2:size M2 N}
+	true.
+
+- : scale-preserves-size size/0 scale/0 size/0.
+
+- : scale-preserves-size (size/+ N=|M1|) (scale/+ S*M1=M2 _) (size/+ N=|M2|)
+    <- scale-preserves-size N=|M1| S*M1=M2 N=|M2|.
+
+%worlds () (scale-preserves-size _ _ _).
+%total (SZ) (scale-preserves-size SZ _ _).
+
+
+%theorem scale-preserves-bound :
+	forall* {S} {M1} {M2} {N}
+	forall {B1:bound M1 N} {SC:scale S M1 M2}
+	exists {B2:bound M2 N}
+	true.
+
+- : scale-preserves-bound bound/0 scale/0 bound/0.
+
+- : scale-preserves-bound (bound/+ P M1<N) (scale/+ S*M1=M2 _) 
+                          (bound/+ P M2<N)
+    <- scale-preserves-bound M1<N S*M1=M2 M2<N.
+
+%worlds () (scale-preserves-bound _ _ _).
+%total (B) (scale-preserves-bound B _ _).
+
+
+%theorem scale-commutes-shift :
+        forall* {S} {N} {M1} {M2} {M4}
+	forall {SC1:scale S M1 M2} {SH2:shift N M2 M4}
+        exists {M3} {SH1:shift N M1 M3} {SC3:scale S M3 M4}
+	true.
+
+- : scale-commutes-shift scale/0 shift/0 _ shift/0 scale/0.
+
+- : scale-commutes-shift (scale/+ S*M1=M2 S*D1=D2) (shift/+ N+1+N1=N2) _
+                         (shift/+ N+1+N1=N2) (scale/+ S*M1=M2 S*D1=D2).
+
+%worlds () (scale-commutes-shift _ _ _ _ _).
+%total { } (scale-commutes-shift _ _ _ _ _).
+
+
+%theorem scale-commutes-shift* :
+        forall* {S} {N} {M1} {M2} {M3} {M4}
+	forall {SC1:scale S M1 M2} {SH2:shift N M2 M4}
+               {SH1:shift N M1 M3}
+        exists {SC3:scale S M3 M4}
+	true.
+
+- : scale-commutes-shift* scale/0 shift/0 shift/0 scale/0.
+
+- : scale-commutes-shift* (scale/+ S*M1=M2 S*D1=D2) (shift/+ N+1+N1=N2)
+                          (shift/+ N+1+N1=N2P) S*M2P11=M222
+    <- plus-deterministic N+1+N1=N2 N+1+N1=N2P nat`eq/ nat`eq/ N2=N2P
+    <- map/+-preserves-eq N2=N2P data`eq/ eq/ M211=M2P11
+    <- scale-respects-eq (scale/+ S*M1=M2 S*D1=D2) scalar`eq/ M211=M2P11 eq/
+                         S*M2P11=M222.
+
+%worlds () (scale-commutes-shift* _ _ _ _).
+%total { } (scale-commutes-shift* _ _ _ _).
+
+
+%theorem shift-commutes-scale* :
+        forall* {S} {N} {M1} {M2} {M3} {M4}
+	forall {SH1:shift N M1 M3} {SC3:scale S M3 M4} 
+               {SC1:scale S M1 M2}
+	exists {SH2:shift N M2 M4}
+	true.
+
+- : shift-commutes-scale* shift/0 scale/0 scale/0 shift/0.
+
+- : shift-commutes-scale* (shift/+ N+1+N1=N2) (scale/+ S*M1=M2 S*D1=D2)
+                          (scale/+ S*M1=M2P S*D1=D2P) M122P<<N=M222
+    <- scale-deterministic S*M1=M2 S*M1=M2P scalar`eq/ eq/ M2=M2P
+    <- data`scale-deterministic S*D1=D2 S*D1=D2P scalar`eq/ data`eq/ D2=D2P
+    <- map/+-preserves-eq nat`eq/ D2=D2P M2=M2P M122=M122P
+    <- shift-respects-eq (shift/+ N+1+N1=N2) nat`eq/ M122=M122P eq/ 
+                         M122P<<N=M222.
+
+%worlds () (shift-commutes-scale* _ _ _ _).
+%total { } (shift-commutes-scale* _ _ _ _).
+
+
+%theorem shift-commutes-scale :
+        forall* {S} {N} {M1} {M3} {M4}
+	forall {SH1:shift N M1 M3} {SC3:scale S M3 M4} 
+        exists {M2} {SC1:scale S M1 M2} {SH2:shift N M2 M4}
+	true.
+
+- : shift-commutes-scale shift/0 scale/0 _ scale/0 shift/0.
+
+- : shift-commutes-scale (shift/+ N+1+N1=N2) (scale/+ S*M1=M2 S*D1=D2) _
+                         (scale/+ S*M1=M2 S*D1=D2) (shift/+ N+1+N1=N2).
+
+%worlds () (shift-commutes-scale _ _ _ _ _).
+%total { } (shift-commutes-scale _ _ _ _ _).
+
+
+%theorem scale-commutes-update :
+	forall* {S} {N} {D1} {D2} {M1} {M2} {M4}
+	forall {SM1:scale S M1 M2} {U2:update M2 N D2 M4} 
+               {SD:data`scale S D1 D2} 
+        exists {M3} {U1:update M1 N D1 M3} {SM3:scale S M3 M4}
+	true.
+
+- : scale-commutes-update scale/0 update/0 S*D1=D2 _ update/0
+                          (scale/+ scale/0 S*D1=D2).
+
+- : scale-commutes-update (scale/+ S1*M1=M2 _) (update/= nat`eq/) S*D1=D2 _
+                          (update/= nat`eq/) (scale/+ S1*M1=M2 S*D1=D2).
+
+- : scale-commutes-update (scale/+ S*M1=M2 M) (update/< P) S*D1=D2 _
+                          (update/< P) (scale/+ (scale/+ S*M1=M2 M) S*D1=D2).
+
+- : scale-commutes-update (scale/+ S*M1=M2 M) (update/> M2->M4 P) S*D1=D2 _
+                          (update/> M1->M3 P) (scale/+ S*M3=M4 M)
+    <- scale-commutes-update S*M1=M2 M2->M4 S*D1=D2 _ M1->M3 S*M3=M4.
+
+%worlds () (scale-commutes-update _ _ _ _ _ _).
+%total (S) (scale-commutes-update S _ _ _ _ _).
+
+
+%theorem scale-commutes-update* :
+	forall* {S} {N} {D1} {D2} {M1} {M2} {M3} {M4}
+	forall {SM1:scale S M1 M2} {U2:update M2 N D2 M4} 
+               {SD:data`scale S D1 D2} {U1:update M1 N D1 M3}
+        exists {SM3:scale S M3 M4}
+	true.
+
+- : scale-commutes-update* S*M1=M2 M2->M4 S*D1=D2 M1->M3 S*M3=M4
+    <- scale-commutes-update S*M1=M2 M2->M4 S*D1=D2 M3P M1->M3P S*M3P=M4
+    <- update-deterministic M1->M3P M1->M3 eq/ nat`eq/ data`eq/ M3P=M3
+    <- scale-respects-eq S*M3P=M4 scalar`eq/ M3P=M3 eq/ S*M3=M4.
+
+%worlds () (scale-commutes-update* _ _ _ _ _).
+%total { } (scale-commutes-update* _ _ _ _ _).
+
+
+%theorem update-commutes-scale* :
+	forall* {S} {N} {D1} {M1} {M2} {M3} {M4}
+	forall {U1:update M1 N D1 M3} {SM3:scale S M3 M4}
+               {SM1:scale S M1 M2} 
+	exists {D2} {SD:data`scale S D1 D2} {U2:update M2 N D2 M4} 
+	true.
+
+- : update-commutes-scale* update/0 (scale/+ scale/0 S*D1=D2) scale/0
+                           _ S*D1=D2 update/0.
+
+- : update-commutes-scale* (update/= nat`eq/) (scale/+ S*M1=M4 S*D1=D2)
+                           (scale/+ S*M1=M2 _) _ S*D1=D2 M102->M124
+    <- scale-deterministic S*M1=M2 S*M1=M4 scalar`eq/ eq/ M2=M4
+    <- map/+-preserves-eq nat`eq/ data`eq/ M2=M4 M122=M124
+    <- update-respects-eq (update/= nat`eq/) eq/ nat`eq/ data`eq/ M122=M124 
+                          M102->M124.
+
+- : update-commutes-scale* (update/< P) 
+                           (scale/+ (scale/+ S*M1=M4 S*D3=D4) S*D1=D2)
+                           (scale/+ S*M1=M2 S*D3=D5) _ S*D1=D2 
+                           M152->M22M344
+    <- scale-deterministic S*M1=M4 S*M1=M2 scalar`eq/ eq/ M4=M2
+    <- data`scale-deterministic S*D3=D4 S*D3=D5 scalar`eq/ data`eq/ D4=D5
+    <- map/+-preserves-eq nat`eq/ D4=D5 M4=M2 M144=M152
+    <- update-respects-eq (update/< P) M144=M152 nat`eq/ data`eq/ eq/ 
+                          M152->M22M344.
+
+- : update-commutes-scale* (update/> M1^N0=D1->M3 P) (scale/+ S*M3=M4 S*D3=D4)
+                           (scale/+ S*M1=M2 S*D3=D5) _ S*D1=D2 M152->M144
+    <- data`scale-deterministic S*D3=D4 S*D3=D5 scalar`eq/ data`eq/ D4=D5
+    <- update-commutes-scale* M1^N0=D1->M3 S*M3=M4 S*M1=M2 
+                              _ S*D1=D2 M2^N0=D2->M4
+    <- map/+-preserves-eq nat`eq/ D4=D5 eq/ M142=M152
+    <- update-respects-eq (update/> M2^N0=D2->M4 P) M142=M152 nat`eq/ data`eq/
+                          eq/ M152->M144.
+
+%worlds () (update-commutes-scale* _ _ _ _ _ _).
+%total (U) (update-commutes-scale* U _ _ _ _ _).
+
+%{%
+#ifdef DATA_SCALE_TOTAL_STAR
+%}%
+
+%theorem update-commutes-scale :
+	forall* {S} {N} {D1} {M1} {M3} {M4}
+	forall {U1:update M1 N D1 M3} {SM3:scale S M3 M4}
+	exists {D2} {M2} {SD:data`scale S D1 D2} 
+               {SM1:scale S M1 M2} {U2:update M2 N D2 M4} 
+	true.
+
+- : update-commutes-scale U1 SM3 _ _ SD SM1 U2
+    <- scale-total SM1
+    <- update-commutes-scale* U1 SM3 SM1 _ SD U2.
+
+%worlds () (update-commutes-scale _ _ _ _ _ _ _).
+%total { } (update-commutes-scale _ _ _ _ _ _ _).
+
+%{%
+#endif /* DATA_SCALE_TOTAL_STAR */
+%}%
