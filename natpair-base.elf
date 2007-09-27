@@ -557,6 +557,34 @@ nat2pair : nat -> pair -> type = [N] [P] pair2nat P N.
 %total { } (nat2pair-implies-ge _ _ _).
 
 
+%theorem constrained1-pair2nat-unbounded :
+	forall {N1} {B}
+	exists {N2} {N} {D:pair2nat (pair/ N1 N2) N} {G:gt N B}
+	true.
+
+- : constrained1-pair2nat-unbounded N1 B (s B) N N1,N2->N N>B
+    <- pair2nat-total N1,N2->N
+    <- nat2pair-implies-ge N1,N2->N N>=N1 N>=N2
+    <- ge-succ-implies-gt N>=N2 N>B.
+
+%worlds () (constrained1-pair2nat-unbounded _ _ _ _ _ _).
+%total { } (constrained1-pair2nat-unbounded _ _ _ _ _ _).
+
+
+%theorem constrained2-pair2nat-unbounded :
+	forall {N2} {B}
+	exists {N1} {N} {D:pair2nat (pair/ N1 N2) N} {G:gt N B}
+	true.
+
+- : constrained2-pair2nat-unbounded N2 B (s B) N N1,N2->N N>B
+    <- pair2nat-total N1,N2->N
+    <- nat2pair-implies-ge N1,N2->N N>=N1 N>=N2
+    <- ge-succ-implies-gt N>=N1 N>B.
+
+%worlds () (constrained2-pair2nat-unbounded _ _ _ _ _ _).
+%total { } (constrained2-pair2nat-unbounded _ _ _ _ _ _).
+
+
 
 
 %%%% Renamings
