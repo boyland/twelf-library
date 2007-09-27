@@ -499,17 +499,22 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %theorem false-implies-fresh : 
 	forall* {M} {N} forall {F:void} exists {D:fresh M N} true.
+
 %worlds () (false-implies-fresh _ %{=>}% N-not-in-domain-M).
 %total {} (false-implies-fresh _ _).
+
 
 %theorem fresh-respects-eq :
 	forall* {M} {N} {MP} {NP}
 	forall {D:fresh M N} {EM:eq M MP} {EN:nat`eq N NP}
 	exists {DP:fresh MP NP}
 	true.
+
 - : fresh-respects-eq D eq/ nat`eq/ D.
+
 %worlds () (fresh-respects-eq _ _ _ _).
 %total {} (fresh-respects-eq _ _ _ _).
+
 
 %% fresh is NOT deterministic
 
@@ -517,32 +522,41 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 	forall {M}
 	exists {N} {F:fresh M N}
 	true.
+
 - : fresh-total* map/0 z fresh/0.
+
 - : fresh-total* (map/+ N1 _ M) N3 (fresh/> F N+1+N1=N3)
     <- fresh-total* M N F
     <- plus-total* (s N) N1 N3 N+1+N1=N3.
+
 %worlds () (fresh-total* M %{=>}% N N-not-in-domain-of-M).
 %total (M) (fresh-total* M _ _).
 
 %abbrev fresh-total = fresh-total* _ _.
+
 
 %theorem fresh-lookup-not-equal :
 	forall* {M} {N1} {N2} {D2}
 	forall {F:fresh M N1} {L:lookup M N2 D2}
 	exists {NE:nat`ne N1 N2}
 	true.
+
 - : fresh-lookup-not-equal (fresh/< N2>N1) (lookup/= nat`eq/) (nat`ne/< N2>N1).
+
 - : fresh-lookup-not-equal (fresh/< N1>N3) (lookup/> _ N0+1+N1=N2) 
                            (nat`ne/< N2>N3)
     <- plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
     <- gt-transitive N2>N1 N1>N3 N2>N3.
+
 - : fresh-lookup-not-equal (fresh/> _ X+1+N2=N1) (lookup/= nat`eq/) (nat`ne/> N1>N2)
     <- plus-implies-gt X+1+N2=N1 nat`eq/ N1>N2.
+
 - : fresh-lookup-not-equal (fresh/> F N4+1+N1=N3) (lookup/> L N0+1+N1=N2)
                            N3<>N2
     <- fresh-lookup-not-equal F L N4<>N0
     <- succ-preserves-ne N4<>N0 N4+1<>N0+1
     <- plus-right-preserves-ne* N4+1<>N0+1 N4+1+N1=N3 N0+1+N1=N2 N3<>N2.
+
 %worlds () (fresh-lookup-not-equal N1-not-in-domain-of-M M^N2=D %{=>}% N1<>N2).
 %total (F) (fresh-lookup-not-equal F _ _).
 
@@ -1162,6 +1176,26 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 
 %abbrev bound-total = bound-total* _ _.
+
+
+%theorem ge-bound-implies-fresh :
+	forall* {M} {X} {N}
+	forall {B:bound M X} {G:nat`ge N X}
+	exists {F:fresh M N}
+	true.
+
+- : ge-bound-implies-fresh bound/0 _ fresh/0.
+
+- : ge-bound-implies-fresh (bound/+ M1+1+X1=X B) N>=X (fresh/> F1 N1+1+M1=N)
+    <- nat`ge-implies-plus N>=X Y1 Y1+X=N
+    <- nat`plus-commutative M1+1+X1=X X1+M1+1=X
+    <- nat`plus-associative-converse X1+M1+1=X Y1+X=N N1 Y1+X1=N1 N1+M1+1=N
+    <- plus-swap-succ-converse N1+M1+1=N N1+1+M1=N
+    <- plus-implies-ge Y1+X1=N1 N1>=X1
+    <- ge-bound-implies-fresh B N1>=X1 F1.
+
+%worlds () (ge-bound-implies-fresh _ _ _).
+%total (B) (ge-bound-implies-fresh B _ _).
 
 
 
