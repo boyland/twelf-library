@@ -1250,6 +1250,40 @@ END_ELF
 %worlds () (fresh-join-left-preserves-lookup-converse _ _ _ _).
 %total { } (fresh-join-left-preserves-lookup-converse _ _ _ _).
 
+
+%theorem join-left-affects-lookup :
+	forall* {M1} {N} {D2} {M2} {M3}
+	forall {L:lookup M2 N D2}
+	       {A:join M1 M2 M3}
+	exists {D3}
+               {N:lookup M3 N D3}
+	true.
+
+%theorem join-left-affects-lookup/L :
+	forall* {M1} {N} {D2} {M2} {M3} {B}
+	forall {L:lookup M2 N D2}
+	       {A:join M1 M2 M3}
+	       {D:domain? M1 N B}
+	exists {D3}
+               {N:lookup M3 N D3}
+	true.
+
+- : join-left-affects-lookup/L L2 A (domain?/in L1) _ L3
+    <- join-joins-lookup L1 L2 A _ _ L3.
+
+- : join-left-affects-lookup/L L2 A (domain?/out F1) _ L3
+    <- fresh-join-left-preserves-lookup* F1 L2 A L3.
+
+%worlds () (join-left-affects-lookup/L _ _ _ _ _).
+%total { } (join-left-affects-lookup/L _ _ _ _ _).
+
+- : join-left-affects-lookup L2 A _ L3
+    <- domain?-total D
+    <- join-left-affects-lookup/L L2 A D _ L3.
+
+%worlds () (join-left-affects-lookup _ _ _ _).
+%total { } (join-left-affects-lookup _ _ _ _).
+
 %{%
 #ifdef DATA_JOIN_COMMUTATIVE
 /* being lazy: don't want to do the hard work again */
@@ -1307,6 +1341,40 @@ END_ELF
 
 %worlds () (fresh-join-right-preserves-lookup-converse _ _ _ _).
 %total { } (fresh-join-right-preserves-lookup-converse _ _ _ _).
+
+
+%theorem join-right-affects-lookup :
+	forall* {M1} {N} {D1} {M2} {M3}
+	forall {L:lookup M1 N D1}
+	       {A:join M1 M2 M3}
+	exists {D3}
+               {N:lookup M3 N D3}
+	true.
+
+%theorem join-right-affects-lookup/L :
+	forall* {M1} {N} {D1} {M2} {M3} {B}
+	forall {L:lookup M1 N D1}
+	       {A:join M1 M2 M3}
+	       {D:domain? M2 N B}
+	exists {D3}
+               {N:lookup M3 N D3}
+	true.
+
+- : join-right-affects-lookup/L L1 A (domain?/in L2) _ L3
+    <- join-joins-lookup L1 L2 A _ _ L3.
+
+- : join-right-affects-lookup/L L1 A (domain?/out F2) _ L3
+    <- fresh-join-right-preserves-lookup* L1 F2 A L3.
+
+%worlds () (join-right-affects-lookup/L _ _ _ _ _).
+%total { } (join-right-affects-lookup/L _ _ _ _ _).
+
+- : join-right-affects-lookup L1 A _ L3
+    <- domain?-total D
+    <- join-right-affects-lookup/L L1 A D _ L3.
+
+%worlds () (join-right-affects-lookup _ _ _ _).
+%total { } (join-right-affects-lookup _ _ _ _).
 
 %{%
 #ifdef DATA_JOIN_NO_RIGHT_IDENTITY
