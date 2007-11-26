@@ -1771,6 +1771,21 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 %abbrev update-total = update-total* _ _ _ _.
 
 
+%theorem lookup-implies-update :
+        forall* {F} {N} {D}
+        forall {L:lookup F N D}
+        exists {U:update F N D F} 
+        true.
+        
+- : lookup-implies-update (lookup/= nat`eq/) (update/= nat`eq/).
+
+- : lookup-implies-update (lookup/> L P) (update/> U P)
+    <- lookup-implies-update L U.
+
+%worlds () (lookup-implies-update _ _).
+%total (L) (lookup-implies-update L _).
+
+
 %theorem update-implies-lookup :
 	forall* {F} {N} {D} {F'}
 	forall {U:update F N D F'} 
@@ -1961,6 +1976,45 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 
 %worlds () (update-preserves-fresh-converse _ _ _ _).
 %total { } (update-preserves-fresh-converse _ _ _ _).
+
+
+%theorem update-is-cause-of-change :
+	forall* {M1} {N1} {N2} {M2} {D1} {D2}
+	forall {F:fresh M1 N1}
+	       {U:update M1 N2 D2 M2}
+	       {L:lookup M2 N1 D1}
+	exists {EN:nat`eq N1 N2} {ED:data`eq D1 D2}
+	true.
+
+%theorem update-is-cause-of-change/L :
+	forall* {M1} {N1} {N2} {M2} {D1} {D2} {B}
+	forall {F:fresh M1 N1}
+	       {U:update M1 N2 D2 M2}
+	       {L:lookup M2 N1 D1}
+	       {E:nat`eq? N1 N2 B}
+	exists {EN:nat`eq N1 N2} {ED:data`eq D1 D2}
+	true.
+
+- : update-is-cause-of-change F U L EN ED
+     <- nat`eq?-total E?
+     <- update-is-cause-of-change/L F U L E? EN ED.
+
+- : update-is-cause-of-change/L F U L (nat`eq?/yes) nat`eq/ ED
+    <- update-implies-lookup U L'
+    <- lookup-deterministic L L' eq/ nat`eq/ ED.
+
+- : update-is-cause-of-change/L F U L (nat`eq?/no N1<>N2) EN ED
+    <- update-preserves-fresh F U N1<>N2 F'
+    <- fresh-lookup-not-equal F' L N1<>N1
+    <- nat`ne-anti-reflexive N1<>N1 V
+    <- nat`false-implies-eq V EN
+    <- data`false-implies-eq V ED.
+    
+%worlds () (update-is-cause-of-change/L _ _ _ _ _ _).
+%total { } (update-is-cause-of-change/L _ _ _ _ _ _).
+
+%worlds () (update-is-cause-of-change _ _ _ _ _).
+%total { } (update-is-cause-of-change _ _ _ _ _).
 
 
 %theorem update-preserves-membership :
