@@ -56,29 +56,33 @@ END_ELF
 #undef MUL_COMMUTATIVE
 %}%
 
-%{%
 
-%% Incomplete
+%%% set membership w.r.t. union:
+
 
 %theorem union-left-preserves-member* :
 	forall* {S1} {S2} {S3} {N}
-	forall {M:member S2 N}
+	forall {M:lookup S2 N unit/}
 	       {U:union S1 S2 S3}
-	exists {M:member S3 N}
+	exists {M:lookup S3 N unit/}
 	true.
 
-%theorem union-left-preserves-member*/L :
-	forall* {S1} {S2} {S3} {N} {B}
-	forall {M2:member S2 N}
-	       {U:union S1 S2 S3}
-               {M1?:member? S1 N B}
-	exists {M3:member S3 N}
-	true.
+- : union-left-preserves-member* M U M'
+    <- union-left-affects-lookup M U _ M'.
 
-- : union-left-preserves-member* M2 U M3
-    <- member?-total M1?
-    <- union-left-preserves-member*/L M2 U M1? M3.
+%worlds () (union-left-preserves-member* _ _ _).
+%total { } (union-left-preserves-member* _ _ _).
 
-- : union-left-preserves-member*/L M2 U (member?/in M1) M3.
 
-%}%
+%theorem union-right-preserves-member* :
+        forall* {S1} {S2} {S3} {N}
+        forall {M:lookup S1 N unit/}
+               {U:union S1 S2 S3}
+        exists {M:lookup S3 N unit/}
+        true.
+
+- : union-right-preserves-member* M U M'
+    <- union-right-affects-lookup M U _ M'.
+
+%worlds () (union-right-preserves-member* _ _ _).
+%total { } (union-right-preserves-member* _ _ _).
