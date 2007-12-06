@@ -106,4 +106,4 @@ install : ${DISTFILES}
 	cp ${DISTFILES} ${DIST}
 
 checkin :
-	ci -u ${SOURCE}
+	/afs/cs.uwm.edu/users/csfac/boyland/cmd/vci -u ${SOURCE}
