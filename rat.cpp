@@ -2,9 +2,9 @@
 #include "rat-base.elf"
 #include "rat-inv.elf"
 #include "rat-comp.elf"
-#include "rat-less.elF"
+#include "rat-less.elf"
 #include "rat-inv-comp.elf"
-#include "rat-inv-less.elF"
+#include "rat-inv-less.elf"
 #include "rat-eq.elf"
 #include "rat-leq.elf"
 #undef EQ
