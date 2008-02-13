@@ -162,6 +162,24 @@ divrem/s : divrem M (s N-) (s Q) R
 %total D (divrem-implies-gt D _).
 
 
+%theorem divrem-contradiction :
+	forall* {M} {N} {Q} {R} {X}
+	forall	{D:divrem M N Q R}
+		{P:plus N X R}
+	exists	{F:void}
+	true.
+
+- : divrem-contradiction D P F
+    <- divrem-implies-gt D N>R
+    <- plus-commutative P Pc
+    <- plus-implies-ge Pc R>=N
+    <- gt-transitive-ge N>R R>=N N>N
+    <- gt-anti-reflexive N>N F.
+
+%worlds () (divrem-contradiction _ _ _).
+%total { } (divrem-contradiction _ _ _).
+   
+
 %theorem divrem-can-be-inverted :
 	forall* {M} {N} {Q} {R}
 	forall {D:divrem M N Q R}
