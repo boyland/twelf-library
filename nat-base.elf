@@ -161,6 +161,16 @@ compare/> : compare M N greater <- gt M N.
 %total {} (succ-cancels E _).
 
 
+%theorem succ-contradiction :
+	forall* {N}
+	forall {E:eq N (s N)}
+	exists {F:void}
+	true.
+
+%worlds () (succ-contradiction _ _).
+%total { } (succ-contradiction _ _).
+
+
 %theorem eq-contradiction : 
 	forall* {N}
         forall {E:eq z (s N)}
