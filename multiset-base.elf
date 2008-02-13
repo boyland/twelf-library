@@ -32,3 +32,300 @@ END_ELF
 %}%
 
 
+
+%%%% Definitions
+
+%{%
+lookup/fresh and update do unintuitive things for multisets.
+We define more intuitive operations: count and add.
+%}%
+
+
+count : map -> nat -> nat -> type.
+
+
+count/s : lookup M N C -> count M N (s C).
+
+count/z : not-member M N -> count M N z.
+
+
+
+add : map -> nat -> map -> type.
+
+
+add/0 : not-member M N -> update M N z M' -> add M N M'.
+
+add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
+
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about count
+
+
+%theorem false-implies-count :
+	forall* {M} {N} {C}
+	forall {F:void}
+	exists {MC:count M N C}
+	true.
+
+%worlds () (false-implies-count _ _).
+%total { } (false-implies-count _ _).
+
+
+%theorem count-respects-eq :
+	forall* {M1} {N1} {C1} {M2} {N2} {C2}
+	forall {MC1:count M1 N1 C1}
+	       {EM:eq M1 M2} {EN:nat`eq N1 N2} {EC:nat`eq C1 C2}
+	exists {MC2:count M2 N2 C2}
+	true.
+
+- : count-respects-eq C eq/ nat`eq/ nat`eq/ C.
+
+%worlds () (count-respects-eq _ _ _ _ _).
+%total { } (count-respects-eq _ _ _ _ _).
+
+
+%theorem count-total** :
+	forall* {M} {N} {B}
+	forall {D?:member? M N B}
+	exists {C} {MC:count M N C}
+	true.
+
+- : count-total** (member?/in L) _ (count/s L).
+
+- : count-total** (member?/out F) _ (count/z F).
+
+%worlds () (count-total** _ _ _).
+%total { } (count-total** _ _ _).
+
+
+%theorem count-total* :
+	forall {M} {N}
+	exists {C} {MC:count M N C}
+	true.
+
+- : count-total* M N _ MC
+    <- member?-total M?
+    <- count-total** M? _ MC.
+
+%worlds () (count-total* _ _ _ _).
+%total { } (count-total* _ _ _ _).
+
+
+%abbrev count-total = count-total* _ _ _.
+
+
+%theorem count-deterministic :
+	forall* {M1} {N1} {C1} {M2} {N2} {C2}
+	forall {MC1:count M1 N1 C1}
+	       {MC2:count M2 N2 C2}
+	       {EM:eq M1 M2} {EN:nat`eq N1 N2} 
+	exists {EC:nat`eq C1 C2}
+	true.
+
+- : count-deterministic (count/z _) (count/z _) _ _ nat`eq/.
+
+- : count-deterministic (count/s L) (count/s L') eq/ nat`eq/ SC=sC'
+    <- lookup-deterministic L L' eq/ nat`eq/ C=C'
+    <- succ-deterministic C=C' SC=sC'.
+
+- : count-deterministic (count/z F) (count/s L) eq/ nat`eq/ E
+    <- not-member-lookup-not-equal F L N<>N
+    <- nat`ne-anti-reflexive N<>N V
+    <- nat`false-implies-eq V E.
+
+- : count-deterministic (count/s L) (count/z F) eq/ nat`eq/ E
+    <- not-member-lookup-not-equal F L N<>N
+    <- nat`ne-anti-reflexive N<>N V
+    <- nat`false-implies-eq V E.
+
+%worlds () (count-deterministic _ _ _ _ _).
+%total { } (count-deterministic _ _ _ _ _).
+
+
+%theorem count-empty-is-zero :
+	forall*	{N} {M}
+	forall	{K:count map/0 N M}
+	exists	{E:nat`eq M z}
+	true.
+
+- : count-empty-is-zero (count/z _) nat`eq/.
+
+%worlds () (count-empty-is-zero _ _).
+%total { } (count-empty-is-zero _ _).
+
+
+
+%%% Theorems about add
+
+
+%theorem false-implies-add :
+	forall*	{M} {N} {M'}
+	forall	{F:void}
+	exists	{A:add M N M'}
+	true.
+
+%worlds () (false-implies-add _ _).
+%total { } (false-implies-add _ _).
+
+
+%theorem add-respects-eq :
+	forall*	{M1} {N1} {M1'} 
+		{M2} {N2} {M2'}
+	forall	{A1: add M1 N1 M1'}
+		{EM: eq M1 M2}
+		{EN: nat`eq N1 N2}
+		{EM': eq M1' M2'}
+	exists	{A2: add M2 N2 M2'}
+	true.
+
+- : add-respects-eq A eq/ nat`eq/ eq/ A.
+
+%worlds () (add-respects-eq _ _ _ _ _).
+%total { } (add-respects-eq _ _ _ _ _).
+
+
+%theorem add-total* :
+	forall	{M} {N}
+	exists	{M'}
+		{A:add M N M'}
+	true.
+
+%abbrev add-total = add-total* _ _ _.
+
+%theorem add-total/L :
+	forall*	{M} {N} {B}
+	forall	{M?:member? M N B}
+	exists	{M'}
+		{A:add M N M'}
+	true.
+
+- : add-total/L (member?/out MF) _ (add/0 MF MU)
+    <- update-total MU.
+
+- : add-total/L (member?/in ML) _ (add/+ ML MU)
+    <- update-total MU.
+
+%worlds () (add-total/L _ _ _).
+%total { } (add-total/L _ _ _).
+
+- : add-total A
+    <- member?-total M
+    <- add-total/L M _ A.
+
+%worlds () (add-total* _ _ _ _).
+%total { } (add-total* _ _ _ _).
+
+
+%theorem add-deterministic:
+	forall*	{M1} {N1} {M1'} 
+		{M2} {N2} {M2'}
+	forall	{A1: add M1 N1 M1'}
+		{A2: add M2 N2 M2'}
+		{EM: eq M1 M2}
+		{EN: nat`eq N1 N2}
+	exists	{EM': eq M1' M2'}
+	true.
+
+- : add-deterministic (add/0 _ U) (add/0 _ U') eq/ nat`eq/ EM'
+    <- update-deterministic U U' eq/ nat`eq/ nat`eq/ EM'.
+
+- : add-deterministic (add/0 NM _) (add/+ M _) eq/ nat`eq/ EM
+    <- not-member-lookup-not-equal NM M NE
+    <- nat`ne-anti-reflexive NE F
+    <- false-implies-eq F EM.
+
+- : add-deterministic (add/+ M _) (add/0 NM _) eq/ nat`eq/ EM
+    <- not-member-lookup-not-equal NM M NE
+    <- nat`ne-anti-reflexive NE F
+    <- false-implies-eq F EM.
+
+- : add-deterministic (add/+ ML1 U1) (add/+ ML2 U2) EM EN EM'
+    <- lookup-deterministic ML1 ML2 EM EN EC
+    <- succ-deterministic EC SEC
+    <- update-deterministic U1 U2 EM EN SEC EM'.
+
+%worlds () (add-deterministic _ _ _ _ _).
+%total { } (add-deterministic _ _ _ _ _).
+
+
+%theorem count-add-implies-count :
+	forall* {M} {N} {C} {M'}
+	forall	{K:count M N C}
+		{A:add M N M'}
+	exists	{K':count M' N (s C)}
+	true.
+
+- : count-add-implies-count (count/z NM) A K'
+    <- update-total U    
+    <- add-deterministic (add/0 NM U) A eq/ nat`eq/ EM'
+    <- update-implies-lookup U L
+    <- count-respects-eq (count/s L) EM' nat`eq/ nat`eq/ K'.
+
+- : count-add-implies-count (count/s L) A K'
+    <- update-total U    
+    <- add-deterministic (add/+ L U) A eq/ nat`eq/ EM'
+    <- update-implies-lookup U L'
+    <- count-respects-eq (count/s L') EM' nat`eq/ nat`eq/ K'.
+
+%worlds () (count-add-implies-count _ _ _).
+%total { } (count-add-implies-count _ _ _).
+
+
+ %theorem update-preserves-count :
+	forall* {M} {N} {C} {M'} {N'} {C'}
+	forall	{K:count M N C}
+		{A:update M N' C' M'}
+		{NE: nat`ne N N'}
+	exists	{K':count M' N C}
+	true.
+
+ - : update-preserves-count (count/z NM) U NE (count/z NM')
+     <- update-preserves-not-member NM U NE NM'.
+
+ - : update-preserves-count (count/s L) U NE (count/s L')
+     <- update-preserves-lookup L U NE L'.
+
+ %worlds () (update-preserves-count _ _ _ _).
+ %total { } (update-preserves-count _ _ _ _).
+
+
+%theorem add-preserves-count :
+	forall* {M} {N} {C} {M'} {N'}
+	forall	{K:count M N C}
+		{A:add M N' M'}
+		{NE: nat`ne N N'}
+	exists	{K':count M' N C}
+	true.
+
+- : add-preserves-count K (add/0 _ U) NE K'
+    <- update-preserves-count K U NE K'.
+
+- : add-preserves-count K (add/+ _ U) NE K'
+    <- update-preserves-count K U NE K'.
+
+%worlds () (add-preserves-count _ _ _ _).
+%total { } (add-preserves-count _ _ _ _).
+
+
+%theorem add-preserves-count-converse :
+	forall* {M} {N} {C} {M'} {N'}
+	forall	{K':count M' N C}
+		{A:add M N' M'}
+		{NE: nat`ne N N'}
+	exists	{K:count M N C}
+	true.
+	
+- : add-preserves-count-converse K2 A NE K1
+    <- count-total K1'
+    <- add-preserves-count K1' A NE K2'
+    <- count-deterministic K2' K2 eq/ nat`eq/ EQ
+    <- count-respects-eq K1' eq/ nat`eq/ EQ K1.
+
+%worlds () (add-preserves-count-converse _ _ _ _).
+%total { } (add-preserves-count-converse _ _ _ _).
