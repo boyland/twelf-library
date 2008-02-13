@@ -1,5 +1,9 @@
 %%%% More Functor Use to define add
 
+%{%
+This module does NOT implement multiset add-all!
+It should be related to count!
+
  %abbrev nat`add = nat`plus.
  %abbrev nat`false-implies-add = nat`false-implies-plus.
  %abbrev nat`add-deterministic = nat`plus-deterministic.
@@ -50,4 +54,5 @@ END_ELF
 #undef join
 %}%
 
+%}%
 
