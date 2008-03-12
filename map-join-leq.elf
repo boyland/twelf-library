@@ -246,8 +246,86 @@
 %{%
 #define LEQ_IMPLIES_JOIN 1
 #endif /* DATA_JOIN_IS_LUB */
+%}%
 
+%theorem disjoint-leq-implies-join-leq* :
+	forall* {C1} {C2} {C} {C3}
+	forall	{D:disjoint C1 C2}
+		{L1:leq C1 C}
+		{L2:leq C2 C}
+		{J:join C1 C2 C3}
+	exists	{L3:leq C3 C}
+	true.
 
+- : disjoint-leq-implies-join-leq* disjoint/L _ C2<=C Z+C2=C3 C3<=C
+    <- join-deterministic join/L Z+C2=C3 eq/ eq/ C2=C3
+    <- leq-respects-eq C2<=C C2=C3 eq/ C3<=C.
+
+- : disjoint-leq-implies-join-leq* disjoint/R C1<=C _ C1+0=C3 C3<=C
+    <- join-deterministic join/R C1+0=C3 eq/ eq/ C1=C3
+    <- leq-respects-eq C1<=C C1=C3 eq/ C3<=C.
+
+- : disjoint-leq-implies-join-leq* 
+	(disjoint/< C1^C022 P) 
+	(leq/= C1<=C4 D1<=D4 nat`eq/) 
+	C222<=C444 C111+C222=C333 C333<=C444
+    <- join/<-inversion C111+C222=C333 P _ C1+C022=C5 C333=C115
+    <- leq/>-inversion C222<=C444 P C022<=C4
+    <- disjoint-leq-implies-join-leq* 
+	C1^C022 C1<=C4 C022<=C4 C1+C022=C5 C5<=C4
+    <- eq-symmetric C333=C115 C115=C333
+    <- leq-respects-eq 
+	(leq/= C5<=C4 D1<=D4 nat`eq/) C115=C333 eq/ C333<=C444.
+
+- : disjoint-leq-implies-join-leq* (disjoint/< C1^C022 N0+1+N1=N2) (leq/> C611<=C4 N6+1+N4=N1) C222<=C444 C111+C222=C333 C333<=C444
+    <- join/<-inversion C111+C222=C333 N0+1+N1=N2 _ C1+C022=C5 C333=C115
+    <- plus-swap-succ N6+1+N4=N1 N6+N4+1=N1
+    <- plus-associative-converse 
+	N6+N4+1=N1 N0+1+N1=N2 N7 N0+1+N6=N7 N7+N4+1=N2
+    <- plus-swap-succ-converse N7+N4+1=N2 N7+1+N4=N2
+    <- leq/>-inversion C222<=C444 N7+1+N4=N2 C722<=C4
+    <- disjoint-leq-implies-join-leq* 
+	(disjoint/< C1^C022 N0+1+N6=N7) 
+	C611<=C4 C722<=C4 
+	(join/< C1+C022=C5 N0+1+N6=N7) C615<=C4
+    <- eq-symmetric C333=C115 C115=C333
+    <- leq-respects-eq 
+	(leq/> C615<=C4 N6+1+N4=N1) C115=C333 eq/ C333<=C444.
+
+- : disjoint-leq-implies-join-leq* 
+	(disjoint/> C011^C2 P) 
+	C111<=C444 (leq/= C2<=C4 D2<=D4 nat`eq/) 
+	C111+C222=C333 C333<=C444
+    <- join/>-inversion C111+C222=C333 P _ C011+C2=C5 C333=C225
+    <- leq/>-inversion C111<=C444 P C011<=C4
+    <- disjoint-leq-implies-join-leq* 
+	C011^C2 C011<=C4 C2<=C4 C011+C2=C5 C5<=C4
+    <- eq-symmetric C333=C225 C225=C333
+    <- leq-respects-eq 
+	(leq/= C5<=C4 D2<=D4 nat`eq/) C225=C333 eq/ C333<=C444.
+
+- : disjoint-leq-implies-join-leq* 
+	(disjoint/> C011^C2 N0+1+N2=N1) 
+	C111<=C444 (leq/> C622<=C4 N6+1+N4=N2)
+	C111+C222=C333 C333<=C444
+    <- join/>-inversion C111+C222=C333 N0+1+N2=N1 _ C011+C2=C5 C333=C225
+    <- plus-swap-succ N6+1+N4=N2 N6+N4+1=N2
+    <- plus-associative-converse 
+	N6+N4+1=N2 N0+1+N2=N1 N7 N0+1+N6=N7 N7+N4+1=N1
+    <- plus-swap-succ-converse N7+N4+1=N1 N7+1+N4=N1
+    <- leq/>-inversion C111<=C444 N7+1+N4=N1 C711<=C4
+    <- disjoint-leq-implies-join-leq* 
+	(disjoint/> C011^C2 N0+1+N6=N7) 
+	C711<=C4 C622<=C4 
+	(join/> C011+C2=C5 N0+1+N6=N7) C625<=C4
+    <- eq-symmetric C333=C225 C225=C333
+    <- leq-respects-eq 
+	(leq/> C625<=C4 N6+1+N4=N2) C225=C333 eq/ C333<=C444.
+
+%worlds () (disjoint-leq-implies-join-leq* _ _ _ _ _).
+%total (L) (disjoint-leq-implies-join-leq* _ L _ _ _).
+
+%{%
 #ifdef DATA_JOIN_PRESERVES_LEQ
 %}%
 
