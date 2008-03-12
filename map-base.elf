@@ -1152,6 +1152,24 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (shift-preserves-disjoint-converse _ _ _ _).
 
 
+%theorem ne-implies-disjoint :
+	forall* {N1} {D1} {N2} {D2}
+	forall	{NE:nat`ne N1 N2}
+	exists	{D:disjoint (map/+ N1 D1 map/0) (map/+ N2 D2 map/0)}
+	true.
+
+- : ne-implies-disjoint (nat`ne/< N1<N2) 
+	(disjoint/< disjoint/L N0+1+N1=N2)
+    <- gt-implies-plus N1<N2 _ N0+1+N1=N2.
+
+- : ne-implies-disjoint (nat`ne/> N1>N2) 
+	(disjoint/> disjoint/R N3+1+N2=N1)
+    <- gt-implies-plus N1>N2 _ N3+1+N2=N1.
+
+%worlds () (ne-implies-disjoint _ _).
+%total { } (ne-implies-disjoint _ _).
+
+
 
 %%% Theorems about size
 
