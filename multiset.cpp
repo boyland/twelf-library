@@ -9,6 +9,6 @@
 #include "multiset-help.elf"
 #include "multiset-base.elf"
 #include "multiset-extra.elf"
-#include "multiset-add.elf"
+ /* #include "multiset-add.elf" */
 #include "multiset-redef.elf"
 
