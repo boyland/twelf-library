@@ -38,7 +38,7 @@ SETSRC = set.cpp set-head.elf set-base.elf set-help.elf set-remove.elf \
 MSETSRC = multiset.cpp multiset-head.elf multiset-base.elf multiset-help.elf \
           multiset-add.elf multiset-extra.elf multiset-redef.elf
 
-CLEANFILES = ${GEN}
+CLEANFILES = ${GEN} *.tgz tmp.elf
 
 SOURCE = std.elf ${BSRC} ${NATSRC} ${NATPSRC} ${RATSRC} ${RAT0SRC} ${OPSRC} \
 	${MAPSRC} ${SETSRC} ${MSETSRC} ${RAT0VSRC} ${VSRC} \
@@ -47,7 +47,7 @@ SOURCE = std.elf ${BSRC} ${NATSRC} ${NATPSRC} ${RATSRC} ${RAT0SRC} ${OPSRC} \
 .PHONY: output
 output : std.elf ${GEN}
 
-.PHONY: clean
+.PHONY: clean realclean
 clean :
 	rm -f ${CLEANFILES}
 
@@ -107,3 +107,9 @@ install : ${DISTFILES}
 
 checkin :
 	/afs/cs.uwm.edu/users/csfac/boyland/cmd/vci -u ${SOURCE}
+checkout :
+	co ${SOURCE}
+
+realclean : clean
+	rm -f *~
+	rcsclean
