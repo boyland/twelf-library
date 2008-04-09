@@ -2282,10 +2282,10 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 	true.
 
 - : update-overwrites-converse U12 U1 U2
-    <- update-total U2' 
-    <- update-overwrites U1 U2' nat`eq/ U12'
-    <- update-deterministic U12' U12 eq/ nat`eq/ data`eq/ M2'=M2
-    <- update-respects-eq U2' eq/ nat`eq/ data`eq/ M2'=M2 U2.
+    <- update-total U2P 
+    <- update-overwrites U1 U2P nat`eq/ U12P
+    <- update-deterministic U12P U12 eq/ nat`eq/ data`eq/ M2P=M2
+    <- update-respects-eq U2P eq/ nat`eq/ data`eq/ M2P=M2 U2.
 
 %worlds () (update-overwrites-converse _ _ _).
 %total { } (update-overwrites-converse _ _ _).
