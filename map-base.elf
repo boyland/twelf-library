@@ -2018,21 +2018,27 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 
 %theorem update-preserves-fresh-converse :
 	forall* {M1} {N1} {N2} {D} {M2}
-	forall {F1:fresh M2 N1} {U:update M1 N2 D M2} {N:nat`ne N1 N2}
+	forall {F1:fresh M2 N1} {U:update M1 N2 D M2}
 	exists {F2:fresh M1 N1}
 	true.
 
 %theorem update-preserves-fresh-converse-helper :
-	forall* {M1} {N1} {N2} {D} {M2} {B}
-	forall {F1:fresh M2 N1} {U:update M1 N2 D M2} {N:nat`ne N1 N2}
-               {D:domain? M1 N1 B}
+	forall* {M1} {N1} {N2} {D} {M2} {B} {B2}
+	forall {F1:fresh M2 N1} {U:update M1 N2 D M2}
+               {D:domain? M1 N1 B} {E:nat`eq? N1 N2 B2}
 	exists {F2:fresh M1 N1}
 	true.
 
-- : update-preserves-fresh-converse-helper _ _ _ (domain?/out F) F.
+- : update-preserves-fresh-converse-helper _ _ (domain?/out F) _ F.
 
-- : update-preserves-fresh-converse-helper F2 U N (domain?/in L1) F1
+- : update-preserves-fresh-converse-helper F2 U (domain?/in L1) (nat`eq?/no N) F1
     <- update-preserves-lookup L1 U N L2
+    <- fresh-lookup-not-equal F2 L2 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-fresh F F1.
+
+- : update-preserves-fresh-converse-helper F2 U _ nat`eq?/yes F1
+    <- update-implies-lookup U L2
     <- fresh-lookup-not-equal F2 L2 N<>N
     <- nat`ne-anti-reflexive N<>N F
     <- false-implies-fresh F F1.
@@ -2040,12 +2046,13 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 %worlds () (update-preserves-fresh-converse-helper _ _ _ _ _).
 %total { } (update-preserves-fresh-converse-helper _ _ _ _ _).
 
-- : update-preserves-fresh-converse F2 U N F1
+- : update-preserves-fresh-converse F2 U F1
     <- domain?-total D
-    <- update-preserves-fresh-converse-helper F2 U N D F1.
+    <- nat`eq?-total E
+    <- update-preserves-fresh-converse-helper F2 U D E F1.
 
-%worlds () (update-preserves-fresh-converse _ _ _ _).
-%total { } (update-preserves-fresh-converse _ _ _ _).
+%worlds () (update-preserves-fresh-converse _ _ _).
+%total { } (update-preserves-fresh-converse _ _ _).
 
 
 %theorem update-is-cause-of-change :
@@ -2113,7 +2120,7 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
     <- update-preserves-lookup-converse L2 U NE L1.
 
 - : update-preserves-membership-converse (domain?/out F2) U NE (domain?/out F1)
-    <- update-preserves-fresh-converse F2 U NE F1.
+    <- update-preserves-fresh-converse F2 U F1.
 
 %worlds () (update-preserves-membership-converse _ _ _ _).
 %total { } (update-preserves-membership-converse _ _ _ _).
@@ -2170,6 +2177,37 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 
 %worlds () (lookup-update-preserves-membership-converse _ _ _ _).
 %total { } (lookup-update-preserves-membership-converse _ _ _ _).
+
+
+%theorem update-preserves-in-domain :
+	forall* {M1} {N1} {N2} {D} {M2}
+	forall {MD1:domain? M1 N1 true} {U:update M1 N2 D M2}
+	exists {MD2:domain? M2 N1 true}
+	true.
+
+%theorem update-preserves-in-domain/L :
+	forall* {M1} {N1} {N2} {D} {M2} {B}
+	forall {MD1:domain? M1 N1 true} {U:update M1 N2 D M2}
+	       {E: nat`eq? N1 N2 B}
+	exists {MD2:domain? M2 N1 true}
+	true.
+
+- : update-preserves-in-domain/L
+	(domain?/in ML1) U (nat`eq?/no N1<>N2) (domain?/in ML2)
+    <- update-preserves-lookup ML1 U N1<>N2 ML2.
+
+- : update-preserves-in-domain/L _ U (nat`eq?/yes) (domain?/in ML)
+    <- update-implies-lookup U ML.
+
+%worlds () (update-preserves-in-domain/L _ _ _ _).
+%total { } (update-preserves-in-domain/L _ _ _ _).
+
+- : update-preserves-in-domain MD1 U MD2
+    <- nat`eq?-total E
+    <- update-preserves-in-domain/L MD1 U E MD2.
+
+%worlds () (update-preserves-in-domain _ _ _).
+%total { } (update-preserves-in-domain _ _ _).
 
 
 %theorem update-overwrites :
@@ -2235,6 +2273,22 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 %worlds () (update-overwrites M1^N1=D1->M2 M2^N2=D2->M3 N1=N2 
                        %{=>}% M1^N1=D2->M3).
 %total (U) (update-overwrites U _ _ _).
+
+
+%theorem update-overwrites-converse :
+	forall* {M1} {N1} {D1} {M2} {D2} {M3}
+	forall {U12:update M1 N1 D1 M3} {U1:update M1 N1 D2 M2}
+	exists {U2:update M2 N1 D1 M3}
+	true.
+
+- : update-overwrites-converse U12 U1 U2
+    <- update-total U2' 
+    <- update-overwrites U1 U2' nat`eq/ U12'
+    <- update-deterministic U12' U12 eq/ nat`eq/ data`eq/ M2'=M2
+    <- update-respects-eq U2' eq/ nat`eq/ data`eq/ M2'=M2 U2.
+
+%worlds () (update-overwrites-converse _ _ _).
+%total { } (update-overwrites-converse _ _ _).
 
 
 %theorem update-may-have-no-effect :
