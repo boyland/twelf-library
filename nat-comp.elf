@@ -264,6 +264,7 @@ END_ELF
 #define OP(X,Y) X*Y
 #define CMPN GE
 #define CMP(X,Y) X>=Y
+#define CMP_TRANSITIVE 1
 #define OP_COMMUTATIVE 1
 #define OP_TOTAL 1
 BEGIN_ELF
@@ -275,6 +276,7 @@ END_ELF
 #undef OPN
 #undef CMP
 #undef CMPN
+#undef CMP_TRANSITIVE
 %}%
 
 %{%
