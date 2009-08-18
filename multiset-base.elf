@@ -254,6 +254,68 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 %total { } (add-deterministic _ _ _ _ _).
 
 
+%theorem add-commutes :
+	forall* {M0} {N1} {M1} {N2} {M2}
+	forall	{A01:add M0 N1 M1}
+		{A12:add M1 N2 M2}
+	exists	{M3}
+		{A02:add M0 N2 M3}
+		{A32:add M3 N1 M2}
+	true.
+
+%theorem add-commutes/L :
+	forall* {M0} {N1} {M1} {N2} {M2} {B}
+	forall	{A01:add M0 N1 M1}
+		{A12:add M1 N2 M2}
+		{EQ?: nat`eq? N1 N2 B}
+	exists	{M3}
+		{A02:add M0 N2 M3}
+		{A32:add M3 N1 M2}
+	true.
+
+- : add-commutes/L A0 A1 nat`eq?/yes _ A0 A1.
+
+- : add-commutes/L (add/0 NM1 U01) (add/0 NM2 U12) (nat`eq?/no N1<>N2) _
+		   (add/0 NM2' U02) (add/0 NM1' U32)
+    <- update-preserves-not-member-converse NM2 U01 NM2'
+    <- update-total U02
+    <- update-preserves-not-member NM1 U02 N1<>N2 NM1'
+    <- update-commutes* U01 U12 N1<>N2 U02 U32.
+
+- : add-commutes/L (add/0 NM1 U01) (add/+ L2 U12) (nat`eq?/no N1<>N2) _
+		   (add/+ L2' U02) (add/0 NM1' U32)
+    <- nat`ne-symmetric N1<>N2 N2<>N1
+    <- update-preserves-lookup-converse L2 U01 N2<>N1 L2'
+    <- update-total U02
+    <- update-preserves-not-member NM1 U02 N1<>N2 NM1'
+    <- update-commutes* U01 U12 N1<>N2 U02 U32.
+
+- : add-commutes/L (add/+ L1 U01) (add/0 NM2 U12) (nat`eq?/no N1<>N2) _
+		   (add/0 NM2' U02) (add/+ L1' U32)
+    <- update-preserves-not-member-converse NM2 U01 NM2'
+    <- update-total U02
+    <- update-preserves-lookup L1 U02 N1<>N2 L1'
+    <- update-commutes* U01 U12 N1<>N2 U02 U32.
+
+- : add-commutes/L (add/+ L1 U01) (add/+ L2 U12) (nat`eq?/no N1<>N2) _
+		   (add/+ L2' U02) (add/+ L1' U32)
+    <- nat`ne-symmetric N1<>N2 N2<>N1
+    <- update-preserves-lookup-converse L2 U01 N2<>N1 L2'
+    <- update-total U02
+    <- update-preserves-lookup L1 U02 N1<>N2 L1'
+    <- update-commutes* U01 U12 N1<>N2 U02 U32.
+
+%worlds () (add-commutes/L _ _ _ _ _ _).
+%total { } (add-commutes/L _ _ _ _ _ _).
+
+- : add-commutes A01 A12 _ A02 A23
+    <- nat`eq?-total EQ?
+    <- add-commutes/L A01 A12 EQ? _ A02 A23.
+
+%worlds () (add-commutes _ _ _ _ _).
+%total { } (add-commutes _ _ _ _ _).
+
+
 %theorem count-add-implies-count :
 	forall* {M} {N} {C} {M'}
 	forall	{K:count M N C}
@@ -329,3 +391,43 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 
 %worlds () (add-preserves-count-converse _ _ _ _).
 %total { } (add-preserves-count-converse _ _ _ _).
+
+
+%theorem shift-preserves-count-converse :
+	forall* {N} {M1} {N1} {M2} {N2} {C}
+	forall	{C2: count M2 N2 C}
+		{MS: shift N M1 M2}
+		{P: plus (s N) N1 N2}
+	exists	{C1: count M1 N1 C}
+	true.
+
+- : shift-preserves-count-converse (count/z MF) MS P (count/z MF')
+    <- shift-preserves-not-member-converse* MF MS P MF'.
+
+- : shift-preserves-count-converse (count/s ML) MS P (count/s ML')
+    <- shift-preserves-lookup-converse* ML MS P ML'.
+
+%worlds () (shift-preserves-count-converse _ _ _ _).
+%total { } (shift-preserves-count-converse _ _ _ _).
+
+
+%theorem shift-preserves-add-converse :
+	forall* {N} {M1} {N1} {M2} {N2} {M2'}
+	forall	{A2: add M2 N2 M2'}
+		{MS: shift N M1 M2}
+		{P: plus (s N) N1 N2}
+	exists	{M1'}
+		{MS': shift N M1' M2'}
+		{A1: add M1 N1 M1'}
+	true.
+
+- : shift-preserves-add-converse (add/+ ML MU) MS P _ MS' (add/+ ML' MU')
+    <- shift-preserves-update-converse MU MS P _ MS' MU'
+    <- shift-preserves-lookup-converse* ML MS P ML'.
+
+- : shift-preserves-add-converse (add/0 MF MU) MS P _ MS' (add/0 MF' MU')
+    <- shift-preserves-update-converse MU MS P _ MS' MU'
+    <- shift-preserves-not-member-converse* MF MS P MF'.
+
+%worlds () (shift-preserves-add-converse _ _ _ _ _ _).
+%total { } (shift-preserves-add-converse _ _ _ _ _ _).
