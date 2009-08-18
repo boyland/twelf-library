@@ -1366,6 +1366,33 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (shifts-add-converse _ _ _ _ _).
 
 
+%theorem shift-preserves-fresh-converse* :
+        forall* {M1} {N1} {N2} {M2} {N0}
+	forall {L2:fresh M2 N2} {S:shift N0 M1 M2}
+               {P:plus (s N0) N1 N2} 
+        exists {L1:fresh M1 N1}
+	true.
+
+- : shift-preserves-fresh-converse* fresh/0 shift/0 _ fresh/0.
+
+- : shift-preserves-fresh-converse* 
+	(fresh/< N1>N) (shift/+ S+1+N2=N1) S+1+N'=N
+	(fresh/< N2>N')
+    <- plus-left-cancels-gt S+1+N2=N1 S+1+N'=N nat`eq/ N1>N N2>N'.
+
+- : shift-preserves-fresh-converse* 
+	(fresh/> F NX+1+N2=N) (shift/+ S+1+N1=N2) S+1+N'=N
+        (fresh/> F NX+1+N1=N')
+    <- plus-commutative S+1+N1=N2 N1+S+1=N2
+    <- plus-associative-converse N1+S+1=N2 NX+1+N2=N N'' NX+1+N1=N'' N''+S+1=N
+    <- plus-commutative N''+S+1=N S+1+N''=N
+    <- plus-left-cancels S+1+N''=N S+1+N'=N nat`eq/ nat`eq/ N''=N'
+    <- plus-respects-eq NX+1+N1=N'' nat`eq/ nat`eq/ N''=N' NX+1+N1=N'.
+
+%worlds () (shift-preserves-fresh-converse* _ _ _ _).
+%total { } (shift-preserves-fresh-converse* _ _ _ _).
+
+
 %theorem shift-preserves-lookup :
         forall* {M1} {N1} {D} {N0} {M2}
 	forall {L1:lookup M1 N1 D} {S:shift N0 M1 M2}
@@ -1437,39 +1464,38 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (shift-preserves-lookup-converse* _ _ _ _).
 
 
-%theorem shift-preserves-update :
-	forall* {M1} {N1} {D} {M1'} {N0} {M2}
-	forall {U1:update M1 N1 D M1'}
-               {S:shift N0 M1 M2}
-        exists {N2} {M2'} 
-               {P:plus (s N0) N1 N2}
-               {SS:shift N0 M1' M2'}
-               {U2:update M2 N2 D M2'}
+%theorem shift-implies-fresh* :
+	forall* {M} {N1} {N} {NM}
+	forall	{SH:shift N M NM}
+		{GE:nat`ge N N1}
+	exists	{F:fresh NM N1}
 	true.
 
-- : shift-preserves-update update/0 shift/0 _ _ P (shift/+ P) update/0
-    <- plus-total P.
+- : shift-implies-fresh* shift/0 _ fresh/0.
 
-- : shift-preserves-update (update/= nat`eq/) (shift/+ P) _ _ P (shift/+ P)
-                           (update/= nat`eq/).
+- : shift-implies-fresh* 
+     (shift/+ SN+N1=N1') N>=N'
+     (fresh/< N1'>N')
+    <- plus-commutative SN+N1=N1' N1+SN=N1'
+    <- plus-implies-ge N1+SN=N1' N1'>=SN
+    <- ge-succ-implies-gt N1'>=SN N1'>N
+    <- gt-transitive-ge N1'>N N>=N' N1'>N'.
 
-- : shift-preserves-update (update/< N4+1+N1=N3) (shift/+ N0+1+N3=N5) _ _
-                           N0+1+N1=N2 (shift/+ N0+1+N1=N2) 
-                           (update/< N4+1+N2=N5)
-    <- plus-commutative N4+1+N1=N3 N1+N4+1=N3
-    <- plus-associative-converse N1+N4+1=N3 N0+1+N3=N5 _ N0+1+N1=N2 N2+N4+1=N5
-    <- plus-commutative N2+N4+1=N5 N4+1+N2=N5.
+%worlds () (shift-implies-fresh* _ _ _).
+%total { } (shift-implies-fresh* _ _ _).
 
-- : shift-preserves-update (update/> U N4+1+N3=N1) (shift/+ N0+1+N3=N5) _ _
-                           N0+1+N1=N2 (shift/+ N0+1+N3=N5)
-                           (update/> U N4+1+N5=N2)
-   <- plus-total N0+1+N1=N2
-   <- plus-commutative N4+1+N3=N1 N3+N4+1=N1
-   <- plus-associative-converse* N3+N4+1=N1 N0+1+N1=N2 N0+1+N3=N5 N5+N4+1=N2
-   <- plus-commutative N5+N4+1=N2 N4+1+N5=N2.
 
-%worlds () (shift-preserves-update _ _ _ _ _ _ _).
-%total { } (shift-preserves-update _ _ _ _ _ _ _).
+%theorem shift-implies-fresh :
+	forall* {M} {N} {NM}
+	forall	{SH:shift N M NM}
+	exists	{F:fresh NM N}
+	true.
+
+- : shift-implies-fresh SH F
+    <- shift-implies-fresh* SH (nat`ge/= nat`eq/) F.
+
+%worlds () (shift-implies-fresh _ _).
+%total { } (shift-implies-fresh _ _).
 
 
 %theorem shift-preserves-size :
@@ -2208,6 +2234,80 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 
 %worlds () (update-preserves-in-domain _ _ _).
 %total { } (update-preserves-in-domain _ _ _).
+
+
+%theorem shift-preserves-update :
+	forall* {M1} {N1} {D} {M1'} {N0} {M2}
+	forall {U1:update M1 N1 D M1'}
+               {S:shift N0 M1 M2}
+        exists {N2} {M2'} 
+               {P:plus (s N0) N1 N2}
+               {SS:shift N0 M1' M2'}
+               {U2:update M2 N2 D M2'}
+	true.
+
+- : shift-preserves-update update/0 shift/0 _ _ P (shift/+ P) update/0
+    <- plus-total P.
+
+- : shift-preserves-update (update/= nat`eq/) (shift/+ P) _ _ P (shift/+ P)
+                           (update/= nat`eq/).
+
+- : shift-preserves-update (update/< N4+1+N1=N3) (shift/+ N0+1+N3=N5) _ _
+                           N0+1+N1=N2 (shift/+ N0+1+N1=N2) 
+                           (update/< N4+1+N2=N5)
+    <- plus-commutative N4+1+N1=N3 N1+N4+1=N3
+    <- plus-associative-converse N1+N4+1=N3 N0+1+N3=N5 _ N0+1+N1=N2 N2+N4+1=N5
+    <- plus-commutative N2+N4+1=N5 N4+1+N2=N5.
+
+- : shift-preserves-update (update/> U N4+1+N3=N1) (shift/+ N0+1+N3=N5) _ _
+                           N0+1+N1=N2 (shift/+ N0+1+N3=N5)
+                           (update/> U N4+1+N5=N2)
+   <- plus-total N0+1+N1=N2
+   <- plus-commutative N4+1+N3=N1 N3+N4+1=N1
+   <- plus-associative-converse* N3+N4+1=N1 N0+1+N1=N2 N0+1+N3=N5 N5+N4+1=N2
+   <- plus-commutative N5+N4+1=N2 N4+1+N5=N2.
+
+%worlds () (shift-preserves-update _ _ _ _ _ _ _).
+%total { } (shift-preserves-update _ _ _ _ _ _ _).
+
+
+%theorem shift-preserves-update* :
+	forall* {M1} {N1} {D} {M1'} {N0} {M2} {N2} {M2'}
+	forall {U1:update M1 N1 D M1'}
+               {S:shift N0 M1 M2}
+               {P:plus (s N0) N1 N2}
+               {SS:shift N0 M1' M2'}
+        exists {U2:update M2 N2 D M2'}
+	true.
+
+- : shift-preserves-update* U1 S P SS U2
+    <- shift-preserves-update U1 S _ _ P' SS' U2'
+    <- plus-deterministic P' P nat`eq/ nat`eq/ N2'=N2
+    <- shift-deterministic SS' SS nat`eq/ eq/ M2'=M2
+    <- update-respects-eq U2' eq/ N2'=N2 data`eq/ M2'=M2 U2.
+
+%worlds () (shift-preserves-update* _ _ _ _ _).
+%total { } (shift-preserves-update* _ _ _ _ _).
+
+
+%theorem shift-preserves-update-converse :
+	forall* {M1} {N1} {D} {N0} {M2} {N2} {M2'}
+        forall {U2:update M2 N2 D M2'}
+               {S:shift N0 M1 M2}
+               {P:plus (s N0) N1 N2}
+        exists {M1'} {SS:shift N0 M1' M2'}
+	       {U1:update M1 N1 D M1'}
+	true.
+
+- : shift-preserves-update-converse U2 S P _ SS U1
+    <- update-total U1
+    <- shift-preserves-update U1 S _ _ P' SS' U2'
+    <- plus-deterministic P' P nat`eq/ nat`eq/ N2'=N2
+    <- update-deterministic U2' U2 eq/ N2'=N2 data`eq/ M2'=M2
+    <- shift-respects-eq SS' nat`eq/ eq/ M2'=M2 SS.
+
+%worlds () (shift-preserves-update-converse _ _ _ _ _ _).
+%total { } (shift-preserves-update-converse _ _ _ _ _ _).
 
 
 %theorem update-overwrites :
