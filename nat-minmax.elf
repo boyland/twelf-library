@@ -11,3 +11,74 @@ BEGIN_ELF
 END_ELF
 %}%
 
+%theorem succ-preserves-min :
+	forall* {N1} {N2} {N3}
+	forall	{M: min N1 N2 N3}
+	exists	{MS: min (s N1) (s N2) (s N3)}
+	true.
+
+- : succ-preserves-min min/= min/=.
+
+- : succ-preserves-min (min/< N2>N1) (min/< N2+1>N1+1)
+    <- succ-preserves-gt N2>N1 N2+1>N1+1.
+
+- : succ-preserves-min (min/> N1>N2) (min/> N1+1>N2+1)
+    <- succ-preserves-gt N1>N2 N1+1>N2+1.
+
+%worlds () (succ-preserves-min _ _).
+%total { } (succ-preserves-min _ _).
+
+
+%theorem succ-preserves-min-converse :
+	forall* {N1} {N2} {N3}
+	forall	{MS: min (s N1) (s N2) (s N3)}
+	exists	{M: min N1 N2 N3}
+	true.
+
+- : succ-preserves-min-converse min/= min/=.
+
+- : succ-preserves-min-converse (min/< N2+1>N1+1) (min/< N2>N1)
+    <- succ-preserves-gt-converse N2+1>N1+1 N2>N1.
+
+- : succ-preserves-min-converse (min/> N1+1>N2+1) (min/> N1>N2)
+    <- succ-preserves-gt-converse N1+1>N2+1 N1>N2.
+
+%worlds () (succ-preserves-min-converse _ _).
+%total { } (succ-preserves-min-converse _ _).
+
+
+%theorem succ-preserves-max :
+	forall* {N1} {N2} {N3}
+	forall	{M: max N1 N2 N3}
+	exists	{MS: max (s N1) (s N2) (s N3)}
+	true.
+
+- : succ-preserves-max max/= max/=.
+
+- : succ-preserves-max (max/< N2>N1) (max/< N2+1>N1+1)
+    <- succ-preserves-gt N2>N1 N2+1>N1+1.
+
+- : succ-preserves-max (max/> N1>N2) (max/> N1+1>N2+1)
+    <- succ-preserves-gt N1>N2 N1+1>N2+1.
+
+%worlds () (succ-preserves-max _ _).
+%total { } (succ-preserves-max _ _).
+
+
+%theorem succ-preserves-max-converse :
+	forall* {N1} {N2} {N3}
+	forall	{MS: max (s N1) (s N2) (s N3)}
+	exists	{M: max N1 N2 N3}
+	true.
+
+- : succ-preserves-max-converse max/= max/=.
+
+- : succ-preserves-max-converse (max/< N2+1>N1+1) (max/< N2>N1)
+    <- succ-preserves-gt-converse N2+1>N1+1 N2>N1.
+
+- : succ-preserves-max-converse (max/> N1+1>N2+1) (max/> N1>N2)
+    <- succ-preserves-gt-converse N1+1>N2+1 N1>N2.
+
+%worlds () (succ-preserves-max-converse _ _).
+%total { } (succ-preserves-max-converse _ _).
+
