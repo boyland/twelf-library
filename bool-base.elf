@@ -19,14 +19,14 @@ false : bool.
 
 
 
-eq : bool -> bool -> type.
+eq? : bool -> bool -> bool -> type.
+
+%abbrev eq = [B1] [B2] eq? B1 B2 true.
+
+%abbrev ne = [B1] [B2] eq? B1 B2 false.
 
 
 eq/ : eq B B.
-
-
-
-ne : bool -> bool -> type.
 
 
 ne/TF : ne true false.
@@ -34,14 +34,36 @@ ne/TF : ne true false.
 ne/FT : ne false true.
 
 
+%abbrev eq?/yes = eq/.
 
-eq? : bool -> bool -> bool -> type.
+%abbrev eq?/no = [NE:ne B1 B2] NE.
 
 
-eq?/yes : eq? B B true.
+not : bool -> bool -> type.
 
-eq?/no : eq? B1 B2 false
-    <- ne B1 B2.
+not/T : not true false.
+
+not/F : not false true.
+
+
+and : bool -> bool -> bool -> type.
+
+
+and/FX : and false B false.
+
+and/XF : and B false false.
+
+and/TT : and true true true.
+
+
+or : bool -> bool -> bool -> type.
+
+or/TX: or true B true.
+
+or/XT: or B true true.
+
+or/FF: or false false false.
+
 
 
 
@@ -131,3 +153,61 @@ END_ELF
 
 
 %abbrev eq?-total = eq?-total* _ _ _.
+
+
+
+%%% Theorems about not, and, or
+
+%{%
+These boolean connectives aren't as useful
+as they might seem.  Currently I don't prove
+many things about them.
+%}%
+
+
+%theorem not-total*:
+	forall {B1}
+	exists {B2} {N:not B1 B2}
+	true.
+
+%abbrev not-total = not-total* _ _.
+
+- : not-total not/T.
+
+- : not-total not/F.
+
+%worlds () (not-total* _ _ _).
+
+
+%theorem and-total* :
+	forall {B1} {B2} 
+	exists {B3} {A:and B1 B2 B3}
+	true.
+
+%abbrev and-total = and-total* _ _ _.
+
+- : and-total and/FX.
+
+- : and-total and/XF.
+
+- : and-total and/TT.
+
+%worlds () (and-total* _ _ _ _).
+%total { } (and-total* _ _ _ _).
+
+
+%theorem or-total* :
+	forall {B1} {B2} 
+	exists {B3} {A:or B1 B2 B3}
+	true.
+
+%abbrev or-total = or-total* _ _ _.
+
+- : or-total or/TX.
+
+- : or-total or/XT.
+
+- : or-total or/FF.
+
+%worlds () (or-total* _ _ _ _).
+%total { } (or-total* _ _ _ _).
