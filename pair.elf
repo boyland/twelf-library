@@ -164,6 +164,70 @@ END_ELF
 %total { } (eq-ne-implies-false _ _ _).
 
 
+%theorem ne/1-inversion:
+	forall*	{N1} {N2} {N3} {N4}
+	forall	{R: ne (pair/ N1 N2) (pair/ N3 N4)}
+		{E: data2`eq N2 N4}
+	exists	{N: data1`ne N1 N3}
+	true.
+
+%theorem ne/1-inversion/L:
+	forall*	{N1} {N2} {N3} {N4} {B}
+	forall	{R: ne (pair/ N1 N2) (pair/ N3 N4)}
+		{E: data2`eq N2 N4}
+		{E?: data1`eq? N1 N3 B}
+	exists	{N: data1`ne N1 N3}
+	true.
+
+- : ne/1-inversion/L _ _ (data1`eq?/no NE) NE.
+
+- : ne/1-inversion/L PNE data2`eq/ (data1`eq?/yes) NE
+    <- eq-ne-implies-false eq/ PNE F
+    <- data1`false-implies-ne F NE.
+
+%worlds () (ne/1-inversion/L _ _ _ _).
+%total { } (ne/1-inversion/L _ _ _ _).
+
+- : ne/1-inversion PNE EQ NE
+    <- data1`eq?-total EQ?
+    <- ne/1-inversion/L PNE EQ EQ? NE.
+
+%worlds () (ne/1-inversion _ _ _).
+%total { } (ne/1-inversion _ _ _).
+
+
+%theorem ne/2-inversion:
+	forall*	{N1} {N2} {N3} {N4}
+	forall	{R: ne (pair/ N1 N2) (pair/ N3 N4)}
+		{E: data1`eq N1 N3}
+	exists	{N: data2`ne N2 N4}
+	true.
+
+%theorem ne/2-inversion/L:
+	forall*	{N1} {N2} {N3} {N4} {B}
+	forall	{R: ne (pair/ N1 N2) (pair/ N3 N4)}
+		{E: data1`eq N1 N3}
+		{E?: data2`eq? N2 N4 B}
+	exists	{N: data2`ne N2 N4}
+	true.
+
+- : ne/2-inversion/L _ _ (data2`eq?/no NE) NE.
+
+- : ne/2-inversion/L PNE data1`eq/ (data2`eq?/yes) NE
+    <- eq-ne-implies-false eq/ PNE F
+    <- data2`false-implies-ne F NE.
+
+%worlds () (ne/2-inversion/L _ _ _ _).
+%total { } (ne/2-inversion/L _ _ _ _).
+
+- : ne/2-inversion PNE EQ NE
+    <- data2`eq?-total EQ?
+    <- ne/2-inversion/L PNE EQ EQ? NE.
+
+%worlds () (ne/2-inversion _ _ _).
+%total { } (ne/2-inversion _ _ _).
+
+
 
 %%% theorems about eq?
 
