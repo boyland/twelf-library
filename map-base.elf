@@ -1014,6 +1014,40 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total (D) (disjoint-lookup-contradiction D _ _ _).
 
 
+%theorem disjoint-lookup-implies-fresh :
+	forall*	{M1} {N} {D} {M2}
+	forall	{L: lookup M1 N D}
+		{A: disjoint M1 M2}
+	exists	{F: fresh M2 N}
+	true.
+
+%theorem disjoint-lookup-implies-fresh/L :
+	forall*	{M1} {N} {D} {M2} {B}
+	forall	{L: lookup M1 N D}
+		{A: disjoint M1 M2}
+		{D?: domain? M2 N B}
+	exists	{F: fresh M2 N}
+	true.
+
+- : disjoint-lookup-implies-fresh/L
+	L1 A (domain?/in L2) FR
+    <- disjoint-lookup-contradiction A L1 L2 F
+    <- false-implies-fresh F FR.
+
+- : disjoint-lookup-implies-fresh/L
+	_ _ (domain?/out FR) FR.
+
+%worlds () (disjoint-lookup-implies-fresh/L _ _ _ _).
+%total { } (disjoint-lookup-implies-fresh/L _ _ _ _).
+
+- : disjoint-lookup-implies-fresh L D F
+    <- domain?-total D?
+    <- disjoint-lookup-implies-fresh/L L D D? F.
+
+%worlds () (disjoint-lookup-implies-fresh _ _ _).
+%total { } (disjoint-lookup-implies-fresh _ _ _).
+
+
 %theorem shift-left-preserves-disjoint :
 	forall* {N} {D} {M1} {M2} {SM1}
 	forall {A:disjoint M1 M2} {S1:shift N M1 SM1}
@@ -1150,6 +1184,22 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds () (shift-preserves-disjoint-converse _ _ _ _).
 %total { } (shift-preserves-disjoint-converse _ _ _ _).
+
+
+%theorem can-construct-unit-disjoint:
+	forall*	{N} {D} {M1} {M}
+	forall	{S: shift N M1 M}
+	exists	{A: disjoint M (map/+ N D map/0)}
+	true.
+
+- : can-construct-unit-disjoint shift/0 disjoint/L.
+
+- : can-construct-unit-disjoint (shift/+ P) (disjoint/> disjoint/R P'')
+    <- plus-swap-succ P P'
+    <- plus-commutative P' P''.
+
+%worlds () (can-construct-unit-disjoint _ _).
+%total { } (can-construct-unit-disjoint _ _).
 
 
 %theorem ne-implies-disjoint :
@@ -1364,6 +1414,33 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds () (shifts-add-converse _ _ _ _ _).
 %total { } (shifts-add-converse _ _ _ _ _).
+
+
+%theorem shift-preserves-fresh :
+        forall* {M1} {N1} {N2} {N0}
+        forall	{L1:fresh M1 N1}
+        	{P:plus (s N0) N1 N2} 
+	exists	{M2} {S:shift N0 M1 M2}
+		{L2:fresh M2 N2} 
+	true.
+	
+- : shift-preserves-fresh fresh/0 P _ shift/0 fresh/0.
+
+- : shift-preserves-fresh 
+	(fresh/< G) P _ (shift/+ P')
+	(fresh/< G')
+    <- plus-total P'
+    <- plus-left-preserves-gt* G P' P G'.
+
+- : shift-preserves-fresh
+	(fresh/> F D+1+N3=N1) N0+1+N1=N2 _ (shift/+ N0+1+N3=N4)
+	(fresh/> F D+1+N4=N2)
+    <- plus-commutative N0+1+N1=N2 N1+N0+1=N2
+    <- plus-associative D+1+N3=N1 N1+N0+1=N2 N4 N3+N0+1=N4 D+1+N4=N2
+    <- plus-commutative N3+N0+1=N4 N0+1+N3=N4.
+
+%worlds () (shift-preserves-fresh _ _ _ _ _).
+%total (F) (shift-preserves-fresh F _ _ _ _).
 
 
 %theorem shift-preserves-fresh-converse* :
@@ -2308,6 +2385,43 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 
 %worlds () (shift-preserves-update-converse _ _ _ _ _ _).
 %total { } (shift-preserves-update-converse _ _ _ _ _ _).
+
+
+%theorem fresh-update-preserves-disjoint :
+	forall* {M1} {M2} {N} {D} {M2'}
+	forall	{I: disjoint M1 M2}
+		{F: fresh M1 N}
+		{U: update M2 N D M2'}
+	exists	{D': disjoint M1 M2'}
+	true.
+
+%theorem fresh-update-preserves-disjoint/L :
+	forall* {M1} {M2} {N} {D} {M2'} {B}
+	forall	{I: disjoint M1 M2}
+		{F: fresh M1 N}
+		{U: update M2 N D M2'}
+		{D?: disjoint? M1 M2' B}
+	exists	{D': disjoint M1 M2'}
+	true.
+
+- : fresh-update-preserves-disjoint/L _ _ _ (disjoint?/yes DJ) DJ.
+
+- : fresh-update-preserves-disjoint/L D FR U (disjoint?/no L1 L2') D'
+    <- fresh-lookup-not-equal FR L1 NE
+    <- nat`ne-symmetric NE NEs
+    <- update-preserves-lookup-converse L2' U NEs L2
+    <- disjoint-lookup-contradiction D L1 L2 F
+    <- false-implies-disjoint F D'.
+
+%worlds () (fresh-update-preserves-disjoint/L _ _ _ _ _).
+%total { } (fresh-update-preserves-disjoint/L _ _ _ _ _).
+
+- : fresh-update-preserves-disjoint D F U D'
+    <- disjoint?-total D?
+    <- fresh-update-preserves-disjoint/L D F U D? D'.
+
+%worlds () (fresh-update-preserves-disjoint _ _ _ _).
+%total { } (fresh-update-preserves-disjoint _ _ _ _).
 
 
 %theorem update-overwrites :
