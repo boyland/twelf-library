@@ -53,8 +53,25 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 %reduces A = AP (join-respects-eq A _ _ _ AP).
 
 
-%% Inversion lemmas for join
+%% A way to get a join fact.
 
+%theorem can-construct-unit-join:
+	forall*	{N} {D} {M1} {M}
+	forall	{S: shift N M1 M}
+	exists	{A: join M (map/+ N D map/0) (map/+ N D M1)}
+	true.
+
+- : can-construct-unit-join shift/0 join/L.
+
+- : can-construct-unit-join (shift/+ P) (join/> join/R P'')
+    <- plus-swap-succ P P'
+    <- plus-commutative P' P''.
+
+%worlds () (can-construct-unit-join _ _).
+%total { } (can-construct-unit-join _ _).
+
+
+%% Inversion lemmas for join
 
 %theorem join/=-inversion :
 	forall* {N1} {D1} {M1} {N2} {D2} {M2} {M} 
@@ -487,6 +504,36 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 
 %worlds () (join-preserves-disjoint* _ _ _ _).
 %total { } (join-preserves-disjoint* _ _ _ _).
+
+
+%{%
+Too much work: we need to add a size to prove termination.
+
+%theorem join-preserves-disjoint-converse:
+	forall* {M1} {M2} {M3} {M4}
+	forall {D3:disjoint M3 M4}
+	       {A:join M1 M2 M3}
+	exists {D1:disjoint M1 M4} {D2:disjoint M2 M4}
+	true.
+
+- : join-preserves-disjoint-converse
+	D join/L disjoint/L D.
+
+- : join-preserves-disjoint-converse
+	_ join/R
+	disjoint/L disjoint/L.
+
+- : join-preserves-disjoint-converse
+	disjoint/R _
+	disjoint/R disjoint/R.
+
+- : join-preserves-disjoint-converse
+	(disjoint/< D P)
+	(join/= J _ nat`eq/)
+	(disjoint/< D1 P) (disjoint/< D2 P)
+    <- join-preserves-disjoint-converse D J D1 D2.
+
+%}%
 
 
 %theorem shift-left-preserves-join :
@@ -1070,6 +1117,29 @@ END_ELF
 %worlds () (join-joins-lookup _ _ _ _ _ _).
 %total (A) (join-joins-lookup _ _ A _ _ _).
 
+%{%
+#ifdef DATA_JOIN_DETERMINISTIC
+%}%
+
+%theorem join-joins-lookup* :
+	forall* {M1} {M2} {M3} {N} {D1} {D2} {D3}
+	forall {L1:lookup M1 N D1} {L2:lookup M2 N D2}
+               {A:join M1 M2 M3}
+	       {J:data`join D1 D2 D3} 
+	exists {L3:lookup M3 N D3}
+	true.
+
+- : join-joins-lookup* L1 L2 A J L3
+    <- join-joins-lookup L1 L2 A _ JP L3P
+    <- data`join-deterministic JP J data`eq/ data`eq/ D3P=D3
+    <- lookup-respects-eq L3P eq/ nat`eq/ D3P=D3 L3.
+
+%worlds () (join-joins-lookup* _ _ _ _ _).
+%total { } (join-joins-lookup* _ _ _ _ _).
+
+%{%
+#endif
+%}%
 
 %theorem join-preserves-fresh* :
 	forall* {M1} {M2} {M3} {N}
@@ -1746,3 +1816,28 @@ END_ELF
 %{%
 #endif /* DATA_JOIN_CROSS_COMPARABLE */
 %}%
+
+%theorem fresh-update-implies-unit-join:
+	forall*	{M} {N} {D} {M'}
+	forall	{F: fresh M N}
+		{U: update M N D M'}
+	exists	{J: join M (map/+ N D map/0) M'}
+	true.
+
+- : fresh-update-implies-unit-join
+	fresh/0 update/0 join/L.
+
+- : fresh-update-implies-unit-join
+	(fresh/< N1>N2) U J
+    <- nat`gt-implies-plus N1>N2 N3 SN3+N2=N1
+    <- update/<-inversion U SN3+N2=N1 EQ
+    <- join-respects-eq  (join/> join/R SN3+N2=N1) eq/ eq/ EQ J.
+
+- : fresh-update-implies-unit-join
+	(fresh/> F SN0+N1=N2) U J
+    <- update/>-inversion U SN0+N1=N2 M1 U1 EQ
+    <- fresh-update-implies-unit-join F U1 J'
+    <- join-respects-eq (join/< J' SN0+N1=N2) eq/ eq/ EQ J.
+
+%worlds () (fresh-update-implies-unit-join _ _ _).
+%total (F) (fresh-update-implies-unit-join F _ _).
