@@ -7,6 +7,38 @@
 %%%% Theorems
 
 
+%theorem add-preserves-member :
+	forall* {S} {N1} {N2} {S'}
+	forall	{SM: lookup S N1 unit/}
+		{SA: update S N2 unit/ S'}
+	exists	{SM': lookup S' N1 unit/}
+	true.
+
+%theorem add-preserves-member/L :
+	forall* {S} {N1} {N2} {S'} {B}
+	forall	{SM: lookup S N1 unit/}
+		{SA: update S N2 unit/ S'}
+		{EQ?: nat`eq? N1 N2 B}
+	exists	{SM': lookup S' N1 unit/}
+	true.
+
+- : add-preserves-member/L SM SA (nat`eq?/no NE) SM'
+    <- update-preserves-lookup SM SA NE SM'.
+
+- : add-preserves-member/L _ SA (nat`eq?/yes) SM'
+    <- update-implies-lookup SA SM'.
+
+%worlds () (add-preserves-member/L _ _ _ _).
+%total { } (add-preserves-member/L _ _ _ _).
+
+- : add-preserves-member SM SA SM'
+    <- nat`eq?-total EQ?
+    <- add-preserves-member/L SM SA EQ? SM'.
+
+%worlds () (add-preserves-member _ _ _).
+%total { } (add-preserves-member _ _ _).
+
+
 %theorem union-right-distributes-over-intersection :
 	forall* {S1} {S2} {S3} {S4} {S7}
         forall {I12:intersection S1 S2 S3} {U34:union S3 S4 S7}
@@ -86,3 +118,50 @@ END_ELF
 
 %worlds () (union-right-preserves-member* _ _ _).
 %total { } (union-right-preserves-member* _ _ _).
+
+
+%theorem union-preserves-disjoint-converse:
+	forall* {S1} {S2} {S3} {S}
+	forall	{D: disjoint S3 S}
+		{U: union S1 S2 S3}
+	exists	{D1: disjoint S1 S}
+		{D2: disjoint S2 S}
+	true.
+
+%theorem union-preserves-disjoint-converse/L:
+	forall* {S1} {S2} {S3} {S} {B1} {B2}
+	forall	{D: disjoint S3 S}
+		{U: union S1 S2 S3}
+		{D1?: disjoint? S1 S B1}
+		{D2?: disjoint? S2 S B2}
+	exists	{D1: disjoint S1 S}
+		{D2: disjoint S2 S}
+	true.
+
+- : union-preserves-disjoint-converse/L _ _ 
+	(disjoint?/yes D1) (disjoint?/yes D2) D1 D2.
+
+- : union-preserves-disjoint-converse/L D U
+	(disjoint?/no M1 M) _ D1 D2
+    <- union-right-preserves-member* M1 U M3
+    <- disjoint-lookup-contradiction D M3 M F
+    <- false-implies-disjoint F D1
+    <- false-implies-disjoint F D2.
+
+- : union-preserves-disjoint-converse/L D U
+	_ (disjoint?/no M2 M) D1 D2
+    <- union-left-preserves-member* M2 U M3
+    <- disjoint-lookup-contradiction D M3 M F
+    <- false-implies-disjoint F D1
+    <- false-implies-disjoint F D2.
+
+%worlds () (union-preserves-disjoint-converse/L _ _ _ _ _ _).
+%total { } (union-preserves-disjoint-converse/L _ _ _ _ _ _).
+
+- : union-preserves-disjoint-converse SD SU S1 S2
+    <- disjoint?-total D1?
+    <- disjoint?-total D2?
+    <- union-preserves-disjoint-converse/L SD SU D1? D2? S1 S2.
+
+%worlds () (union-preserves-disjoint-converse _ _ _ _).
+%total { } (union-preserves-disjoint-converse _ _ _ _).
