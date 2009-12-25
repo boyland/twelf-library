@@ -57,6 +57,8 @@
     [L:member M N] [EM:leq M MP] [LP:member MP N]
     lookup-respects-leq L EM unit/ LP unit`eq/.
 
+%abbrev disjoint-member-contradiction = disjoint-lookup-contradiction.
+%abbrev disjoint-member-implies-not-member = disjoint-lookup-implies-not-member.
 
 %% using "add"
 
@@ -64,8 +66,9 @@
 %abbrev add-respects-eq = update-respects-eq.
 %abbrev add-deterministic = update-deterministic.
 %abbrev add-total* = update-total*.
+%abbrev add-total = update-total.
 %abbrev add-implies-member = update-implies-lookup.
-%abbrev add-preserves-member = update-preserves-lookup.
+% should not need NE : %abbrev add-preserves-member = update-preserves-lookup.
 %abbrev add-preserves-fresh = update-preserves-fresh.
 %abbrev add-preserves-membership = update-preserves-membership.
 %abbrev add-overwrites = update-overwrites.
@@ -73,6 +76,8 @@
 %abbrev add-commutes = update-commutes.
 %abbrev add-commutes* = update-commutes*.
 %abbrev add-preserves-leq* = update-left-preserves-leq*.
+%abbrev not-member-add-preserves-disjoint = 
+	not-member-update-preserves-disjoint.
 
 
 %% using "union"
