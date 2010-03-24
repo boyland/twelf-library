@@ -43,7 +43,7 @@ MSETSRC = multiset.cpp multiset-head.elf multiset-base.elf multiset-help.elf \
 CLEANFILES = ${GEN} *.tgz tmp.elf
 
 SOURCE = std.elf ${BSRC} ${NATSRC} ${NATPSRC} ${RATSRC} ${RAT0SRC} ${OPSRC} \
-	${MAPSRC} ${SETSRC} ${MSETSRC} ${RAT0VSRC} {NATVSRC} ${VSRC} \
+	${MAPSRC} ${SETSRC} ${MSETSRC} ${RAT0VSRC} ${NATVSRC} ${VSRC} \
 	Makefile ${GN} ${REC}
 
 .PHONY: output
