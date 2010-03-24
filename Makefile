@@ -1,4 +1,5 @@
-GEN = bool.elf nat.elf rat.elf rat0.elf set.elf natpair.elf rat0vector.elf \
+GEN = bool.elf nat.elf rat.elf rat0.elf set.elf natpair.elf \
+      natvector.elf rat0vector.elf \
       map.elf map-export.elf multiset.elf
 
 BSRC = bool.cpp bool-base.elf
@@ -17,6 +18,7 @@ RAT0SRC = rat0-base.elf rat0.cpp
 VSRC = vector.elf
 
 RAT0VSRC = rat0vector.cpp
+NATVSRC = natvector.cpp
 
 OPSRC = EQ.i GE.i LE.i LT.i NE.i RCMP.i RELN.i \
         OPN-assoc.i OPN-preserves-CMPN.i OPN-preserves-GE.i \
@@ -41,7 +43,7 @@ MSETSRC = multiset.cpp multiset-head.elf multiset-base.elf multiset-help.elf \
 CLEANFILES = ${GEN} *.tgz tmp.elf
 
 SOURCE = std.elf ${BSRC} ${NATSRC} ${NATPSRC} ${RATSRC} ${RAT0SRC} ${OPSRC} \
-	${MAPSRC} ${SETSRC} ${MSETSRC} ${RAT0VSRC} ${VSRC} \
+	${MAPSRC} ${SETSRC} ${MSETSRC} ${RAT0VSRC} {NATVSRC} ${VSRC} \
 	Makefile ${GN} ${REC}
 
 .PHONY: output
@@ -74,6 +76,8 @@ rat0.elf : ${RAT0SRC} ${OPSRC}
 
 rat0vector.elf : ${RAT0VSRC} ${VSRC}
 
+natvector.elf : ${NATVSRC} ${VSRC}
+
 map.elf : ${MAP} map-export.elf
 	${CAT} ${MAP} map-export.elf > map.elf
 
@@ -92,7 +96,7 @@ multiset.elf : ${MSETSRC} ${MAPSRC}
 DIST = www/.
 DISTFILES = std.elf bool.elf pair.elf \
             nat.elf natpair.elf rat.elf map.elf set.elf multiset.elf \
-	    rat0.elf rat0vector.elf \
+	    rat0.elf natvector.elf rat0vector.elf \
             map.tgz source.tgz
 
 map.tgz : ${MAP} ${MAP_MORE}
