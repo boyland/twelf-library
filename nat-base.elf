@@ -962,6 +962,17 @@ END_ELF
 %total M (times-right-identity M _).
 
 
+%theorem times-left-zero :
+	forall {N:nat}
+	exists	{T: times z N z}
+	true.
+
+- : times-left-zero _ times/z.
+
+%worlds () (times-left-zero _ _).
+%total { } (times-left-zero _ _).
+
+
 %theorem times-right-zero : forall {N:nat}
         exists {T:times N z z}
  	true.
