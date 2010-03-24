@@ -1,4 +1,5 @@
 #define data rat0
+#define DATA_ARITH 1
 #define DATA_ZERO 1
 #define DATA_NE 1
 #include "vector.elf"
