@@ -557,6 +557,84 @@ nat2pair : nat -> pair -> type = [N] [P] pair2nat P N.
 %total { } (nat2pair-implies-ge _ _ _).
 
 
+%abbrev 2>1 : gt (s (s z)) (s z) = gt/1.
+%abbrev 2+0=2 : plus (s (s z)) z (s (s z)) = plus/s (plus/s plus/z).
+%abbrev 0+2=2 : plus z (s (s z)) (s (s z)) = plus/z.
+%abbrev 0/2=0,0 : divrem z (s (s z)) z z = divrem/z 2>0.
+%abbrev 1/2=0,1 : divrem (s z) (s (s z)) z (s z)
+		= (divrem/z 2>1).
+%abbrev <1,0>->2 : pair2nat (pair/ (s z) z) (s (s z)) 
+                = (pair2nat/XX 2+0=2 0+2=2 1*2=2 times/z pair2nat/00
+		     0/2=0,0 1/2=0,1).
+
+%theorem large-nat2pair-implies-gt :
+	forall* {N} {X} {Y}
+	forall {D:nat2pair (s (s N)) (pair/ X Y)}
+	exists {G1: gt (s (s N)) X} {G2: gt (s (s N)) Y}
+	true.
+
+- : large-nat2pair-implies-gt N2P G1 G2
+    <- nat2pair-deterministic <1,0>->2 N2P nat`eq/ EQ
+    <- pair-eq-implies-eq EQ EQ1 EQ2
+    <- gt-respects-eq 2>1 nat`eq/ EQ1 G1
+    <- gt-respects-eq 2>0 nat`eq/ EQ2 G2.
+
+%theorem large-nat2pair-implies-gt/L :
+	forall* {N} {X} {Y}
+	forall {D:nat2pair (s (s (s N))) (pair/ X Y)}
+		{GE: ge (s (s (s N))) Y}
+	exists {G1: gt (s (s (s N))) Y}
+	true.
+
+- : large-nat2pair-implies-gt/L D (ge/> G2) G2.
+
+- : large-nat2pair-implies-gt/L (pair2nat/XX P1 P2 T1 Z1*4=Z2 P2N DR1 DR2)
+     (ge/= nat`eq/) G2
+    <- divrem-implies-gt DR1 TWO>R
+    <- succ-gt-implies-ge TWO>R ONE>=R
+    <- ge-implies-plus ONE>=R XR XR+R=ONE
+    <- divrem-can-be-inverted DR1 T Q*2=T T+R=N
+    <- ge-zero-always _ GE1 <- succ-preserves-ge GE1 GE2 
+    <- succ-preserves-ge GE2 GE3 <- succ-preserves-ge GE3 N>=3
+    <- plus-right-cancels-ge T+R=N (plus/s (plus/s XR+R=ONE)) nat`eq/
+       N>=3 T>=SSXR
+    <- ge-implies-plus T>=SSXR D D+SSXR=T
+    <- plus-commutative D+SSXR=T SSXR+D=T 
+    <- plus-total* XR D T-2 XR+D=T-2
+    <- plus-deterministic (plus/s (plus/s XR+D=T-2)) SSXR+D=T 
+       nat`eq/ nat`eq/ SST-2=T
+    <- succ-deterministic SST-2=T SSST-2=ST
+    <- nat2pair-implies-ge P2N _ Z1>=Q
+    <- times-associative-converse 2*2=4 Z1*4=Z2 U Z1*2=U U*2=Z2
+    <- times-right-preserves-ge* Z1>=Q Z1*2=U Q*2=T U>=T
+    <- times-total* (s (s T-2)) (s (s z)) T2 SST-2*2=T2
+    <- times-respects-eq SST-2*2=T2 SST-2=T nat`eq/ nat`eq/ T*2=T2
+    <- non-trivial-times-implies-much-gt* SST-2*2=T2 T2>SSST-2
+    <- gt-respects-eq T2>SSST-2 nat`eq/ SSST-2=ST T2>ST
+    <- plus-commutative T+R=N R+T=N
+    <- plus-associative* XR+R=ONE (plus/s plus/z) R+T=N XR+N=ST
+    <- plus-implies-ge XR+N=ST ST>=N
+    <- times-right-preserves-ge* U>=T U*2=Z2 T*2=T2 Z2>=T2
+    <- ge-transitive-gt Z2>=T2 T2>ST Z2>ST
+    <- gt-transitive-ge Z2>ST ST>=N Z2>N
+    <- plus-commutative P1 P1c <- plus-implies-ge P1c N>=N1
+    <- plus-commutative P2 P2c <- plus-implies-ge P2c N1>=Z2
+    <- ge-transitive N>=N1 N1>=Z2 N>=Z2
+    <- ge-transitive-gt N>=Z2 Z2>N N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-gt F G2.
+
+%worlds () (large-nat2pair-implies-gt/L _ _ _).
+%total { } (large-nat2pair-implies-gt/L _ _ _).
+
+- : large-nat2pair-implies-gt N2P G1 G2
+    <- nonzero-nat2pair-implies-gt-ge N2P G1 GE2
+    <- large-nat2pair-implies-gt/L N2P GE2 G2.
+
+%worlds () (large-nat2pair-implies-gt _ _ _).
+%total { } (large-nat2pair-implies-gt _ _ _).
+
+
 %theorem constrained1-pair2nat-unbounded :
 	forall {N1} {B}
 	exists {N2} {N} {D:pair2nat (pair/ N1 N2) N} {G:gt N B}
