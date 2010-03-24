@@ -5,7 +5,8 @@
 %%%%% This file requires the "nat.elf" signature (base only).
 
 %{%
-This signature implements vectors of a arbitrary ring.
+This signature implements vectors of a arbitrary ring
+(we don't even require either operation to be invertible).
 The vectors carry their length around so that we can
 ensure that operations succeed.
 
@@ -25,7 +26,7 @@ data`eq/ : data`eq X X.
 %worlds () (data`false-implies-eq _ %{=>}% X=X').
 %total {} (data`false-implies-eq _ _).
 
-It also assumes the existence of add and mul operations
+If ARITH is defined, it also assumes the existence of add and mul operations
 and that these operators are deterministic/total/commutative/associative.
 
 This file is intended to be copied and modified to apply to specific
@@ -89,6 +90,35 @@ eq?/no : ne V1 V2 -> eq? V1 V2 false.
 %}%
 
 
+%%% lookup
+
+
+get : vector N -> nat -> data -> type.
+
+
+get/0 : get (vector/+ X _) nat`z X.
+
+get/+ : get V N X ->
+    get (vector/+ _ V) (s N) X.
+
+
+
+%%% update
+
+
+set : vector N -> nat -> data -> vector N -> type.
+
+
+set/0 : set (vector/+ X1 V) nat`z X2 (vector/+ X2 V).
+
+set/+ : set V1 N X2 V2 ->
+    set (vector/+ X1 V1) (s N) X2 (vector/+ X1 V2).
+
+
+%{%
+#ifdef DATA_ARITH
+%}%
+
 %%% addition
 
 
@@ -119,6 +149,8 @@ scale/+ :
 
 
 %{%
+#endif
+
 #ifdef DATA_ZERO
 %}%
 
@@ -135,6 +167,9 @@ zero?/+ : zero? V B -> zero? (vector/+ data`zero V) B.
 zero?/X : data`ne D data`zero -> zero? (vector/+ D _) false.
 
 
+%{%
+#ifdef DATA_ARITH
+%}%
 
 %%% dot product
 
@@ -152,6 +187,7 @@ dot/+ :
 
 
 %{%
+#endif
 #endif
 %}%
 
@@ -450,6 +486,293 @@ dot/+ :
 #endif
 %}%
 
+
+%%% Theorems about get
+
+
+%theorem false-implies-get:
+	forall*	{N} {V: vector N} {I} {X}
+	forall	{F: void}
+	exists	{G: get V I X}
+	true.
+
+%worlds () (false-implies-get _ _).
+%total { } (false-implies-get _ _).
+
+
+%theorem get-respects-eq:
+	forall* {N} {V1: vector N} {I1} {X1}
+		{V2: vector N} {I2} {X2}
+	forall	{G1: get V1 I1 X1}
+		{EV: eq V1 V2}
+		{EN: nat`eq I1 I2}
+		{ED: data`eq X1 X2}
+	exists	{G2: get V2 I2 X2}
+	true.
+
+- : get-respects-eq G eq/ nat`eq/ data`eq/ G.
+
+%worlds () (get-respects-eq _ _ _ _ _).
+%total { } (get-respects-eq _ _ _ _ _).
+
+
+%theorem get-deterministic:
+	forall* {N} {V1: vector N} {I1} {X1}
+		{V2: vector N} {I2} {X2}
+	forall	{G1: get V1 I1 X1}
+		{G2: get V2 I2 X2}
+		{EV: eq V1 V2}
+		{EN: nat`eq I1 I2}
+	exists	{ED: data`eq X1 X2}
+	true.
+
+- : get-deterministic get/0 get/0 _ _ data`eq/.
+
+- : get-deterministic (get/+ G1) (get/+ G2) eq/ nat`eq/ DE
+    <- get-deterministic G1 G2 eq/ nat`eq/ DE.
+
+%worlds () (get-deterministic _ _ _ _ _).
+%total (G) (get-deterministic G _ _ _ _).
+
+
+%theorem get-implies-gt:
+	forall* {N} {V:vector N} {I} {X}
+	forall	{G: get V I X}
+	exists	{GT: nat`gt N I}
+	true.
+
+- : get-implies-gt get/0 GT
+    <- succ-implies-gt-zero _ GT.
+
+- : get-implies-gt (get/+ G) GT
+    <- get-implies-gt G GT'
+    <- succ-preserves-gt GT' GT.
+
+%worlds () (get-implies-gt _ _).
+%total (G) (get-implies-gt G _).
+
+
+%theorem gt-implies-get*:
+	forall* {N} {V:vector N}
+	forall	{I} {GT: nat`gt N I}
+	exists	{X} {G: get V I X}
+	true.
+
+%abbrev gt-implies-get : (nat`gt N I) -> (get V I X) -> type
+	= [GT] [G] gt-implies-get* _ GT _ G.
+
+- : gt-implies-get* nat`z _ _ get/0.
+
+- : gt-implies-get* (nat`s I) N+1>I+1 _ (get/+ G)
+    <- succ-preserves-gt-converse N+1>I+1 N>I
+    <- gt-implies-get* I N>I _ G.
+
+%worlds () (gt-implies-get* _ _ _ _).
+%total (I) (gt-implies-get* I _ _ _).
+
+
+%theorem get-preserves-zero:
+	forall* {N} {V:vector N} {I} {X}
+	forall	{Z:zero? V true}
+		{G: get V I X}
+	exists	{E: data`eq X data`zero}
+	true.
+
+- : get-preserves-zero (zero?/+ _) (get/0) data`eq/.
+
+- : get-preserves-zero (zero?/+ Z) (get/+ G) E
+    <- get-preserves-zero Z G E.
+
+%worlds () (get-preserves-zero _ _ _).
+%total (Z) (get-preserves-zero Z _ _).
+
+
+
+%%% Theorems about set
+
+
+%theorem false-implies-set:
+	forall*	{N} {V: vector N} {I} {X} {VP}
+	forall	{F: void}
+	exists	{G: set V I X VP}
+	true.
+
+%worlds () (false-implies-set _ _).
+%total { } (false-implies-set _ _).
+
+
+%theorem set-respects-eq:
+	forall* {N} {V1: vector N} {I1} {X1} {V3}
+		{V2: vector N} {I2} {X2} {V4}
+	forall	{G1: set V1 I1 X1 V3}
+		{EV: eq V1 V2}
+		{EN: nat`eq I1 I2}
+		{ED: data`eq X1 X2}
+		{ER: eq V3 V4}
+	exists	{G2: set V2 I2 X2 V4}
+	true.
+
+- : set-respects-eq G eq/ nat`eq/ data`eq/ eq/ G.
+
+%worlds () (set-respects-eq _ _ _ _ _ _).
+%total { } (set-respects-eq _ _ _ _ _ _).
+
+
+%theorem set-deterministic:
+	forall* {N} {V1: vector N} {I1} {X1} {V3}
+		{V2: vector N} {I2} {X2} {V4}
+	forall	{G1: set V1 I1 X1 V3}
+		{G2: set V2 I2 X2 V4}
+		{EV: eq V1 V2}
+		{EN: nat`eq I1 I2}
+		{ED: data`eq X1 X2}
+	exists	{ER: eq V3 V4}
+	true.
+
+- : set-deterministic set/0 set/0 _ _ data`eq/ eq/.
+
+- : set-deterministic (set/+ G1) (set/+ G2) eq/ nat`eq/ data`eq/ EQ
+    <- set-deterministic G1 G2 eq/ nat`eq/ data`eq/ EQ'
+    <- vector/+-preserves-eq data`eq/ EQ' EQ.
+
+%worlds () (set-deterministic _ _ _ _ _ _).
+%total (G) (set-deterministic G _ _ _ _ _).
+
+
+%theorem set-implies-gt:
+	forall* {N} {V:vector N} {I} {X} {VP}
+	forall	{G: set V I X VP}
+	exists	{GT: nat`gt N I}
+	true.
+
+- : set-implies-gt set/0 GT
+    <- succ-implies-gt-zero _ GT.
+
+- : set-implies-gt (set/+ G) GT
+    <- set-implies-gt G GT'
+    <- succ-preserves-gt GT' GT.
+
+%worlds () (set-implies-gt _ _).
+%total (G) (set-implies-gt G _).
+
+
+%theorem gt-implies-set*:
+	forall* {N} {V:vector N} {X}
+	forall	{I} {GT: nat`gt N I}
+	exists	{VP} {G: set V I X VP}
+	true.
+
+%abbrev gt-implies-set : (nat`gt N I) -> (set V I X VP) -> type
+	= [GT] [S] gt-implies-set* _ GT _ S.
+
+- : gt-implies-set* nat`z _ _ set/0.
+
+- : gt-implies-set* (nat`s I) N+1>I+1 _ (set/+ S)
+    <- succ-preserves-gt-converse N+1>I+1 N>I
+    <- gt-implies-set* I N>I _ S.
+
+%worlds () (gt-implies-set* _ _ _ _).
+%total (I) (gt-implies-set* I _ _ _).
+
+
+%theorem set-idempotent:
+	forall* {N} {V: vector N} {I} {X} {VP}
+	forall	{S: set V I X VP}
+	exists	{S: set VP I X VP}
+	true.
+
+- : set-idempotent set/0 set/0.
+
+- : set-idempotent (set/+ S) (set/+ SP)
+    <- set-idempotent S SP.
+
+%worlds () (set-idempotent _ _).
+%total (S) (set-idempotent S _).
+
+	
+%theorem set-implies-get:
+	forall* {N} {V: vector N} {I} {X} {VP}
+	forall	{S: set V I X VP}
+	exists	{G: get VP I X}
+	true.
+
+- : set-implies-get set/0 get/0.
+
+- : set-implies-get (set/+ S) (get/+ G)
+    <- set-implies-get S G.
+
+%worlds () (set-implies-get _ _).
+%total (S) (set-implies-get S _).
+
+
+%theorem set-overwrites:
+	forall* {N} {V: vector N} {I} {X1} {V1} {X2} {V2}
+	forall	{S1: set V I X1 V1}
+		{S2: set V1 I X2 V2}
+	exists	{S12: set V I X2 V2}
+	true.
+
+- : set-overwrites set/0 set/0 set/0.
+
+- : set-overwrites (set/+ S1) (set/+ S2) (set/+ S12)
+    <- set-overwrites S1 S2 S12.
+
+%worlds () (set-overwrites _ _ _).
+%total (S) (set-overwrites S _ _).
+
+
+%theorem set-preserves-get:
+	forall*	{N} {V1:vector N} {I1} {X1} {I2} {X2} {V2}
+	forall	{G: get V1 I1 X1}
+		{S: set V1 I2 X2 V2}
+		{N: nat`ne I1 I2}
+	exists	{G: get V2 I1 X1}
+	true.
+
+- : set-preserves-get get/0 set/0 Z<>Z G
+    <- nat`eq-ne-implies-false nat`eq/ Z<>Z F
+    <- false-implies-get F G.
+
+- : set-preserves-get get/0 (set/+ S) _ get/0.
+
+- : set-preserves-get (get/+ G) set/0 _ (get/+ G).
+
+- : set-preserves-get (get/+ G) (set/+ S) I1+1<>I2+1 (get/+ G')
+    <- nat`succ-preserves-ne-converse I1+1<>I2+1 I1<>I2
+    <- set-preserves-get G S I1<>I2 G'.
+
+%worlds () (set-preserves-get _ _ _ _).
+%total (G) (set-preserves-get G _ _ _).
+
+
+%theorem set-preserves-get-converse:
+	forall*	{N} {V1:vector N} {I1} {X1} {I2} {X2} {V2}
+	forall	{G: get V2 I1 X1}
+		{S: set V1 I2 X2 V2}
+		{N: nat`ne I1 I2}
+	exists	{G: get V1 I1 X1}
+	true.
+
+- : set-preserves-get-converse get/0 set/0 Z<>Z G
+    <- nat`eq-ne-implies-false nat`eq/ Z<>Z F
+    <- false-implies-get F G.
+
+- : set-preserves-get-converse get/0 (set/+ S) _ get/0.
+
+- : set-preserves-get-converse (get/+ G) set/0 _ (get/+ G).
+
+- : set-preserves-get-converse (get/+ G) (set/+ S) I1+1<>I2+1 (get/+ G')
+    <- nat`succ-preserves-ne-converse I1+1<>I2+1 I1<>I2
+    <- set-preserves-get-converse G S I1<>I2 G'.
+
+%worlds () (set-preserves-get-converse _ _ _ _).
+%total (G) (set-preserves-get-converse G _ _ _).
+
+
+
+%{%
+#ifdef DATA_ARITH
+%}%
 
 %%% Theorems about add
 
@@ -1264,5 +1587,5 @@ dot/+ :
 
 %{%
 #endif
+#endif
 %}%
-
