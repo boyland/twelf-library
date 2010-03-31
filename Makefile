@@ -94,10 +94,15 @@ multiset.elf : ${MSETSRC} ${MAPSRC}
 # Distribution:
 
 DIST = www/.
-DISTFILES = std.elf bool.elf pair.elf \
-            nat.elf natpair.elf rat.elf map.elf set.elf multiset.elf \
-	    rat0.elf natvector.elf rat0vector.elf \
-            map.tgz source.tgz
+DISTELF = std.elf bool.elf pair.elf \
+            nat.elf natpair.elf rat.elf set.elf multiset.elf \
+	    rat0.elf natvector.elf rat0vector.elf
+
+DISTFILES = ${DISTELF} map.elf \
+            library.tgz map.tgz source.tgz
+
+library.tgz : sources.cfg ${DISTELF}
+	tar cvf - sources.cfg ${DISTELF} | gzip > $@
 
 map.tgz : ${MAP} ${MAP_MORE}
 	tar cvf - ${MAP} ${MAP_MORE} | gzip > map.tgz
