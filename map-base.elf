@@ -1251,6 +1251,20 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %abbrev size-total = size-total* _ _.
 
 
+%theorem size-respects-eq :
+	forall* {M1} {M2} {N1} {N2}
+	forall  {SZ1:size M1 N1} 
+		{EM:eq M1 M2}
+        	{EN:nat`eq N1 N2}
+	exists	{SZ2:size M2 N2} 
+	true.
+
+- : size-respects-eq S eq/ nat`eq/ S.
+
+%worlds () (size-respects-eq _ _ _ _).
+%total { } (size-respects-eq _ _ _ _).
+
+
 %theorem size-deterministic :
 	forall* {M1} {M2} {N1} {N2}
 	forall {SZ1:size M1 N1} {SZ2:size M2 N2} {EM:eq M1 M2}
@@ -2387,6 +2401,30 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 %total { } (shift-preserves-update-converse _ _ _ _ _ _).
 
 
+%theorem fresh-update-increases-size :
+	forall* {M1} {S} {N} {D} {M2}
+	forall	{S1: size M1 S}
+		{F: fresh M1 N}
+		{U: update M1 N D M2}
+	exists	{S2: size M2 (s S)}
+	true.
+
+- : fresh-update-increases-size size/0 fresh/0 update/0 (size/+ size/0).
+
+- : fresh-update-increases-size (size/+ S) (fresh/< G) U S'
+    <- gt-implies-plus G _ P
+    <- update/<-inversion U P E
+    <- size-respects-eq (size/+ (size/+ S)) E nat`eq/ S'.
+
+- : fresh-update-increases-size (size/+ S) (fresh/> F P) U S''
+    <- update/>-inversion U P _ U' E
+    <- fresh-update-increases-size S F U' S'
+    <- size-respects-eq (size/+ S') E nat`eq/ S''.
+
+%worlds () (fresh-update-increases-size _ _ _ _).
+%total (F) (fresh-update-increases-size F _ _ _).
+
+				       
 %theorem fresh-update-preserves-disjoint :
 	forall* {M1} {M2} {N} {D} {M2'}
 	forall	{I: disjoint M1 M2}
