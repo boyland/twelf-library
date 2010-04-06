@@ -55,7 +55,7 @@ clean :
 
 CAT = cat
 # The C preprocessor (not C++ compiler!)
-CPP = cpp -DBEGIN_ELF="%}%" -DEND_ELF="%{%"
+CPP = /lib/cpp -DBEGIN_ELF="%}%" -DEND_ELF="%{%"
 REC = ./remove-empty-comments.pl
 GN = ./get-names.pl
 
