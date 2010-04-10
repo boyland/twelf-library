@@ -222,6 +222,26 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 %worlds () (meet-implies-ge _ _ _).
 %total (A) (meet-implies-ge A _ _).
 
+
+%theorem meet-empty-implies-disjoint :
+	forall* {M1} {M2}
+	forall	{A: meet M1 M2 map/0}
+	exists	{D: disjoint M1 M2}
+	true.
+
+- : meet-empty-implies-disjoint (meet/L) (disjoint/L).
+
+- : meet-empty-implies-disjoint (meet/R) (disjoint/R).
+
+- : meet-empty-implies-disjoint (meet/< shift/0 A P) (disjoint/< D P)
+    <- meet-empty-implies-disjoint A D.
+
+- : meet-empty-implies-disjoint (meet/> shift/0 A P) (disjoint/> D P)
+    <- meet-empty-implies-disjoint A D.
+
+%worlds () (meet-empty-implies-disjoint _ _).
+%total (A) (meet-empty-implies-disjoint A _).
+
 %{%
 #ifdef DATA_MEET_DETERMINISTIC
 %}%
