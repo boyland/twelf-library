@@ -55,12 +55,13 @@ clean :
 
 CAT = cat
 # The C preprocessor (not C++ compiler!)
-CPP = /lib/cpp -DBEGIN_ELF="%}%" -DEND_ELF="%{%"
+CPP = /lib/cpp 
+CPPFLAGS= -DBEGIN_ELF="%}%" -DEND_ELF="%{%"
 REC = ./remove-empty-comments.pl
 GN = ./get-names.pl
 
 %.elf : %.cpp
-	${CPP} $*.cpp | ${REC} > $$$$.elf; \
+	${CPP} ${CPPFLAGS} $*.cpp | ${REC} > $$$$.elf; \
 	${GN} $* $$$$.elf | ${CAT} $$$$.elf - > $*.elf; \
 	rm $$$$.elf
 
