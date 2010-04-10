@@ -371,7 +371,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 
 %{%
 #endif /* DATA_MEET_TOTAL_STAR */ 
-%{%
+%}%
 
 %theorem disjoint-meet-empty :
 	forall* {M1} {M2}
@@ -394,7 +394,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 %worlds () (disjoint-meet-empty _ _).
 %total (D) (disjoint-meet-empty D _).
 
-%}%
+%{%
 #ifdef DATA_MEET_COMMUTATIVE
 %}%
 
