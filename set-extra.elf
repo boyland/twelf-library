@@ -165,3 +165,85 @@ END_ELF
 
 %worlds () (union-preserves-disjoint-converse _ _ _ _).
 %total { } (union-preserves-disjoint-converse _ _ _ _).
+
+
+
+%%% Theorems about size, union and intersection
+
+
+%theorem union-intersection-size :
+	forall*	{S1} {S2} {S3} {S4} {N1} {N2} {N3} {N4} {N}
+	forall	{U: union S1 S2 S3}
+		{I: intersection S1 S2 S4}
+		{SZ1: size S1 N1}
+		{SZ2: size S2 N2}
+		{SZ3: size S3 N3}
+		{SZ4: size S4 N4}
+		{P12: plus N1 N2 N}
+	exists	{P34: plus N3 N4 N}
+	true.
+
+- : union-intersection-size 
+	(union/L) (intersection/L) 
+	size/0 SZ2 SZ3 size/0 
+	plus/z P
+    <- plus-right-identity _ P'
+    <- size-deterministic SZ2 SZ3 eq/ N2=N3
+    <- plus-respects-eq P' N2=N3 nat`eq/ nat`eq/ P.
+
+- : union-intersection-size
+	union/L intersection/R
+	size/0 size/0 size/0 size/0
+        plus/z plus/z.
+
+- : union-intersection-size
+	union/R intersection/L
+	size/0 size/0 size/0 size/0
+        plus/z plus/z.
+
+- : union-intersection-size
+	union/R intersection/R
+	SZ1 size/0 SZ3 size/0
+	N1+0=N N3+0=N
+    <- size-deterministic SZ1 SZ3 eq/ N1=N3
+    <- plus-respects-eq N1+0=N N1=N3 nat`eq/ nat`eq/ N3+0=N.
+
+- : union-intersection-size
+	(union/= U12 unit`union/ nat`eq/) I
+        (size/+ SZ1) (size/+ SZ2) (size/+ SZ3) (SZ444: size S444 N444)
+        (plus/s N1+SN2=N) SN3+N444=SN
+    <- intersection/=-inversion I nat`eq/ _ _ unit`union/ I12 E
+    <- plus-total N1+N2=N-1
+    <- size-total SZ4
+    <- union-intersection-size U12 I12 SZ1 SZ2 SZ3 SZ4 N1+N2=N-1 N3+N4=N-1
+    <- plus-swap-succ (plus/s N1+N2=N-1) N1+SN2=SN-1
+    <- plus-swap-succ (plus/s N3+N4=N-1) N3+SN4=SN-1
+    <- plus-deterministic N1+SN2=SN-1 N1+SN2=N nat`eq/ nat`eq/ SN-1=N
+    <- plus-respects-eq N3+SN4=SN-1 nat`eq/ nat`eq/ SN-1=N N3+SN4=N
+    <- size-deterministic (size/+ SZ4) SZ444 E SN4=N444
+    <- plus-respects-eq (plus/s N3+SN4=N) nat`eq/ SN4=N444 nat`eq/ SN3+N444=SN.
+
+- : union-intersection-size
+	(union/< U103 SN0+N1=N2) I
+	(size/+ SZ1) (size/+ SZ2) (size/+ SZ3) (SZ444:size S444 N4)
+	(plus/s N1+SN2=N) (plus/s N3+N4=N)
+    <- intersection/<-inversion I SN0+N1=N2 S4 I104 S4<<N1=S444
+    <- shift-preserves-size-converse SZ444 S4<<N1=S444 SZ4
+    <- union-intersection-size 
+	U103 I104 SZ1 (size/+ SZ2) SZ3 SZ4 N1+SN2=N N3+N4=N.
+
+- : union-intersection-size
+	(union/> U023 SN0+N2=N1) I
+	(size/+ SZ1) (size/+ SZ2) (size/+ SZ3) (SZ444:size S444 N4)
+	(plus/s N1+SN2=N) (plus/s N3+N4=N)
+    <- intersection/>-inversion I SN0+N2=N1 S4 I024 S4<<N2=S444
+    <- shift-preserves-size-converse SZ444 S4<<N2=S444 SZ4
+    <- plus-swap-succ-converse N1+SN2=N SN1+N2=N
+    <- union-intersection-size 
+	U023 I024 (size/+ SZ1) SZ2 SZ3 SZ4 SN1+N2=N N3+N4=N.
+
+%worlds () (union-intersection-size _ _ _ _ _ _ _ _).
+%total (U) (union-intersection-size U _ _ _ _ _ _ _).
+
+
+
