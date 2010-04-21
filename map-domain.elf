@@ -1,0 +1,591 @@
+%%%% Map domain
+
+%{%
+We define the domain of a map as a set.
+This functor can be used with any "map" type.
+It should be included after "map-base.elf".
+For theorems connecting domains with join and add,
+please see the corresponding files.
+%}%
+
+
+
+%%% Definition of domain
+
+
+domain : map -> set -> type.
+
+
+domain/0 : domain map/0 set`map/0.
+
+domain/+ : domain M S ->
+	domain (map/+ N _ M) (set`map/+ N unit/ S).
+
+%worlds () (domain _ _).
+%unique domain +M -1S.
+
+
+
+%%% Theorems about domain
+
+
+%theorem false-implies-domain :
+	forall* {M} {S}
+	forall {F:void}
+	exists {D:domain M S}
+	true.
+
+%worlds () (false-implies-domain _ _).
+%total {} (false-implies-domain _ _).
+
+
+%theorem domain-respects-eq :
+	forall* {M1} {M2} {S1} {S2}
+	forall {A1:domain M1 S1} {E1:eq M1 M2} {E2:set`eq S1 S2}
+	exists {A2:domain M2 S2}
+	true.
+
+- : domain-respects-eq A eq/ set`eq/ A.
+
+%worlds () (domain-respects-eq _ _ _ _).
+%total {} (domain-respects-eq _ _ _ _).
+%reduces A = AP (domain-respects-eq A _ _ AP).
+
+
+%theorem domain-deterministic :
+	forall* {M1} {M2} {S1} {S2}
+	forall  {A1:domain M1 S1}
+		{A2:domain M2 S2}
+                {E1:eq M1 M2}
+	exists	{E3:set`eq S1 S2}
+	true.
+
+- : domain-deterministic domain/0 domain/0 eq/ set`eq/.
+
+- : domain-deterministic (domain/+ D1) (domain/+ D2) eq/ SE'
+    <- domain-deterministic D1 D2 eq/ SE
+    <- set`map/+-preserves-eq nat`eq/ unit`eq/ SE SE'.
+
+%worlds () (domain-deterministic _ _ _ _).
+%total (A) (domain-deterministic A _ _ _).
+
+
+%theorem domain-total* :
+	forall {M}
+	exists {S} {A:domain M S}
+	true.
+
+%abbrev domain-total = domain-total* _ _.
+
+- : domain-total domain/0.
+
+- : domain-total* _ (set/+ _ _) (domain/+ D)
+    <- domain-total D.
+
+%worlds () (domain-total* _ _ _).
+
+%total (M) (domain-total* M _ _).
+
+
+%theorem domain-empty-implies-empty :
+	forall* {M}
+	forall {A:domain M set`set/0}
+	exists {E1:eq M map/0}
+	true.
+
+- : domain-empty-implies-empty domain/0 eq/.
+
+%worlds () (domain-empty-implies-empty _ _).
+%total { } (domain-empty-implies-empty _ _).
+
+
+%theorem domain-preserves-lookup :
+	forall* {M} {S} {I} {D}
+	forall	{DM: lookup M I D}
+		{D: domain M S}
+	exists	{SM: set`lookup S I unit/}
+	true.
+
+- : domain-preserves-lookup 
+	(lookup/= nat`eq/) (domain/+ _) 
+	(set`lookup/= nat`eq/).
+
+- : domain-preserves-lookup
+	(lookup/> ML P) (domain/+ D)
+	(set`lookup/> MS P)
+    <- domain-preserves-lookup ML D MS.
+
+%worlds () (domain-preserves-lookup _ _ _).
+%total (L) (domain-preserves-lookup L _ _).
+
+
+
+%theorem domain-preserves-lookup-converse :
+	forall* {M} {S} {I}
+	forall	{SM: set`lookup S I unit/}
+		{D: domain M S}
+	exists	{D} {DM: lookup M I D}
+	true.
+
+- : domain-preserves-lookup-converse
+	(set`lookup/= nat`eq/) (domain/+ _) _
+	(lookup/= nat`eq/).
+
+- : domain-preserves-lookup-converse
+	(set`lookup/> SL P) (domain/+ D) _
+	(lookup/> ML P)
+    <- domain-preserves-lookup-converse SL D _ ML.
+
+%worlds () (domain-preserves-lookup-converse _ _ _ _).
+%total (L) (domain-preserves-lookup-converse L _ _ _).
+
+
+
+%theorem domain-preserves-fresh :
+	forall* {M} {S} {I}
+	forall	{DM: fresh M I}
+		{D: domain M S}
+	exists	{SM: set`not-member S I}
+	true.
+
+- : domain-preserves-fresh 
+	(fresh/0) domain/0
+	(set`not-member/0).
+
+- : domain-preserves-fresh
+	(fresh/< P) (domain/+ _)
+	(set`not-member/< P).
+
+- : domain-preserves-fresh
+	(fresh/> ML P) (domain/+ D)
+	(set`not-member/> MS P)
+    <- domain-preserves-fresh ML D MS.
+
+%worlds () (domain-preserves-fresh _ _ _).
+%total (L) (domain-preserves-fresh L _ _).
+
+
+
+%theorem domain-preserves-fresh-converse :
+	forall* {M} {S} {I}
+	forall	{SM: set`not-member S I}
+		{D: domain M S}
+	exists	{DM: fresh M I}
+	true.
+
+- : domain-preserves-fresh-converse
+	(set`not-member/0) domain/0
+	(fresh/0).
+
+- : domain-preserves-fresh-converse
+	(set`not-member/< G) (domain/+ _)
+	(fresh/< G).
+
+- : domain-preserves-fresh-converse
+	(set`not-member/> SL P) (domain/+ D)
+	(fresh/> ML P)
+    <- domain-preserves-fresh-converse SL D ML.
+
+%worlds () (domain-preserves-fresh-converse _ _ _).
+%total (L) (domain-preserves-fresh-converse L _ _).
+
+
+%theorem domain-preserves-domain? :
+	forall* {M} {S} {I} {B}
+	forall	{DM: domain? M I B}
+		{D: domain M S}
+	exists	{SM: set`member? S I B}
+	true.
+
+- : domain-preserves-domain? (domain?/in ML) D (set`member?/in SL)
+    <- domain-preserves-lookup ML D SL.
+
+- : domain-preserves-domain? (domain?/out MF) D (set`member?/out SF)
+    <- domain-preserves-fresh MF D SF.
+
+%worlds () (domain-preserves-domain? _ _ _).
+%total { } (domain-preserves-domain? _ _ _).
+
+
+%theorem domain-preserves-domain?-converse:
+	forall* {M} {S} {I} {B}
+	forall	{SM: set`member? S I B}
+		{D: domain M S}
+	exists	{DM: domain? M I B}
+	true.
+
+- : domain-preserves-domain?-converse (set`member?/in SL) D (domain?/in ML)
+    <- domain-preserves-lookup-converse SL D _ ML.
+
+- : domain-preserves-domain?-converse (set`member?/out SF) D (domain?/out MF)
+    <- domain-preserves-fresh-converse SF D MF.
+
+%worlds () (domain-preserves-domain?-converse _ _ _).
+%total { } (domain-preserves-domain?-converse _ _ _).
+					     
+
+%theorem domain-preserves-size :
+	forall* {M} {N} {S}
+	forall	{MS: size M N}
+		{D: domain M S}
+	exists	{SS: set`size S N}
+	true.
+
+- : domain-preserves-size (size/0) domain/0 (set`size/0).
+
+- : domain-preserves-size (size/+ MS) (domain/+ D) (set`size/+ SS)
+    <- domain-preserves-size MS D SS.
+
+%worlds () (domain-preserves-size _ _ _).
+%total (D) (domain-preserves-size _ D _).
+
+
+%theorem domain-preserves-size-converse :
+	forall* {M} {N} {S}
+	forall	{SS: set`size S N}
+		{D: domain M S}
+	exists	{MS: size M N}
+	true.
+
+- : domain-preserves-size-converse (set`size/0) domain/0 (size/0).
+
+- : domain-preserves-size-converse (set`size/+ SS) (domain/+ D) (size/+ MS)
+    <- domain-preserves-size-converse SS D MS.
+
+%worlds () (domain-preserves-size-converse _ _ _).
+%total (D) (domain-preserves-size-converse _ D _).
+
+
+%theorem domain-preserves-bound :
+	forall* {M} {N} {S}
+	forall	{MS: bound M N}
+		{D: domain M S}
+	exists	{SS: set`bound S N}
+	true.
+
+- : domain-preserves-bound (bound/0) domain/0 (set`bound/0).
+
+- : domain-preserves-bound (bound/+ P MS) (domain/+ D) (set`bound/+ P SS)
+    <- domain-preserves-bound MS D SS.
+
+%worlds () (domain-preserves-bound _ _ _).
+%total (D) (domain-preserves-bound _ D _).
+
+
+%theorem domain-preserves-bound-converse :
+	forall* {M} {N} {S}
+	forall	{SS: set`bound S N}
+		{D: domain M S}
+	exists	{MS: bound M N}
+	true.
+
+- : domain-preserves-bound-converse (set`bound/0) domain/0 (bound/0).
+
+- : domain-preserves-bound-converse 
+	(set`bound/+ P SS) (domain/+ D) (bound/+ P MS)
+    <- domain-preserves-bound-converse SS D MS.
+
+%worlds () (domain-preserves-bound-converse _ _ _).
+%total (D) (domain-preserves-bound-converse _ D _).
+
+
+%theorem shift-preserves-domain* :
+	forall* {N} {M1} {M2} {S1} {S2}
+	forall  {D1:domain M1 S1}
+		{S:shift N M1 M2}
+		{S:set`shift N S1 S2}
+        exists  {D2:domain M2 S2}
+        true.
+
+- : shift-preserves-domain* domain/0 shift/0 set`shift/0 domain/0.
+
+- : shift-preserves-domain* 
+	(domain/+ D1) (shift/+ P1) (set`shift/+ P2) D2
+    <- plus-deterministic P1 P2 nat`eq/ nat`eq/ N1=N2
+    <- set`map/+-preserves-eq N1=N2 unit`eq/ set`eq/ S1=S2
+    <- domain-respects-eq (domain/+ D1) eq/ S1=S2 D2.
+
+%worlds () (shift-preserves-domain* _ _ _ _).
+%total { } (shift-preserves-domain* _ _ _ _).
+
+
+%theorem shift-preserves-domain :
+	forall* {N} {M1} {M2} {S1}
+	forall  {D1:domain M1 S1}
+		{S:shift N M1 M2}
+	exists	{S2}
+		{S:set`shift N S1 S2}
+        	{D2:domain M2 S2}
+        true.
+
+- : shift-preserves-domain D1 S _ SS D2
+    <- set`shift-total SS
+    <- shift-preserves-domain* D1 S SS D2.
+
+%worlds () (shift-preserves-domain _ _ _ _ _).
+%total { } (shift-preserves-domain _ _ _ _ _).
+
+
+%theorem shift-preserves-domain-converse :
+	forall* {N} {M1} {M2} {S1} {S2}
+	forall  {D1:domain M2 S2}
+		{S:shift N M1 M2}
+		{S:set`shift N S1 S2}
+        exists  {D2:domain M1 S1}
+        true.
+
+%abbrev shift-preserves-domain-converse* = shift-preserves-domain-converse.
+
+- : shift-preserves-domain-converse domain/0 shift/0 set`shift/0 domain/0.
+
+- : shift-preserves-domain-converse
+	(domain/+ D1) (shift/+ P1) (set`shift/+ P2) D2
+    <- plus-left-cancels P1 P2 nat`eq/ nat`eq/ N1=N2
+    <- set`map/+-preserves-eq N1=N2 unit`eq/ set`eq/ S1=S2
+    <- domain-respects-eq (domain/+ D1) eq/ S1=S2 D2.
+
+%worlds () (shift-preserves-domain-converse _ _ _ _).
+%total { } (shift-preserves-domain-converse _ _ _ _).
+
+
+%abbrev domain-commute-shift = shift-preserves-domain*.
+
+%theorem shift-commute-domain :
+	forall*	{N} {M1} {M2} {S1} {S2}
+	forall	{MS: shift N M1 M2}
+		{D1: domain M1 S1}
+		{D2: domain M2 S2}
+	exists	{SS: set`shift N S1 S2}
+	true.
+
+- : shift-commute-domain shift/0 domain/0 domain/0 set`shift/0.
+
+- : shift-commute-domain (shift/+ P) (domain/+ D1) (domain/+ D2) (set`shift/+ P).
+
+%worlds () (shift-commute-domain _ _ _ _).
+%total { } (shift-commute-domain _ _ _ _).
+
+
+%theorem update-commute-domain:
+	forall*	{M1} {N} {D} {M2} {S1} {S2}
+	forall	{U1: update M1 N D M2}
+		{D1: domain M1 S1}
+		{D2: domain M2 S2}
+	exists	{U2: set`add S1 N S2}
+	true.
+
+- : update-commute-domain (update/0) domain/0 (domain/+ domain/0)
+	(set`update/0).
+
+% NB: we can't use %unique for coverage for both this and the next case.
+- : update-commute-domain (update/= nat`eq/) (domain/+ D1) (domain/+ D2) SU
+    <- domain-deterministic D1 D2 eq/ S1=S2
+    <- set`map/+-preserves-eq nat`eq/ unit`eq/ S1=S2 SE
+    <- set`add-respects-eq 
+	(set`update/= nat`eq/) set`eq/ nat`eq/ unit`eq/ SE SU.
+
+% depends on %unique for coverage.
+- : update-commute-domain (update/< P) (domain/+ _) (domain/+ (domain/+ _))
+	(set`update/< P).
+
+- : update-commute-domain (update/> U1 P) (domain/+ D1) (domain/+ D2)
+	(set`update/> U2 P)
+    <- update-commute-domain U1 D1 D2 U2.
+
+%worlds () (update-commute-domain _ _ _ _).
+%total (U) (update-commute-domain U _ _ _).
+
+
+%theorem domain-commute-update:
+	forall*	{M1} {N} {D} {M2} {S1} {S2}
+	forall	{D1: domain M1 S1}
+		{U1: update M1 N D M2}
+		{U2: set`add S1 N S2}
+	exists	{D2: domain M2 S2}
+	true.
+
+- : domain-commute-update domain/0 update/0 set`update/0 (domain/+ domain/0).
+
+- : domain-commute-update (domain/+ D) U1 (set`update/= nat`eq/) D2
+    <- update/=-inversion U1 nat`eq/ ME
+    <- domain-respects-eq (domain/+ D) ME set`eq/ D2.
+
+- : domain-commute-update (domain/+ D) U1 (set`update/< P) D2
+    <- update/<-inversion U1 P ME
+    <- domain-respects-eq (domain/+ (domain/+ D)) ME set`eq/ D2.
+
+- : domain-commute-update (domain/+ D) U1 (set`update/> SA P) D2P
+    <- update/>-inversion U1 P _ U ME
+    <- domain-commute-update D U SA D2
+    <- domain-respects-eq (domain/+ D2) ME set`eq/ D2P.
+
+%worlds () (domain-commute-update _ _ _ _).
+%total (U) (domain-commute-update U _ _ _).
+
+%{%
+#ifdef MAP_LEQ
+%}%
+
+%theorem domain-preserves-leq*:
+	forall*	{M1} {M2} {S1} {S2}
+	forall	{U1: leq M1 M2}
+		{D1: domain M1 S1}
+		{D2: domain M2 S2}
+	exists	{U2: set`leq S1 S2}
+	true.
+
+- : domain-preserves-leq* leq/0 domain/0 _ set`leq/0.
+
+- : domain-preserves-leq* (leq/= L1 _ nat`eq/) (domain/+ D1) (domain/+ D2) 
+	(set`leq/= L2 unit`eq/ nat`eq/)
+    <- domain-preserves-leq* L1 D1 D2 L2.
+
+- : domain-preserves-leq* (leq/> L1 P) (domain/+ D1) (domain/+ D2)
+	(set`leq/> L2 P)
+    <- domain-preserves-leq* L1 (domain/+ D1) D2 L2.
+
+%worlds () (domain-preserves-leq* _ _ _ _).
+%total (L) (domain-preserves-leq* L _ _ _).
+
+
+%theorem domain-preserves-leq:
+	forall*	{M1} {M2} {S1}
+	forall	{L1: leq M1 M2}
+		{D1: domain M1 S1}
+	exists	{S2}
+		{D2: domain M2 S2}
+		{L2: set`leq S1 S2}
+	true.
+
+- : domain-preserves-leq L1 D1 _ D2 L2
+    <- domain-total D2
+    <- domain-preserves-leq* L1 D1 D2 L2.
+
+%worlds () (domain-preserves-leq _ _ _ _ _).
+%total { } (domain-preserves-leq _ _ _ _ _).
+
+%{%
+#endif /* MAP_LEQ */
+#ifdef DATA_JOIN
+%}%
+
+%theorem join-commute-domain:
+	forall* {M1} {M2} {M3} {S1} {S2} {S3}
+	forall	{J1: join M1 M2 M3}
+		{D1: domain M1 S1}
+		{D2: domain M2 S2}
+		{D3: domain M3 S3}
+	exists	{J2: set`union S1 S2 S3}
+	true.
+
+- : join-commute-domain join/L domain/0 D2 D3 J2
+    <- domain-deterministic D2 D3 eq/ S2=S3
+    <- set`union-respects-eq set`union/L set`eq/ set`eq/ S2=S3 J2.
+
+- : join-commute-domain join/R D1 domain/0 D3 J2
+    <- domain-deterministic D1 D3 eq/ S1=S3
+    <- set`union-respects-eq set`union/R set`eq/ set`eq/ S1=S3 J2.
+
+- : join-commute-domain 
+	(join/= J1 _ nat`eq/) 
+	(domain/+ D1) (domain/+ D2) (domain/+ D3)
+	(set`union/= U1 nat`eq/)
+    <- join-commute-domain J1 D1 D2 D3 U1.
+
+- : join-commute-domain
+	(join/< J P)
+	(domain/+ D1) (domain/+ D2) (domain/+ D3)
+	(set`union/< U P)
+    <- join-commute-domain J D1 (domain/+ D2) D3 U.
+
+- : join-commute-domain
+	(join/> J P)
+	(domain/+ D1) (domain/+ D2) (domain/+ D3)
+	(set`union/> U P)
+    <- join-commute-domain J (domain/+ D1) D2 D3 U.
+
+%worlds () (join-commute-domain _ _ _ _ _).
+%total (J) (join-commute-domain J _ _ _ _).
+
+%{%
+#endif /* MAPA_JOIN */
+#ifdef MAP_MEET
+%}%
+
+%theorem meet-commute-domain:
+	forall* {M1} {M2} {M3} {S1} {S2} {S3}
+	forall	{J1: meet M1 M2 M3}
+		{D1: domain M1 S1}
+		{D2: domain M2 S2}
+		{D3: domain M3 S3}
+	exists	{J2: set`intersection S1 S2 S3}
+	true.
+
+- : meet-commute-domain meet/L domain/0 D2 domain/0 set`intersection/L.
+
+- : meet-commute-domain meet/R D1 domain/0 domain/0 set`intersection/R.
+
+- : meet-commute-domain 
+	(meet/= J1 _ nat`eq/) 
+	(domain/+ D1) (domain/+ D2) (domain/+ D3)
+	(set`intersection/= U1 nat`eq/)
+    <- meet-commute-domain J1 D1 D2 D3 U1.
+
+- : meet-commute-domain
+	(meet/< MS J P)
+	(domain/+ (D1:domain M1 S1)) (domain/+ (D2:domain M2 S2)) SD3
+	(set`intersection/< SS U P)
+    <- domain-total D3
+    <- meet-commute-domain J D1 (domain/+ D2) D3 U
+    <- shift-commute-domain MS D3 SD3 SS.
+
+- : meet-commute-domain
+	(meet/> MS J P)
+	(domain/+ D1) (domain/+ D2) SD3
+	(set`intersection/> SS U P)
+    <- domain-total D3
+    <- meet-commute-domain J (domain/+ D1) D2 D3 U
+    <- shift-commute-domain MS D3 SD3 SS.
+
+%worlds () (meet-commute-domain _ _ _ _ _).
+%total (J) (meet-commute-domain J _ _ _ _).
+
+%{%
+#endif /* MAP_MEET */
+#ifdef MAP_SCALE
+%}%
+
+%theorem scale-preserves-domain:
+	forall* {M1} {M2} {S}
+	forall	{D1: domain M1 S}
+		{MS: scale X M1 M2}
+	exists	{D2: domain M2 S}
+	true.
+
+- : scale-preserves-domain domain/0 scale/0 domain/0.
+
+- : scale-preserves-domain (domain/+ D1) (scale/+ S) (domain/+ D2)
+    <- scale-preserves-domain D1 S D2.
+
+%worlds () (scale-preserves-domain _ _ _).
+%total (D) (scale-preserves-domain D _ _).
+
+
+%theorem scale-preserves-domain-converse:
+	forall* {M1} {M2} {S}
+	forall	{D1: domain M2 S}
+		{MS: scale X M1 M2}
+	exists	{D2: domain M1 S}
+	true.
+
+- : scale-preserves-domain-converse domain/0 scale/0 domain/0.
+
+- : scale-preserves-domain-converse (domain/+ D1) (scale/+ S) (domain/+ D2)
+    <- scale-preserves-domain-converse D1 S D2.
+
+%worlds () (scale-preserves-domain-converse _ _ _).
+%total (D) (scale-preserves-domain-converse D _ _).
+
+%{%
+#endif /* MAP_SCALE */
+%}%
