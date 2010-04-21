@@ -24,10 +24,7 @@ BEGIN_ELF
 #include "map-base.elf"
 #include "map-leq.elf"
 #include "map-join.elf"
-#include "map-join-leq.elf"
 #include "map-meet.elf"
-#include "map-meet-leq.elf"
-#include "map-meet-join.elf"
 END_ELF
 %}%
 
