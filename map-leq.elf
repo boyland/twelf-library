@@ -7,6 +7,7 @@
   * data`leq-anti-symmetric
   * data`leq-transitive
   */
+#define MAP_LEQ 1
 %}%
 
 
@@ -85,9 +86,9 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
 
 
 %theorem leq-respects-eq :
-	forall* {M1} {M2} {M1'} {M2'}
-	forall {L:leq M1 M2} {E1:eq M1 M1'} {E2:eq M2 M2'}
-	exists {LP:leq M1' M2'}
+	forall* {M1} {M2} {M1P} {M2P}
+	forall {L:leq M1 M2} {E1:eq M1 M1P} {E2:eq M2 M2P}
+	exists {LP:leq M1P M2P}
 	true.
 
 - : leq-respects-eq L eq/ eq/ L.
@@ -142,11 +143,11 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
     <- false-implies-eq F M1=M311
     <- leq-respects-eq M1<=M2 M1=M311 eq/ M311<=M2.
 
-- : leq/>-inversion (leq/> M311'<=M2 N3P+1+N2=N1) N3+1+N2=N1 M311<=M2
+- : leq/>-inversion (leq/> M311P<=M2 N3P+1+N2=N1) N3+1+N2=N1 M311<=M2
     <- plus-right-cancels N3P+1+N2=N1 N3+1+N2=N1 nat`eq/ nat`eq/ N3P+1=N3+1
     <- succ-cancels N3P+1=N3+1 N3P=N3
-    <- map/+-preserves-eq N3P=N3 data`eq/ eq/ M311'=M311
-    <- leq-respects-eq M311'<=M2 M311'=M311 eq/ M311<=M2.
+    <- map/+-preserves-eq N3P=N3 data`eq/ eq/ M311P=M311
+    <- leq-respects-eq M311P<=M2 M311P=M311 eq/ M311<=M2.
 
 %worlds () (leq/>-inversion _ _ _).
 %total { } (leq/>-inversion _ _ _).
@@ -281,16 +282,16 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
     <- lookup-respects-leq (lookup/= nat`eq/) M311<=M2 D2 L13 D1<=D2.
 
 - : lookup-respects-leq (lookup/> L13 N3+1+N2=N1) (leq/= M1<=M2 _ nat`eq/)
-                        D2 (lookup/> L13' N3+1+N2=N1) D1<=D2
-    <- lookup-respects-leq L13 M1<=M2 D2 L13' D1<=D2.
+                        D2 (lookup/> L13P N3+1+N2=N1) D1<=D2
+    <- lookup-respects-leq L13 M1<=M2 D2 L13P D1<=D2.
 
 - : lookup-respects-leq (lookup/> L10 N0+1+N1=N) (leq/> M311<=M2 N3+1+N2=N1)
-                        D2 (lookup/> L14' N4+1+N2=N) D1<=D2
+                        D2 (lookup/> L14P N4+1+N2=N) D1<=D2
     <- nat`plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
     <- nat`plus-associative-converse N3+N2+1=N1 N0+1+N1=N 
                                      N4 N0+1+N3=N4 N4+N2+1=N
     <- nat`plus-swap-succ-converse N4+N2+1=N N4+1+N2=N
-    <- lookup-respects-leq (lookup/> L10 N0+1+N3=N4) M311<=M2 D2 L14' D1<=D2.
+    <- lookup-respects-leq (lookup/> L10 N0+1+N3=N4) M311<=M2 D2 L14P D1<=D2.
 
 %worlds () (lookup-respects-leq _ _ _ _ _).
 %total (L) (lookup-respects-leq _ L _ _ _).
@@ -319,11 +320,11 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
     {N3+1+N2=N1:plus (s N3) N2 N1}
     fresh-respects-geq 
        (fresh/> F20 N0+1+N2=N: fresh (map/+ N2 D2 M2) N) 
-       (leq/> M311<=M2 N3+1+N2=N1) F'
+       (leq/> M311<=M2 N3+1+N2=N1) FP
     <- fresh-respects-geq F20 M311<=M2 F3110
     <- nat`plus-swap-succ N0+1+N2=N N0+N2+1=N
     <- nat`plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
-    <- plus-right-preserves-fresh* F3110 N3+N2+1=N1 N0+N2+1=N F'.
+    <- plus-right-preserves-fresh* F3110 N3+N2+1=N1 N0+N2+1=N FP.
 
 %worlds () (fresh-respects-geq _ _ _).
 %total (F) (fresh-respects-geq F _ _).
@@ -398,10 +399,10 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
 
 - : shift-left-preserves-leq* _ shift/0 leq/0.
 
-- : shift-left-preserves-leq* M111<=M2 (shift/+ N+1+N1=N1') 
-                              (leq/> M111<=M2 N1+1+N=N1')
-    <- plus-swap-succ N+1+N1=N1' N+N1+1=N1'
-    <- plus-commutative N+N1+1=N1' N1+1+N=N1'.
+- : shift-left-preserves-leq* M111<=M2 (shift/+ N+1+N1=N1P) 
+                              (leq/> M111<=M2 N1+1+N=N1P)
+    <- plus-swap-succ N+1+N1=N1P N+N1+1=N1P
+    <- plus-commutative N+N1+1=N1P N1+1+N=N1P.
 
 %worlds () (shift-left-preserves-leq* _ _ _).
 %total { } (shift-left-preserves-leq* _ _ _).
@@ -417,29 +418,29 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
 - : shift-preserves-leq* _ shift/0 _ leq/0.
 
 - : shift-preserves-leq* (leq/= M1<=M2 D1<=D2 nat`eq/)
-                         (shift/+ N+1+N1=N1') 
-                         (shift/+ N+1+N1=N2')
-                         (leq/= M1<=M2 D1<=D2 N1'=N2')
-    <- plus-deterministic N+1+N1=N1' N+1+N1=N2' nat`eq/ nat`eq/ N1'=N2'.
+                         (shift/+ N+1+N1=N1P) 
+                         (shift/+ N+1+N1=N2P)
+                         (leq/= M1<=M2 D1<=D2 N1P=N2P)
+    <- plus-deterministic N+1+N1=N1P N+1+N1=N2P nat`eq/ nat`eq/ N1P=N2P.
 
 - : shift-preserves-leq* (leq/> M311<=M2 N3+1+N2=N1)
-                         (shift/+ N+1+N1=N1') 
-                         (shift/+ N+1+N2=N2')
-                         (leq/> M311<=M2 N3+1+N2'=N1')
+                         (shift/+ N+1+N1=N1P) 
+                         (shift/+ N+1+N2=N2P)
+                         (leq/> M311<=M2 N3+1+N2P=N1P)
     <- plus-commutative N3+1+N2=N1 N2+N3+1=N1
-    <- plus-associative-converse* N2+N3+1=N1 N+1+N1=N1' N+1+N2=N2' N2'+N3+1=N1'
-    <- plus-commutative N2'+N3+1=N1' N3+1+N2'=N1'.
+    <- plus-associative-converse* N2+N3+1=N1 N+1+N1=N1P N+1+N2=N2P N2P+N3+1=N1P
+    <- plus-commutative N2P+N3+1=N1P N3+1+N2P=N1P.
 
 %worlds () (shift-preserves-leq* _ _ _ _).
 %total { } (shift-preserves-leq* _ _ _ _).
 
 
 %theorem update-left-preserves-leq*:
-	forall* {M1} {M2} {N} {D} {M1'} {M2'}
+	forall* {M1} {M2} {N} {D} {M1P} {M2P}
 	forall {L:leq M1 M2} 
-               {U1:update M1 N D M1'}
-	       {U2:update M2 N D M2'}
-	exists {LP:leq M1' M2'}
+               {U1:update M1 N D M1P}
+	       {U2:update M2 N D M2P}
+	exists {LP:leq M1P M2P}
 	true.
 
 - : update-left-preserves-leq* leq/0 update/0 update/0 (leq/= leq/0 D<=D nat`eq/)
@@ -506,10 +507,10 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
                            (leq/= (leq/> M311<=M2 N3+1+N5=N4) D<=D nat`eq/)
      <- nat`plus-swap-succ N5+1+N=N2 N5+N+1=N2
      <- nat`plus-associative-converse N5+N+1=N2 N3+1+N2=N1 
-                                      N4' N3+1+N5=N4' N4'+N+1=N1
+                                      N4P N3+1+N5=N4P N4P+N+1=N1
      <- nat`plus-swap-succ N4+1+N=N1 N4+N+1=N1
-     <- nat`plus-right-cancels N4'+N+1=N1 N4+N+1=N1 nat`eq/ nat`eq/ N4'=N4
-     <- nat`plus-respects-eq N3+1+N5=N4' nat`eq/ nat`eq/ N4'=N4 N3+1+N5=N4
+     <- nat`plus-right-cancels N4P+N+1=N1 N4+N+1=N1 nat`eq/ nat`eq/ N4P=N4
+     <- nat`plus-respects-eq N3+1+N5=N4P nat`eq/ nat`eq/ N4P=N4 N3+1+N5=N4
      <- data`leq-reflexive _ D<=D.
 
  - : update-left-preserves-leq* (leq/> M311<=M2 N3+1+N2=N1)
@@ -543,49 +544,49 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
 
 
 %theorem update-right-preserves-leq*:
-	forall* {M} {N} {D1} {D2} {M1'} {M2'}
+	forall* {M} {N} {D1} {D2} {M1P} {M2P}
 	forall {L:data`leq D1 D2} 
-               {U1:update M N D1 M1'}
-	       {U2:update M N D2 M2'}
-	exists {LP:leq M1' M2'}
+               {U1:update M N D1 M1P}
+	       {U2:update M N D2 M2P}
+	exists {LP:leq M1P M2P}
 	true.
 
 - : update-right-preserves-leq* D1<=D2 update/0 update/0 
                                 (leq/= leq/0 D1<=D2 nat`eq/).
 
 - : update-right-preserves-leq* D1<=D2 (update/= nat`eq/) U2 L
-    <- update/=-inversion U2 nat`eq/ M221=M2'
+    <- update/=-inversion U2 nat`eq/ M221=M2P
     <- leq-reflexive _ M1<=M1
-    <- leq-respects-eq (leq/= M1<=M1 D1<=D2 nat`eq/) eq/ M221=M2' L.
+    <- leq-respects-eq (leq/= M1<=M1 D1<=D2 nat`eq/) eq/ M221=M2P L.
 
 - : update-right-preserves-leq* D1<=D2 (update/< P) U2 L
-    <- update/<-inversion U2 P M22311=M2'
+    <- update/<-inversion U2 P M22311=M2P
     <- leq-reflexive _ M311<=M311
-    <- leq-respects-eq (leq/= M311<=M311 D1<=D2 nat`eq/) eq/ M22311=M2' L.
+    <- leq-respects-eq (leq/= M311<=M311 D1<=D2 nat`eq/) eq/ M22311=M2P L.
 
 - : update-right-preserves-leq* D1<=D2 (update/> U1 P) U22 L
-    <- update/>-inversion U22 P M2' U2 M112=M
-    <- update-right-preserves-leq* D1<=D2 U1 U2 M1'<=M2'
+    <- update/>-inversion U22 P M2P U2 M112=M
+    <- update-right-preserves-leq* D1<=D2 U1 U2 M1P<=M2P
     <- data`leq-reflexive _ D<=D
-    <- leq-respects-eq (leq/= M1'<=M2' D<=D nat`eq/) eq/ M112=M L.
+    <- leq-respects-eq (leq/= M1P<=M2P D<=D nat`eq/) eq/ M112=M L.
 
 %worlds () (update-right-preserves-leq* _ _ _ _).
 %total (U) (update-right-preserves-leq* _ U _ _).
 
 
 %theorem update-preserves-leq* :
-	forall* {M1} {M2} {N} {D1} {D2} {M1'} {M2'}
+	forall* {M1} {M2} {N} {D1} {D2} {M1P} {M2P}
 	forall {L:leq M1 M2} {L:data`leq D1 D2} 
-               {U1:update M1 N D1 M1'}
-	       {U2:update M2 N D2 M2'}
-	exists {LP:leq M1' M2'}
+               {U1:update M1 N D1 M1P}
+	       {U2:update M2 N D2 M2P}
+	exists {LP:leq M1P M2P}
 	true.
 
-- : update-preserves-leq* M1<=M2 D1<=D2 M1^N=D1->M1' M2^N=D2->M2' M1'<=M2'
+- : update-preserves-leq* M1<=M2 D1<=D2 M1^N=D1->M1P M2^N=D2->M2P M1P<=M2P
     <- update-total M2^N=D1->MM
-    <- update-left-preserves-leq* M1<=M2 M1^N=D1->M1' M2^N=D1->MM M1'<=MM
-    <- update-right-preserves-leq* D1<=D2 M2^N=D1->MM M2^N=D2->M2' MM<=M2'
-    <- leq-transitive M1'<=MM MM<=M2' M1'<=M2'.
+    <- update-left-preserves-leq* M1<=M2 M1^N=D1->M1P M2^N=D1->MM M1P<=MM
+    <- update-right-preserves-leq* D1<=D2 M2^N=D1->MM M2^N=D2->M2P MM<=M2P
+    <- leq-transitive M1P<=MM MM<=M2P M1P<=M2P.
 
 %worlds () (update-preserves-leq* _ _ _ _ _).
 %total { } (update-preserves-leq* _ _ _ _ _).
@@ -629,9 +630,9 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
 
 - : lookup-update-preserves-leq (lookup/> L1 N0+1+N1=N2) U D1<=D2 L
     <- update/>-inversion U N0+1+N1=N2 M2 U1 M112=M
-    <- lookup-update-preserves-leq L1 U1 D1<=D2 L1'
+    <- lookup-update-preserves-leq L1 U1 D1<=D2 L1P
     <- data`leq-reflexive _ D1<=D1
-    <- leq-respects-eq (leq/= L1' D1<=D1 nat`eq/) eq/ M112=M L.
+    <- leq-respects-eq (leq/= L1P D1<=D1 nat`eq/) eq/ M112=M L.
 
 %worlds () (lookup-update-preserves-leq _ _ _ _).
 %total (L) (lookup-update-preserves-leq L _ _ _).
@@ -656,9 +657,9 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
 
 
 %theorem nle-respects-eq :
-	forall* {M1} {M2} {M1'} {M2'}
-	forall {L:nle M1 M2} {E1:eq M1 M1'} {E2:eq M2 M2'}
-	exists {LP:nle M1' M2'}
+	forall* {M1} {M2} {M1P} {M2P}
+	forall {L:nle M1 M2} {E1:eq M1 M1P} {E2:eq M2 M2P}
+	exists {LP:nle M1P M2P}
 	true.
 
 - : nle-respects-eq L eq/ eq/ L.
@@ -748,11 +749,11 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
     <- nat`gt-anti-reflexive N>N F.
 
 - : leq-nle-contradiction (leq/> M1<=M2  N3+1+N2=N1) 
-                          (nle/> M1'\<=M2 N3P+1+N2=N1) F
+                          (nle/> M1P\<=M2 N3P+1+N2=N1) F
     <- plus-right-cancels N3P+1+N2=N1 N3+1+N2=N1 nat`eq/ nat`eq/ N3P+1=N3+1
     <- succ-cancels N3P+1=N3+1 N3P=N3
-    <- map/+-preserves-eq N3P=N3 data`eq/ eq/ M1'=M1
-    <- nle-respects-eq M1'\<=M2 M1'=M1 eq/ M1\<=M2
+    <- map/+-preserves-eq N3P=N3 data`eq/ eq/ M1P=M1
+    <- nle-respects-eq M1P\<=M2 M1P=M1 eq/ M1\<=M2
     <- leq-nle-contradiction M1<=M2 M1\<=M2 F.
 
 %worlds () (leq-nle-contradiction _ _ _).
