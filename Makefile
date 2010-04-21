@@ -28,10 +28,7 @@ OPSRC = EQ.i GE.i LE.i LT.i NE.i RCMP.i RELN.i \
 	minmax.elf
 
 MAP = map-head.elf map-base.elf
-MAP_MORE = map-leq.elf \
-           map-join.elf map-join-leq.elf \
-           map-meet.elf map-meet-leq.elf map-meet-join.elf \
-	  map-scale.elf map-scale-leq.elf map-scale-join.elf
+MAP_MORE = map-leq.elf map-join.elf map-meet.elf map-scale.elf map-domain.elf
 MAPSRC = ${MAP} ${MAP_MORE}
 
 SETSRC = set.cpp set-head.elf set-base.elf set-help.elf set-remove.elf \
@@ -55,7 +52,7 @@ clean :
 
 CAT = cat
 # The C preprocessor (not C++ compiler!)
-CPP = /lib/cpp 
+CPP = cpp 
 CPPFLAGS= -DBEGIN_ELF="%}%" -DEND_ELF="%{%"
 REC = ./remove-empty-comments.pl
 GN = ./get-names.pl
