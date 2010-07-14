@@ -256,6 +256,8 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 	exists {E3:eq M3 M3P}
 	true.
 
+%abbrev meet-unique = meet-deterministic.
+
 - : meet-deterministic meet/L meet/L eq/ eq/ eq/.
 
 - : meet-deterministic meet/L meet/R eq/ eq/ eq/.

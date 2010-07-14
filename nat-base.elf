@@ -31,15 +31,30 @@ plus/s : plus (s X) Y (s Z)
     <- plus X Y Z.
 
 
+%worlds () (plus _ _ _).
+%unique plus +N1 +N2 -1N3.
+
+
 
 times : nat -> nat -> nat -> type.
 
 
 times/z : times z X z.
 
+times/s* : times (s X) Y Z
+    <- times X Y T
+    <- plus T Y Z.
+
+%worlds () (times _ _ _).
+%unique times +N1 +N2 -1N3.
+
+
+% for backward compatibility reasons:
+%abbrev
 times/s : times (s X) Y Z
     <- plus T Y Z
-    <- times X Y T.
+    <- times X Y T = [T] [P] times/s* P T.
+
 
 
 
@@ -142,6 +157,8 @@ compare/> : compare M N greater <- gt M N.
         forall {E:eq N1 N2}
         exists {F:eq (s N1) (s N2)}
         true.
+
+%abbrev succ-preserves-eq = succ-deterministic.
 
 - : succ-deterministic eq/ eq/.
 
@@ -527,6 +544,8 @@ compare/> : compare M N greater <- gt M N.
 	       {E1:eq N1 N1'} {E2:eq N2 N2'}
         exists {E3:eq N3 N3'}
         true.
+
+%abbrev plus-unique = plus-deterministic.
 
 - : plus-deterministic plus/z plus/z eq/ eq/ eq/.
 
@@ -923,6 +942,8 @@ END_ELF
                {E1:eq N1 N1'} {E2:eq N2 N2'}
         exists {E3:eq N3 N3'}
         true.
+
+%abbrev times-unique = times-deterministic.
 
 - : times-deterministic (times/z) (times/z) eq/ eq/ eq/.
 

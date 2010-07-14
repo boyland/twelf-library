@@ -125,6 +125,8 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 	exists {EC:nat`eq C1 C2}
 	true.
 
+%abbrev count-unique = count-deterministic.
+
 - : count-deterministic (count/z _) (count/z _) _ _ nat`eq/.
 
 - : count-deterministic (count/s L) (count/s L') eq/ nat`eq/ SC=sC'
@@ -228,6 +230,8 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 		{EN: nat`eq N1 N2}
 	exists	{EM': eq M1' M2'}
 	true.
+
+%abbrev add-unique = add-deterministic.
 
 - : add-deterministic (add/0 _ U) (add/0 _ U') eq/ nat`eq/ EM'
     <- update-deterministic U U' eq/ nat`eq/ nat`eq/ EM'.

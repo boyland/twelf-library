@@ -220,6 +220,8 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 	exists {E3:eq S3 T3}
 	true.
 
+%abbrev remove-unique = remove-deterministic.
+
 - : remove-deterministic remove/L remove/L eq/ eq/ eq/.
 
 - : remove-deterministic remove/L remove/R eq/ eq/ eq/.

@@ -106,6 +106,8 @@ divrem/s : divrem M (s N-) (s Q) R
 	exists {E3:eq Q Q'} {E4:eq R R'}
 	true.
 
+%abbrev divrem-unique = divrem-deterministic.
+
 - : divrem-deterministic (divrem/z _) (divrem/z _) eq/ eq/ eq/ eq/.
 
 - : divrem-deterministic (divrem/s D/N=Q,R D+N=M) (divrem/s D'/N=Q',R' D'+N=M)
