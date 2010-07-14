@@ -193,6 +193,8 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 	exists {E3:eq M3 M3P}
 	true.
 
+%abbrev join-unique = join-deterministic.
+
 - : join-deterministic join/L join/L eq/ eq/ eq/.
 
 - : join-deterministic join/L join/R eq/ eq/ eq/.
@@ -2332,7 +2334,7 @@ END_ELF
 #ifdef DATA_JOIN_COMMUTATIVE
 #define OP_COMMUTATIVE 1
 #endif
-#ifdef DATA_JOIN_TOTAL 1
+#ifdef DATA_JOIN_TOTAL_STAR
 #define OP_TOTAL 1
 #endif
 #define CMP_TRANSITIVE 1
