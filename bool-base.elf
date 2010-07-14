@@ -147,7 +147,6 @@ END_ELF
 
 - : eq?-total* false true _ (eq?/no ne/FT).
 
-
 %worlds () (eq?-total* _ _ _ _).
 %total { } (eq?-total* _ _ _ _).
 
