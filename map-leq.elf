@@ -407,6 +407,7 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
 %worlds () (shift-left-preserves-leq* _ _ _).
 %total { } (shift-left-preserves-leq* _ _ _).
 
+
 %theorem shift-preserves-leq*:
 	forall* {M1} {M2} {N} {SM1} {SM2} 
 	forall {L:leq M1 M2}
@@ -433,6 +434,93 @@ leq?/no : nle M1 M2 -> leq? M1 M2 false.
 
 %worlds () (shift-preserves-leq* _ _ _ _).
 %total { } (shift-preserves-leq* _ _ _ _).
+
+
+%theorem shift-preserves-leq-converse:
+	forall* {M1} {M2} {N} {SM1} {SM2} 
+	forall {L:leq SM1 SM2}
+               {S1:shift N M1 SM1}
+	       {S1:shift N M2 SM2}
+	exists {SL:leq M1 M2}
+	true.
+
+- : shift-preserves-leq-converse _ shift/0 _ leq/0.
+
+- : shift-preserves-leq-converse (leq/= M1<=M2 D1<=D2 nat`eq/)
+     				 (shift/+ N+1+N1P=N1) 
+                         	 (shift/+ N+1+N2P=N1)
+                         	 (leq/= M1<=M2 D1<=D2 N1P=N2P)
+    <- plus-left-cancels N+1+N1P=N1 N+1+N2P=N1 nat`eq/ nat`eq/ N1P=N2P.
+
+- : shift-preserves-leq-converse (leq/> M311<=M2 N3+1+N2P=N1P)
+                         	 (shift/+ N+1+N1=N1P) 
+                        	 (shift/+ N+1+N2=N2P)
+                        	 (leq/> M311<=M2 N3+1+N2=N1)
+    <- plus-commutative N3+1+N2P=N1P N2P+N3+1=N1P
+    <- plus-associative N+1+N2=N2P N2P+N3+1=N1P M1 N2+N3+1=M1 N+1+M1=N1P
+    <- plus-left-cancels N+1+M1=N1P N+1+N1=N1P nat`eq/ nat`eq/ M1=N1
+    <- plus-respects-eq N2+N3+1=M1 nat`eq/ nat`eq/ M1=N1 N2+N3+1=N1
+    <- plus-commutative N2+N3+1=N1 N3+1+N2=N1.
+
+%worlds () (shift-preserves-leq-converse _ _ _ _).
+%total { } (shift-preserves-leq-converse _ _ _ _).
+
+
+%theorem disjoint-respects-geq* :
+	forall* {M1} {M2} {M1P}
+	forall {A:disjoint M1 M2} {E1:leq M1P M1}
+	exists {AP:disjoint M1P M2}
+	true.
+
+- : disjoint-respects-geq* _ leq/0 disjoint/L.
+	
+- : disjoint-respects-geq* disjoint/R _ disjoint/R.
+
+- : disjoint-respects-geq* 
+	(disjoint/< D1 P) (leq/= L _ nat`eq/)
+	(disjoint/< D1P P)
+    <- disjoint-respects-geq* D1 L D1P.
+
+- : disjoint-respects-geq*
+	(disjoint/> D1 P) (leq/= L DL nat`eq/)
+	(disjoint/> D1P P)
+    <- disjoint-respects-geq* D1 (leq/= L DL nat`eq/) D1P.
+
+- : disjoint-respects-geq*
+	(disjoint/< D1 P1) (leq/> L P2) DP
+    <- disjoint-respects-geq* D1 L D1P
+    <- plus-swap-succ P1 P1S
+    <- plus-swap-succ P2 P2S
+    <- plus-commutative P1S P1SC
+    <- plus-commutative P2S P2SC
+    <- shift-preserves-disjoint D1P (shift/+ P2SC) (shift/+ P1SC) DP.
+
+- : disjoint-respects-geq*
+	(disjoint/> D1 N0+1+N1=N2) (leq/> L N3+1+N2=N4) DP
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-associative-converse N0+N1+1=N2 N3+1+N2=N4 N5 N3+1+N0=N5 N5+N1+1=N4
+    <- disjoint-respects-geq* D1 (leq/> L N3+1+N0=N5) D1P
+    <- plus-commutative N5+N1+1=N4 N1+1+N5=N4
+    <- shift-left-preserves-disjoint D1P (shift/+ N1+1+N5=N4) DP.
+
+%worlds () (disjoint-respects-geq* _ _ _).
+%total (D) (disjoint-respects-geq* D _ _).
+
+
+%theorem disjoint-respects-geq :
+	forall* {M1} {M2} {M1P} {M2P}
+	forall {A:disjoint M1 M2} {E1:leq M1P M1} {E2:leq M2P M2} 
+	exists {AP:disjoint M1P M2P}
+	true.
+
+- : disjoint-respects-geq M1^M2 M1P<=M1 M2P<=M2 M1P^M2P
+    <- disjoint-respects-geq* M1^M2 M1P<=M1 M1P^M2
+    <- disjoint-symmetric M1P^M2 M2^M1P
+    <- disjoint-respects-geq* M2^M1P M2P<=M2 M2P^M1P
+    <- disjoint-symmetric M2P^M1P M1P^M2P.
+
+%worlds () (disjoint-respects-geq _ _ _ _).
+%total { } (disjoint-respects-geq _ _ _ _).
 
 
 %theorem update-left-preserves-leq*:
