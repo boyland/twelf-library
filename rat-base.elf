@@ -309,6 +309,8 @@ mul/ : mul Q1 Q2 Q3
         exists {E2:equ Q2 Q2'}
         true.
 
+%abbrev inc-unique = inc-deterministic.
+
 - : inc-deterministic inc/whole inc/whole equ/ equ/.
 
 - : inc-deterministic inc/frac inc/frac equ/ equ/.
@@ -340,6 +342,8 @@ mul/ : mul Q1 Q2 Q3
 	forall {A:abs Q M N} {A':abs Q' M' N'} {E:equ Q Q'}
         exists {EM:eq M M'} {EN:eq N N'}
         true.
+
+%abbrev abs-unique = abs-deterministic.
 
 - : abs-deterministic (abs/whole) (abs/whole) equ/ eq/ eq/.
 
@@ -460,6 +464,8 @@ mul/ : mul Q1 Q2 Q3
                {EM:eq M M'} {EN:eq N N'}
         exists {E:equ Q Q'}
         true.
+
+%abbrev rep-unique = rep-deterministic.
 
 %% three normal cases
 - : rep-deterministic rep/= rep/= eq/ eq/ equ/.
@@ -1138,6 +1144,8 @@ mul/ : mul Q1 Q2 Q3
 	exists {E3:equ Q3 Q3'}
 	true.
 
+%abbrev add-unique = add-deterministic.
+
 - : add-deterministic (add/ R  PM12  TN12  T21  T12  A2  A1)
                       (add/ R' PM12' TN12' T21' T12' A2' A1') 
                       equ/ equ/ Q3=Q3'
@@ -1604,6 +1612,8 @@ END_ELF
                {E1:equ Q1 Q1'} {E2:equ Q2 Q2'}
 	exists {E3:equ Q3 Q3'}
 	true.
+
+%abbrev mul-unique = mul-deterministic.
 
 - : mul-deterministic (mul/ R12  TN12  TM12  A2  A1)
                       (mul/ R12' TN12' TM12' A2' A1') 

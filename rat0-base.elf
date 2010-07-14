@@ -286,6 +286,8 @@ END_ELF
 	exists {E3:eq R3a R3b}
 	true.
 
+%abbrev add-unique = add-deterministic.
+
 - : add-deterministic add/L add/L eq/ eq/ eq/.
 
 - : add-deterministic add/L add/R eq/ eq/ eq/.
@@ -475,6 +477,8 @@ END_ELF
 	       {E1:eq R1a R1b} {E2:eq R2a R2b}
 	exists {E3:eq R3a R3b}
 	true.
+
+%abbrev mul-unique = mul-deterministic.
 
 - : mul-deterministic mul/L _ eq/ _ eq/.
 

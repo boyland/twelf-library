@@ -39,6 +39,8 @@
 	exists {E3:EQ X3 X6}
 	true.
 
+%abbrev IOPN-unique = IOPN-deterministic.
+
 - : IOPN-deterministic OP(X3,X2)=X1 OP(X6,X5)=X4 X1=X4 X2=X5 X3=X6
     <- OPN-right-cancels OP(X3,X2)=X1 OP(X6,X5)=X4 X2=X5 X1=X4 X3=X6.
 
