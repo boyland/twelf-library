@@ -410,12 +410,15 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (lookup-respects-eq M^N=D M=M' N=N' D=D' %{=>}% M'^N'=D').
 %total {} (lookup-respects-eq _ _ _ _ _).
 
+
 %theorem lookup-deterministic :
 	forall* {M} {N} {D} {MP} {NP} {DP}
 	forall {L:lookup M N D} {LP:lookup MP NP DP}
                {EM:eq M MP} {EN:nat`eq N NP}
 	exists {ED:data`eq D DP}
 	true.
+
+%abbrev lookup-unique = lookup-deterministic.
 
 - : lookup-deterministic (lookup/= nat`eq/) (lookup/= nat`eq/) eq/ nat`eq/ data`eq/.
 
@@ -708,6 +711,8 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 		{EN:nat`eq N1 N2}
 	exists	{BE:bool`eq B1 B2}
 	true.
+
+%abbrev domain?-unique = domain?-deterministic.
 
 - : domain?-deterministic _ _ _ _ bool`eq/.
 
@@ -1225,6 +1230,24 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (ne-implies-disjoint _ _).
 
 
+%theorem fresh-implies-unit-disjoint :
+	forall*	{N} {M} {D}
+	forall	{F:fresh M N}
+	exists	{D: disjoint M (map/+ N D map/0)}
+	true.
+
+- : fresh-implies-unit-disjoint fresh/0 disjoint/L.
+
+- : fresh-implies-unit-disjoint (fresh/< G) (disjoint/> disjoint/R P)
+    <- gt-implies-plus G _ P.
+
+- : fresh-implies-unit-disjoint (fresh/> F P) (disjoint/< D P)
+    <- fresh-implies-unit-disjoint F D.
+
+%worlds () (fresh-implies-unit-disjoint _ _).
+%total (F) (fresh-implies-unit-disjoint F _).
+
+
 
 %%% Theorems about size
 
@@ -1275,6 +1298,8 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 	forall {SZ1:size M1 N1} {SZ2:size M2 N2} {EM:eq M1 M2}
         exists {EN:nat`eq N1 N2}
 	true.
+
+%abbrev size-unique = size-deterministic.
 
 - : size-deterministic size/0 size/0 eq/ nat`eq/.
 
@@ -1409,20 +1434,39 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 
 %theorem shift-deterministic :
-	forall* {N} {M1} {M2} {N'} {M1'} {M2'}
-	forall {S:shift N M1 M2} {S':shift N' M1' M2'}
-	       {EN:nat`eq N N'} {EM1:eq M1 M1'}
-	exists {EM2:eq M2 M2'}
+	forall* {N} {M1} {M2} {NP} {M1P} {M2P}
+	forall {S:shift N M1 M2} {SP:shift NP M1P M2P}
+	       {EN:nat`eq N NP} {EM1:eq M1 M1P}
+	exists {EM2:eq M2 M2P}
 	true.
+
+%abbrev shift-unique = shift-deterministic.
 
 - : shift-deterministic shift/0 shift/0 nat`eq/ eq/ eq/.
 
-- : shift-deterministic (shift/+ N1+1+N2=N3) (shift/+ N1+1+N2=N3') nat`eq/ eq/ E
-    <- plus-deterministic N1+1+N2=N3 N1+1+N2=N3' nat`eq/ nat`eq/ N3=N3P
+- : shift-deterministic (shift/+ N1+1+N2=N3) (shift/+ N1+1+N2=N3P) nat`eq/ eq/ E
+    <- plus-deterministic N1+1+N2=N3 N1+1+N2=N3P nat`eq/ nat`eq/ N3=N3P
     <- map/+-preserves-eq N3=N3P data`eq/ eq/ E.
 
 %worlds (WORLDS) (shift-deterministic _ _ _ _ _).
 %total { } (shift-deterministic _ _ _ _ _).
+
+
+%theorem shift-cancels :
+	forall* {N} {M1} {M2} {NP} {M1P} {M2P}
+	forall {S:shift N M1 M2} {SP:shift NP M1P M2P}
+	       {EN:nat`eq N NP} {EM1:eq M2 M2P}
+	exists {EM2:eq M1 M1P}
+	true.
+
+- : shift-cancels shift/0 shift/0 nat`eq/ eq/ eq/.
+
+- : shift-cancels (shift/+ N1+1+N2=N3) (shift/+ N1+1+N2P=N3) nat`eq/ eq/ E
+    <- plus-left-cancels N1+1+N2=N3 N1+1+N2P=N3 nat`eq/ nat`eq/ N2=N2P
+    <- map/+-preserves-eq N2=N2P data`eq/ eq/ E.
+
+%worlds () (shift-cancels _ _ _ _ _).
+%total { } (shift-cancels _ _ _ _ _).
 
 
 %theorem shifts-add :
@@ -1490,6 +1534,23 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds (WORLDS) (shift-preserves-fresh _ _ _ _ _).
 %total (F) (shift-preserves-fresh F _ _ _ _).
+
+
+%theorem shift-preserves-fresh* :
+        forall* {M1} {N1} {N2} {N0} {M2}
+        forall	{L1:fresh M1 N1}
+        	{P:plus (s N0) N1 N2} 
+		{S:shift N0 M1 M2}
+	exists	{L2:fresh M2 N2} 
+	true.
+	
+- : shift-preserves-fresh* F P S1 FP1
+    <- shift-preserves-fresh F P _ S2 FP2
+    <- shift-deterministic S2 S1 nat`eq/ eq/ EQ
+    <- fresh-respects-eq FP2 EQ nat`eq/ FP1.
+
+%worlds () (shift-preserves-fresh* _ _ _ _).
+%total { } (shift-preserves-fresh* _ _ _ _).
 
 
 %theorem shift-preserves-fresh-converse* :
@@ -1896,6 +1957,8 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 	exists {EM':eq M1' M2'}
 	true.
 
+%abbrev update-unique = update-deterministic.
+
 - : update-deterministic update/0 update/0 eq/ nat`eq/ data`eq/ eq/.
 
 - : update-deterministic (update/= nat`eq/) (update/= nat`eq/) eq/ nat`eq/ data`eq/ eq/.
@@ -1954,6 +2017,7 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 %worlds (WORLDS) (update-deterministic M1^N1=D1->M1' M2^N2=D2->M2' M1=M2 N1=N2 D1=D2
                           %{=>}% M1'=M2').
 %total (U) (update-deterministic U _ _ _ _ _).
+
 
 %theorem update-total* :
 	forall {M} {N} {D}
@@ -2308,8 +2372,8 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 %total { } (lookup-update-preserves-membership/L _ _ _ _ _).
 
 - : lookup-update-preserves-membership MD1 L1 U MD2
-    <- nat`eq?-total EQ?
-    <- lookup-update-preserves-membership/L MD1 L1 U EQ? MD2.
+    <- nat`eq?-total EQUAL?
+    <- lookup-update-preserves-membership/L MD1 L1 U EQUAL? MD2.
 
 %worlds (WORLDS) (lookup-update-preserves-membership _ _ _ _).
 %total { } (lookup-update-preserves-membership _ _ _ _).
