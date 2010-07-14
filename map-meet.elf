@@ -41,7 +41,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 	exists {D:meet M1 M2 M3}
 	true.
 
-%worlds () (false-implies-meet _ _).
+%worlds (WORLDS) (false-implies-meet _ _).
 %total {} (false-implies-meet _ _).
 
 
@@ -53,7 +53,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 
 - : meet-respects-eq A eq/ eq/ eq/ A.
 
-%worlds () (meet-respects-eq _ _ _ _ _).
+%worlds (WORLDS) (meet-respects-eq _ _ _ _ _).
 %total {} (meet-respects-eq _ _ _ _ _).
 %reduces A = AP (meet-respects-eq A _ _ _ AP).
 
@@ -71,7 +71,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 
 - : meet/L-inversion meet/R eq/ eq/.
 
-%worlds () (meet/L-inversion _ _ _).
+%worlds (WORLDS) (meet/L-inversion _ _ _).
 %total { } (meet/L-inversion _ _ _).
 
 
@@ -85,7 +85,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 
 - : meet/R-inversion meet/R eq/ eq/.
 
-%worlds () (meet/R-inversion _ _ _).
+%worlds (WORLDS) (meet/R-inversion _ _ _).
 %total { } (meet/R-inversion _ _ _).
 
 
@@ -119,7 +119,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meet-respects-eq AP M311=M1 eq/ eq/ MA
     <- false-implies-eq F ME.
 
-%worlds () (meet/=-inversion _ _ _ _ _ _ _).
+%worlds (WORLDS) (meet/=-inversion _ _ _ _ _ _ _).
 %total {} (meet/=-inversion _ _ _ _ _ _ _).
 %reduces AP < A (meet/=-inversion A _ _ _ _ AP _).
 
@@ -155,7 +155,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meet-respects-eq AP M311=M1 M2=M022 eq/ A
     <- false-implies-shift F SP.
 
-%worlds () (meet/<-inversion _ _ _ _ _).
+%worlds (WORLDS) (meet/<-inversion _ _ _ _ _).
 %total {}  (meet/<-inversion _ _ _ _ _).
 %reduces AP < A (meet/<-inversion A _ _ AP _).
 
@@ -191,7 +191,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meet-respects-eq AP M1=M311 M022=M2 eq/ A
     <- false-implies-shift F SP.
 
-%worlds () (meet/>-inversion _ _ _ _ _).
+%worlds (WORLDS) (meet/>-inversion _ _ _ _ _).
 %total { } (meet/>-inversion _ _ _ _ _).
 %reduces AP < A (meet/>-inversion A _ _ AP _).
 
@@ -222,7 +222,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- succ-preserves-ge N3>=N0 N3+1>=N0+1
     <- plus-right-preserves-ge* N3+1>=N0+1 N3+1+N2=N5 N0+1+N2=N1 N5>=N1.
 
-%worlds () (meet-implies-ge _ _ _).
+%worlds (WORLDS) (meet-implies-ge _ _ _).
 %total (A) (meet-implies-ge A _ _).
 
 
@@ -242,7 +242,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 - : meet-empty-implies-disjoint (meet/> shift/0 A P) (disjoint/> D P)
     <- meet-empty-implies-disjoint A D.
 
-%worlds () (meet-empty-implies-disjoint _ _).
+%worlds (WORLDS) (meet-empty-implies-disjoint _ _).
 %total (A) (meet-empty-implies-disjoint A _).
 
 %{%
@@ -283,7 +283,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meet-deterministic M311*M2=M3 M311*M2=M3P eq/ eq/ M3=M3P
     <- shift-deterministic M3<<N2=M M3P<<N2=MP nat`eq/ M3=M3P M=MP.
 
-%worlds () (meet-deterministic _ _ _ _ _).
+%worlds (WORLDS) (meet-deterministic _ _ _ _ _).
 %total (A) (meet-deterministic A _ _ _ _).
 
 %{%
@@ -359,7 +359,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- nat`compare-total* N1 N2 C CMP
     <- meet-map/+-map/+-total* N1 D1 M1 N2 D2 M2 C CMP M3 A.
 
-%worlds () (meet-total* _ _ _ _)
+%worlds (WORLDS) (meet-total* _ _ _ _)
            (meet-M-map/+-total* _ _ _ _ _ _)
            (meet-map/+-M-total* _ _ _ _ _ _)
            (meet-map/+-map/+-total* _ _ _ _ _ _ _ _ _ _).
@@ -394,7 +394,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
                         (meet/> shift/0 M N3+1+N2=N1)
     <- disjoint-meet-empty D M.
 
-%worlds () (disjoint-meet-empty _ _).
+%worlds (WORLDS) (disjoint-meet-empty _ _).
 %total (D) (disjoint-meet-empty D _).
 
 %{%
@@ -424,7 +424,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
                      (meet/< M3<<N2=S2M3 M2*M311=M3 N3+1+N2=N1)
     <- meet-commutative M311*M2=M3 M2*M311=M3.
 
-%worlds () (meet-commutative _ _).
+%worlds (WORLDS) (meet-commutative _ _).
 %total (A) (meet-commutative A _).
 
 %{%
@@ -447,7 +447,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- plus-swap-succ N+1+N1=N1P N+N1+1=N1P
     <- plus-commutative N+N1+1=N1P N1+1+N=N1P.
 
-%worlds () (shift-left-preserves-meet _ _ _ _).
+%worlds (WORLDS) (shift-left-preserves-meet _ _ _ _).
 %total { } (shift-left-preserves-meet _ _ _ _).
 
 
@@ -467,7 +467,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- plus-commutative N2+N3+1=N1 N3+1+N2=N1
     <- meet/>-inversion M111*M222=SM3 N3+1+N2=N1 M3 M311*M2=M3 M3<<N2=SM3.
 
-%worlds () (shift-left-preserves-meet-converse _ _ _ _ _).
+%worlds (WORLDS) (shift-left-preserves-meet-converse _ _ _ _ _).
 %total { } (shift-left-preserves-meet-converse _ _ _ _ _).
 
 
@@ -487,7 +487,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- plus-swap-succ N+1+N2=N2P N+N2+1=N2P
     <- plus-commutative N+N2+1=N2P N2+1+N=N2P.
 
-%worlds () (shift-right-preserves-meet _ _ _ _).
+%worlds (WORLDS) (shift-right-preserves-meet _ _ _ _).
 %total { } (shift-right-preserves-meet _ _ _ _).
 
 
@@ -507,7 +507,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- plus-commutative N1+N2+1=N3 N2+1+N1=N3
     <- meet/<-inversion M111*M322=SM3 N2+1+N1=N3 M3 M1*M222=M3 M3<<N1=SM3.
 
-%worlds () (shift-right-preserves-meet-converse _ _ _ _ _).
+%worlds (WORLDS) (shift-right-preserves-meet-converse _ _ _ _ _).
 %total { } (shift-right-preserves-meet-converse _ _ _ _ _).
 
 
@@ -558,7 +558,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- plus-associative-converse* N2+N3+1=N1 N+1+N1=N4 N+1+N2=N5 N5+N3+1=N4
     <- plus-commutative N5+N3+1=N4 N3+1+N5=N4.
 
-%worlds () (shift-preserves-meet _ _ _ _ _).
+%worlds (WORLDS) (shift-preserves-meet _ _ _ _ _).
 %total { } (shift-preserves-meet _ _ _ _ _).
 
 
@@ -610,7 +610,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- plus-right-cancels N1P+N+1=N4 N1+N+1=N4 nat`eq/ nat`eq/ N1P=N1
     <- plus-respects-eq N6+1+N2=N1P nat`eq/ nat`eq/ N1P=N1 N6+1+N2=N1.
 
-%worlds () (shift-preserves-meet-converse _ _ _ _ _ _).
+%worlds (WORLDS) (shift-preserves-meet-converse _ _ _ _ _ _).
 %total { } (shift-preserves-meet-converse _ _ _ _ _ _).
 
 %{%
@@ -932,7 +932,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- shift-preserves-meet M511*M6=M7 (shift/+ N4+1+N5=N1) 
                             M6<<N4=M24 M7<<N4=M34 A16.
 
-%worlds () (meet-associativeM _ _ _ _ _ _) 
+%worlds (WORLDS) (meet-associativeM _ _ _ _ _ _) 
            (meet-associativeM* _ _ _ _ _ _ _ _ _).
 
 %total (S SP) (meet-associativeM* SP _ _ _ _ _ _ _ _)
@@ -951,7 +951,7 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meet-total A24
     <- meet-associativeM _ BD A12 A34 A24 A16.
 
-%worlds () (meet-associative _ _ _ _ _).
+%worlds (WORLDS) (meet-associative _ _ _ _ _).
 %total { } (meet-associative _ _ _ _ _).
 
 
@@ -1006,7 +1006,7 @@ END_ELF
     <- shift-preserves-leq* M3<=M311 M3<<N2=S2M3 (shift/+ N2+1+N3=N1) 
                             S2M3<=M111.
 
-%worlds () (meet-implies-leq* _ _).
+%worlds (WORLDS) (meet-implies-leq* _ _).
 %total (A) (meet-implies-leq* A _).
 
 %{%
@@ -1024,7 +1024,7 @@ END_ELF
     <- meet-commutative M1*M2=M3 M2*M1=M3
     <- meet-implies-leq* M2*M1=M3 M3<=M2.
 
-%worlds () (meet-implies-leq _ _ _).
+%worlds (WORLDS) (meet-implies-leq _ _ _).
 %total { } (meet-implies-leq _ _ _).
 
 %{%
@@ -1116,7 +1116,7 @@ END_ELF
     <- plus-commutative N6+N2+1=N0 N2+1+N6=N0
     <- shift-preserves-leq* M600<=M3 (shift/+ N2+1+N6=N0) M3<<N2=S2M3 M000<=S2M3.
 
-%worlds () (meet-is-glb _ _ _ _).
+%worlds (WORLDS) (meet-is-glb _ _ _ _).
 %total (A) (meet-is-glb A _ _ _).
 
 
@@ -1133,7 +1133,7 @@ END_ELF
     <- leq-anti-symmetric S'<=S S<=S' S'=S
     <- meet-respects-eq S*S=S' eq/ eq/ S'=S S*S=S.
 
-%worlds () (meet-idempotent _).
+%worlds (WORLDS) (meet-idempotent _).
 %total { } (meet-idempotent _).
 
 
@@ -1151,7 +1151,7 @@ END_ELF
     <- leq-anti-symmetric M3<=M1 M1<=M3 M3=M1
     <- meet-respects-eq M1*M2=M3 eq/ eq/ M3=M1 M1*M2=M1.
 
-%worlds () (leq-implies-meet _ _).
+%worlds (WORLDS) (leq-implies-meet _ _).
 %total { } (leq-implies-meet _ _).
 
 %{%
@@ -1266,7 +1266,7 @@ END_ELF
     <- shift-respects-eq S5M3<<N4=S4S5M3 nat`eq/ eq/ S4S5M3=S1M3 S5M3<<N4=S1M3
     <- shift-preserves-leq* S5M3<=M5 S5M3<<N4=S1M3 M5<<N4=S4M5 S1M3<<S4M5.
 
-%worlds () (meet-left-preserves-leq* _ _ _ _).
+%worlds (WORLDS) (meet-left-preserves-leq* _ _ _ _).
 %total (A) (meet-left-preserves-leq* _ _ A _).
 
 %{%
@@ -1448,7 +1448,7 @@ END_ELF
     <- shift-preserves-join M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
                             S4M5+S4M6=S4M7.
 
-%worlds () (meet-right-distributes-over-join _ _ _ _ _ _ _).
+%worlds (WORLDS) (meet-right-distributes-over-join _ _ _ _ _ _ _).
 %total (A) (meet-right-distributes-over-join _ A _ _ _ _ _).
 
 %{%
@@ -1634,7 +1634,7 @@ works for sets etc, but not in general.
     <- shift-preserves-meet M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
                             S4M5+S4M6=S4M7.
 
-%worlds () (join-right-distributes-over-meet _ _ _ _ _ _ _).
+%worlds (WORLDS) (join-right-distributes-over-meet _ _ _ _ _ _ _).
 %total (A) (join-right-distributes-over-meet _ A _ _ _ _ _).
 %{%
 
