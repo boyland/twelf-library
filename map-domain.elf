@@ -60,6 +60,8 @@ domain/+ : domain M S ->
 	exists	{E3:set`eq S1 S2}
 	true.
 
+%abbrev domain-unique = domain-deterministic.
+
 - : domain-deterministic domain/0 domain/0 eq/ set`eq/.
 
 - : domain-deterministic (domain/+ D1) (domain/+ D2) eq/ SE'
@@ -256,6 +258,58 @@ domain/+ : domain M S ->
 %total (D) (domain-preserves-size-converse _ D _).
 
 
+%theorem domain-preserves-disjoint :
+	forall*	{M1} {M2} {S1} {S2}
+	forall	{D: disjoint M1 M2}
+		{DM1: domain M1 S1}
+		{DM2: domain M2 S2}
+	exists	{DP: set`disjoint S1 S2}
+	true.
+
+- : domain-preserves-disjoint disjoint/L _ _ set`disjoint/L.
+
+- : domain-preserves-disjoint disjoint/R _ _ set`disjoint/R.
+
+- : domain-preserves-disjoint 
+	(disjoint/< D P) (domain/+ D1) (domain/+ D2)
+	(set`disjoint/< DP P)
+    <- domain-preserves-disjoint D D1 (domain/+ D2) DP.
+
+- : domain-preserves-disjoint
+	(disjoint/> D P) (domain/+ D1) (domain/+ D2)
+	(set`disjoint/> DP P)
+    <- domain-preserves-disjoint D (domain/+ D1) D2 DP.
+
+%worlds () (domain-preserves-disjoint _ _ _ _).
+%total (D) (domain-preserves-disjoint D _ _ _).
+
+
+%theorem domain-preserves-disjoint-converse :
+	forall*	{M1} {M2} {S1} {S2}
+	forall	{D: set`disjoint S1 S2}
+		{DM1: domain M1 S1}
+		{DM2: domain M2 S2}
+	exists	{DP: disjoint M1 M2}
+	true.
+
+- : domain-preserves-disjoint-converse set`disjoint/L _ _ disjoint/L.
+
+- : domain-preserves-disjoint-converse set`disjoint/R _ _ disjoint/R.
+
+- : domain-preserves-disjoint-converse 
+	(set`disjoint/< D P) (domain/+ D1) (domain/+ D2)
+	(disjoint/< DP P)
+    <- domain-preserves-disjoint-converse D D1 (domain/+ D2) DP.
+
+- : domain-preserves-disjoint-converse
+	(set`disjoint/> D P) (domain/+ D1) (domain/+ D2)
+	(disjoint/> DP P)
+    <- domain-preserves-disjoint-converse D (domain/+ D1) D2 DP.
+
+%worlds () (domain-preserves-disjoint-converse _ _ _ _).
+%total (D) (domain-preserves-disjoint-converse D _ _ _).
+
+
 %theorem domain-preserves-bound :
 	forall* {M} {N} {S}
 	forall	{MS: bound M N}
@@ -327,6 +381,24 @@ domain/+ : domain M S ->
 
 
 %theorem shift-preserves-domain-converse :
+	forall* {N} {M1} {M2} {S2}
+	forall  {D1:domain M2 S2}
+		{S:shift N M1 M2}
+	exists	{S1}
+		{S:set`shift N S1 S2}
+        	{D2:domain M1 S1}
+        true.
+
+- : shift-preserves-domain-converse domain/0 shift/0 _ set`shift/0 domain/0.
+
+- : shift-preserves-domain-converse
+	(domain/+ D) (shift/+ P) _ (set`shift/+ P) (domain/+ D).
+
+%worlds () (shift-preserves-domain-converse _ _ _ _ _).
+%total { } (shift-preserves-domain-converse _ _ _ _ _).
+
+
+%theorem shift-preserves-domain-converse* :
 	forall* {N} {M1} {M2} {S1} {S2}
 	forall  {D1:domain M2 S2}
 		{S:shift N M1 M2}
@@ -334,18 +406,16 @@ domain/+ : domain M S ->
         exists  {D2:domain M1 S1}
         true.
 
-%abbrev shift-preserves-domain-converse* = shift-preserves-domain-converse.
+- : shift-preserves-domain-converse* domain/0 shift/0 set`shift/0 domain/0.
 
-- : shift-preserves-domain-converse domain/0 shift/0 set`shift/0 domain/0.
-
-- : shift-preserves-domain-converse
+- : shift-preserves-domain-converse*
 	(domain/+ D1) (shift/+ P1) (set`shift/+ P2) D2
     <- plus-left-cancels P1 P2 nat`eq/ nat`eq/ N1=N2
     <- set`map/+-preserves-eq N1=N2 unit`eq/ set`eq/ S1=S2
     <- domain-respects-eq (domain/+ D1) eq/ S1=S2 D2.
 
-%worlds () (shift-preserves-domain-converse _ _ _ _).
-%total { } (shift-preserves-domain-converse _ _ _ _).
+%worlds () (shift-preserves-domain-converse* _ _ _ _).
+%total { } (shift-preserves-domain-converse* _ _ _ _).
 
 
 %abbrev domain-commute-shift = shift-preserves-domain*.
@@ -466,7 +536,7 @@ domain/+ : domain M S ->
 
 %{%
 #endif /* MAP_LEQ */
-#ifdef DATA_JOIN
+#ifdef MAP_JOIN
 %}%
 
 %theorem join-commute-domain:
@@ -508,7 +578,7 @@ domain/+ : domain M S ->
 %total (J) (join-commute-domain J _ _ _ _).
 
 %{%
-#endif /* MAPA_JOIN */
+#endif /* MAP_JOIN */
 #ifdef MAP_MEET
 %}%
 
