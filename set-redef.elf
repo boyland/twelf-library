@@ -7,8 +7,10 @@
 %}%
 
 %abbrev set = map.
+%abbrev 0 = map/0.
 %abbrev set/0 = map/0.
 %abbrev set/+ = [N] [S] (map/+ N unit/ S).
+%abbrev set/1 : nat -> set = [N] (set/+ N set/0).
 
 
 %%  To avoid nasty skolemization functions, we do some explicit typing:
