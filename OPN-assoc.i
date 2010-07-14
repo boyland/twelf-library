@@ -1,3 +1,8 @@
+%{%
+#ifndef WORLDS
+#define WORLDS /* nothing */
+#endif
+%}%
 %theorem OPN-associative* :
 	forall* {X1} {X2} {X12} {X3} {X23} {X123}
         forall {OP12:OPN X1 X2 X12} {OP12-3:OPN X12 X3 X123} {OP23:OPN X2 X3 X23}

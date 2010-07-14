@@ -17,6 +17,9 @@
  * OP(,) OPN CMPN CMP(,)
  */
 
+#ifndef WORLDS
+#define WORLDS /* nothing */
+#endif
 #ifdef OP_TOTAL
 %}%
 
