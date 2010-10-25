@@ -12,7 +12,7 @@
 %}%
 
 %{%
- The identifiers clash with those of rat: add mul
+ The identifiers clash with those of rat: add mul leq
 %}%
 
 %{%
@@ -61,6 +61,17 @@ eq?/yes : eq? R R true.
 
 
 eq?/no : (ne R1 R2) -> eq? R1 R2 false.
+
+
+
+leq : rat0 -> rat0 -> type.
+
+
+leq/Z : leq zero zero.
+
+leq/ZQ : leq zero (rat+ _).
+
+leq/Q : rat`leq Q1 Q2 -> leq (rat+ Q1) (rat+ Q2).
 
 
 
@@ -231,6 +242,83 @@ END_ELF
 
 
 %abbrev eq?-total = eq?-total* _ _ _.
+
+
+
+%%% Theorems about leq
+
+
+%theorem false-implies-leq :
+	forall*	{R1} {R2}
+	forall	{F: void}
+	exists	{L: leq R1 R2}
+	true.
+
+%worlds () (false-implies-leq _ _).
+%total { } (false-implies-leq _ _).
+
+
+%theorem leq-respects-eq :
+	forall*	{R1} {R2} {R3} {R4}
+	forall	{L1: leq R1 R2}
+		{E1: eq R1 R3}
+		{E2: eq R2 R4}
+	exists	{L3: leq R3 R4}
+	true.
+
+- : leq-respects-eq L _ _ L.
+
+%worlds () (leq-respects-eq _ _ _ _).
+%total { } (leq-respects-eq _ _ _ _).
+
+
+%theorem leq-reflexive :
+	forall	{R}
+	exists	{L: leq R R}
+	true.
+
+- : leq-reflexive _ leq/Z.
+
+- : leq-reflexive _ (leq/Q L)
+    <- rat`leq-reflexive _ L.
+
+%worlds () (leq-reflexive _ _).
+%total { } (leq-reflexive _ _).
+
+
+%theorem leq-anti-symmetric :
+	forall*	{R1} {R2}
+	forall	{L1: leq R1 R2}
+		{L2: leq R2 R1}
+	exists	{E: eq R1 R2}
+	true.
+
+- : leq-anti-symmetric leq/Z leq/Z eq/.
+
+- : leq-anti-symmetric (leq/Q L1) (leq/Q L2) E2
+    <- rat`leq-anti-symmetric L1 L2 E1
+    <- rat+-preserves-eq E1 E2.
+
+%worlds () (leq-anti-symmetric _ _ _).
+%total { } (leq-anti-symmetric _ _ _).
+
+
+%theorem leq-transitive :
+	forall*	{R1} {R2} {R3}
+	forall	{L12: leq R1 R2}
+		{L23: leq R2 R3}
+	exists	{L13: leq R1 R3}
+	true.
+
+- : leq-transitive leq/Z L L.
+
+- : leq-transitive leq/ZQ (leq/Q _) leq/ZQ.
+
+- : leq-transitive (leq/Q L12) (leq/Q L23) (leq/Q L13)
+    <- rat`leq-transitive L12 L23 L13.
+
+%worlds () (leq-transitive _ _ _).
+%total { } (leq-transitive _ _ _).
 
 
 
