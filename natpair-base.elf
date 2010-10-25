@@ -209,6 +209,8 @@ nat2pair : nat -> pair -> type = [N] [P] pair2nat P N.
 	exists {EN:nat`eq N1 N2}
 	true.
 
+%abbrev pair2nat-unique = pair2nat-deterministic.
+
 - : pair2nat-deterministic pair2nat/00 pair2nat/00 eq/ nat`eq/.
 
 % lemma
@@ -270,6 +272,8 @@ nat2pair : nat -> pair -> type = [N] [P] pair2nat P N.
 	forall {D1:nat2pair N1 P1} {D2:nat2pair N2 P2}	{EN:nat`eq N1 N2}
 	exists {EP:eq P1 P2}
 	true.
+
+%abbrev nat2pair-unique = nat2pair-deterministic.
 
 % lemma
 %theorem nat2pair-deterministic/0 :
