@@ -108,6 +108,8 @@ max/< : GT X2 X1 -> max X1 X2 X2.
 	exists {E3:eq X3 Y3}
 	true.
 
+%abbrev min-unique = min-deterministic.
+
 - : min-deterministic (min/=) (min/=) eq/ eq/ eq/.
 
 - : min-deterministic (min/=) (min/> X>X) eq/ eq/ eq/.
@@ -148,6 +150,42 @@ max/< : GT X2 X1 -> max X1 X2 X2.
 
 %worlds () (min-commutative _ _).
 %total { } (min-commutative _ _).
+
+
+%theorem min/<-inversion :
+	forall*	{X1} {X2} {X3}
+	forall	{M: min X1 X2 X3}
+		{G: GT X2 X3}
+	exists	{E: EQ X1 X3}
+	true.
+
+- : min/<-inversion min/= N>N E
+    <- GT-anti-reflexive N>N F
+    <- false-implies-EQ F E.
+
+- : min/<-inversion (min/< G) _ EQ/.
+
+- : min/<-inversion (min/> _) N>N E
+    <- GT-anti-reflexive N>N F
+    <- false-implies-EQ F E.
+
+%worlds () (min/<-inversion _ _ _).
+%total { } (min/<-inversion _ _ _).
+
+
+%theorem min/>-inversion :
+	forall*	{X1} {X2} {X3}
+	forall	{M: min X1 X2 X3}
+		{G: GT X1 X3}
+	exists	{E: EQ X2 X3}
+	true.
+
+- : min/>-inversion M G E
+    <- min-commutative M MP
+    <- min/<-inversion MP G E.
+
+%worlds () (min/>-inversion _ _ _).
+%total { } (min/>-inversion _ _ _).
 
 
 %theorem GE-implies-min :
