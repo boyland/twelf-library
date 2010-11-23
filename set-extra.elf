@@ -89,6 +89,46 @@ END_ELF
 %}%
 
 
+% a useful way to break down a union:
+
+%theorem leq-union-implies-leq-intersection-union :
+	forall*	{A} {B} {C} {D} {E} {F}
+	forall	{L: leq A D}
+		{U: union B C D}
+		{I: intersection A B E}
+		{V: union E C F}
+	exists	{M: leq A F}
+	true.
+
+- : leq-union-implies-leq-intersection-union
+	A<=D BUC=D A^B=E EUC=F A<=F
+    <- leq-implies-intersection A<=D A^D=A
+    <- intersection-total* A C G A^C=G
+    <- intersection-left-distributes-over-union* BUC=D A^D=A A^B=E A^C=G EUG=A
+    <- intersection-implies-leq A^C=G G<=A G<=C
+    <- union-left-preserves-leq* G<=C EUG=A EUC=F A<=F.
+
+%worlds () (leq-union-implies-leq-intersection-union _ _ _ _ _).
+%total { } (leq-union-implies-leq-intersection-union _ _ _ _ _).
+
+
+%theorem leq-union-disjoint-implies-leq :
+	forall*	{A} {B} {C} {D}
+	forall	{L: leq A D}
+		{U: union B C D}
+		{X: disjoint A B}
+	exists	{M: leq A C}
+	true.
+
+- : leq-union-disjoint-implies-leq A<=D BUC=D A^B A<=C
+    <- disjoint-intersection-empty A^B A^B=0
+    <- leq-union-implies-leq-intersection-union A<=D BUC=D A^B=0 union/L A<=C.
+
+%worlds () (leq-union-disjoint-implies-leq _ _ _ _).
+%total { } (leq-union-disjoint-implies-leq _ _ _ _).
+
+
+
 %%% set membership w.r.t. union:
 
 
