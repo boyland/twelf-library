@@ -617,6 +617,7 @@ Too much work: we need to add a size to prove termination.
 %total { } (shift-right-preserves-join-converse _ _ _ _ _).
 
 
+% this should be a * theorem
 %theorem shift-preserves-join :
 	forall* {N} {M1} {M2} {M3} {SM1} {SM2} {SM3}
 	forall {A:join M1 M2 M3} 
@@ -716,6 +717,62 @@ Too much work: we need to add a size to prove termination.
 
 %worlds (WORLDS) (shift-preserves-join-converse _ _ _ _ _ _).
 %total { } (shift-preserves-join-converse _ _ _ _ _ _).
+
+
+% arguably: this should be the non-starred version
+%theorem shift-preserves-join-converse* :
+	forall* {N} {M3} {SM1} {SM2} {SM3}
+	forall {SA:join SM1 SM2 SM3}  {S3:shift N M3 SM3}
+	exists {M1} {M2}
+               {S1:shift N M1 SM1} {S2:shift N M2 SM2} 
+	       {A:join M1 M2 M3}
+	true.
+
+- : shift-preserves-join-converse* U shift/0 _ _ shift/0 shift/0 join/L.
+
+- : shift-preserves-join-converse* join/L S _ _ shift/0 S join/L.
+
+- : shift-preserves-join-converse* join/R S _ _ S shift/0 join/R.
+
+- : shift-preserves-join-converse* (join/= U DJ nat`eq/) (shift/+ P) _ _
+	(shift/+ P) (shift/+ P) (join/= U DJ nat`eq/).
+
+- : shift-preserves-join-converse* (join/< U D+1+A=B) 
+	(shift/+ N+1+Y=A) _ _
+	(shift/+ N+1+Y=A)
+	(shift/+ N+1+Z=B)
+	(join/< U D+1+Y=Z)
+    <- plus-commutative N+1+Y=A Y+N+1=A
+    <- plus-associative-converse Y+N+1=A D+1+A=B Z D+1+Y=Z Z+N+1=B
+    <- plus-commutative Z+N+1=B N+1+Z=B.
+
+- : shift-preserves-join-converse* (join/> U D+1+B=A)
+	(shift/+ N+1+Y=B) _ _
+	(shift/+ N+1+Z=A)
+	(shift/+ N+1+Y=B)
+	(join/> U D+1+Y=Z)
+    <- plus-commutative N+1+Y=B Y+N+1=B
+    <- plus-associative-converse Y+N+1=B D+1+B=A Z D+1+Y=Z Z+N+1=A
+    <- plus-commutative Z+N+1=A N+1+Z=A.
+
+%worlds (WORLDS) (shift-preserves-join-converse* _ _ _ _ _ _ _).
+%total { } (shift-preserves-join-converse* _ _ _ _ _ _ _).
+
+
+%theorem shift-preserves-join-converse** :
+	forall* {N} {M1} {M2} {M3} {SM1} {SM2} {SM3}
+	forall {SA:join SM1 SM2 SM3}  {S3:shift N M3 SM3}
+               {S1:shift N M1 SM1} {S2:shift N M2 SM2} 
+	exists {A:join M1 M2 M3}
+	true.
+
+- : shift-preserves-join-converse** JP S3 S1 S2 J
+    <- shift-preserves-join-converse JP S1 S2 _ JX S3X
+    <- shift-cancels S3X S3 nat`eq/ eq/ M3X=M3
+    <- join-respects-eq JX eq/ eq/ M3X=M3 J.
+
+%worlds (WORLDS) (shift-preserves-join-converse** _ _ _ _ _).
+%total { } (shift-preserves-join-converse** _ _ _ _ _).
 
 
 %{%
