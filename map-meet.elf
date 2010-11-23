@@ -1283,7 +1283,7 @@ END_ELF
 #ifdef DATA_MEET_COMMUTATIVE
 #define OP_COMMUTATIVE 1
 #endif
-#ifdef DATA_MEET_TOTAL 1
+#ifdef DATA_MEET_TOTAL
 #define OP_TOTAL 1
 #endif
 #define CMP_TRANSITIVE 1
