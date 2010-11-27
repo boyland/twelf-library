@@ -974,6 +974,81 @@ END_ELF
 #endif /* DATA_MEET_ASSOCIATIVE */
 %}%
 
+%theorem meet-meets-lookup :
+	forall*	{M1} {M2} {M3} {N} {D1} {D2}
+	forall	{L1: lookup M1 N D1}
+		{L2: lookup M2 N D2}
+		{MM: meet M1 M2 M3}
+	exists	{D3}
+		{DM: data`meet D1 D2 D3}
+		{L3: lookup M3 N D3}
+	true.
+
+- : meet-meets-lookup (lookup/= nat`eq/) (lookup/= nat`eq/) MM _ DM L3
+    <- meet/=-inversion MM nat`eq/ _ _ DM _ NM=M3
+    <- lookup-respects-eq (lookup/= nat`eq/) NM=M3 nat`eq/ data`eq/ L3.
+
+- : meet-meets-lookup (lookup/= nat`eq/) (lookup/> L2 P2) MM _ DM L3
+    <- meet/>-inversion MM P2 _ MP SM
+    <- meet-meets-lookup (lookup/= nat`eq/) L2 MP _ DM L3P
+    <- plus-swap-succ P2 P2S
+    <- plus-commutative P2S P2SC
+    <- shift-preserves-lookup* L3P SM P2SC L3.
+
+- : meet-meets-lookup (lookup/> L1 P1) (lookup/= nat`eq/) MM _ DM L3
+    <- meet/<-inversion MM P1 _ MP SM
+    <- meet-meets-lookup L1 (lookup/= nat`eq/) MP _ DM L3P
+    <- plus-swap-succ P1 P1S
+    <- plus-commutative P1S P1SC
+    <- shift-preserves-lookup* L3P SM P1SC L3.
+
+- : meet-meets-lookup (lookup/> L1 P1) LL2
+	(meet/= MM _ nat`eq/) _ DM (lookup/> L3 P1)
+    <- lookup/>-inversion LL2 P1 L2
+    <- meet-meets-lookup L1 L2 MM _ DM L3.
+
+- : meet-meets-lookup (lookup/> L1 N4+1+N1=N) (lookup/> L2 N5+1+N2=N)
+	(meet/< SM MM N0+1+N1=N2) _ DM SL3
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-associative-converse N0+N1+1=N2 N5+1+N2=N _ N5+1+N0=N4P N4P+N1+1=N
+    <- plus-swap-succ N4+1+N1=N N4+N1+1=N
+    <- plus-right-cancels N4P+N1+1=N N4+N1+1=N nat`eq/ nat`eq/ N4P=N4
+    <- plus-respects-eq N5+1+N0=N4P nat`eq/ nat`eq/ N4P=N4 N5+1+N0=N4
+    <- meet-meets-lookup L1 (lookup/> L2 N5+1+N0=N4) MM _ DM L3
+    <- plus-commutative N4+N1+1=N N1+1+N4=N
+    <- shift-preserves-lookup* L3 SM N1+1+N4=N SL3. 
+
+- : meet-meets-lookup (lookup/> L1 N4+1+N1=N) (lookup/> L2 N5+1+N2=N)
+	(meet/> SM MM N0+1+N2=N1) _ DM SL3
+    <- plus-swap-succ N0+1+N2=N1 N0+N2+1=N1
+    <- plus-associative-converse N0+N2+1=N1 N4+1+N1=N _ N4+1+N0=N5P N5P+N2+1=N
+    <- plus-swap-succ N5+1+N2=N N5+N2+1=N
+    <- plus-right-cancels N5P+N2+1=N N5+N2+1=N nat`eq/ nat`eq/ N5P=N5
+    <- plus-respects-eq N4+1+N0=N5P nat`eq/ nat`eq/ N5P=N5 N4+1+N0=N5
+    <- meet-meets-lookup (lookup/> L1 N4+1+N0=N5) L2 MM _ DM L3
+    <- plus-commutative N5+N2+1=N N2+1+N5=N
+    <- shift-preserves-lookup* L3 SM N2+1+N5=N SL3. 
+
+%worlds () (meet-meets-lookup _ _ _ _ _ _).
+%total (M) (meet-meets-lookup _ _ M _ _ _).
+
+
+%theorem meet-meets-lookup* :
+	forall*	{M1} {M2} {M3} {N} {D1} {D2} {D3}
+	forall	{L1: lookup M1 N D1}
+		{L2: lookup M2 N D2}
+		{MM: meet M1 M2 M3}
+		{DM: data`meet D1 D2 D3}
+	exists	{L3: lookup M3 N D3}
+	true.
+
+- : meet-meets-lookup* L1 L2 MM DM L3
+    <- meet-meets-lookup L1 L2 MM _ DMX L3X
+    <- data`meet-deterministic DMX DM data`eq/ data`eq/ D3X=D3
+    <- lookup-respects-eq L3X eq/ nat`eq/ D3X=D3 L3.
+
+%worlds () (meet-meets-lookup* _ _ _ _ _).
+%total { } (meet-meets-lookup* _ _ _ _ _).
 
 %{%
 #ifdef MAP_LEQ
