@@ -726,6 +726,25 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 %total { } (disjoint-implies-remove-nothing _ _).
 
 
+%theorem remove-subset-implies-union :
+	forall*	{A} {B} {C}
+	forall	{R: remove A B C}
+		{L: leq B A}
+	exists	{U: union B C A}
+	true.
+
+- : remove-subset-implies-union A-B=C B<=A BUC=A
+    <- remove-implies-leq A-B=C C<=A
+    <- union-total* B C AX BUC=AX
+    <- remove-implies-leq-union A-B=C BUC=AX A<=AX
+    <- union-is-lub BUC=AX B<=A C<=A AX<=A
+    <- leq-anti-symmetric AX<=A A<=AX AX=A
+    <- union-respects-eq BUC=AX eq/ eq/ AX=A BUC=A.
+
+%worlds () (remove-subset-implies-union _ _ _).
+%total { } (remove-subset-implies-union _ _ _).
+
+
 %theorem union-right-commutes-remove* :
 	forall*	{A} {B} {C} {D} {E} {F} {G}
 	forall	{R: remove A B C}
@@ -976,3 +995,130 @@ Tried to do it without peeking inside of union, and failed
     <- leq-union-disjoint-implies-leq G<=H DUE=H G^D G<=E
 
 %}%
+
+
+%theorem remove-right-preserves-leq :
+	forall*	{A} {B} {C} {D} {E}
+	forall	{L: leq A D}
+		{R: remove A B C}
+		{RP: remove D B E}
+	exists	{LP: leq C E}
+	true.
+
+- : remove-right-preserves-leq A<=D A-B=C D-B=E C<=E
+    <- remove-implies-leq A-B=C C<=A
+    <- leq-transitive C<=A A<=D C<=D
+    <- union-total* B E F BUE=F
+    <- remove-implies-leq-union D-B=E BUE=F D<=F
+    <- leq-transitive C<=D D<=F C<=F
+    <- remove-implies-disjoint A-B=C B^C
+    <- disjoint-symmetric B^C C^B
+    <- leq-union-disjoint-implies-leq C<=F BUE=F C^B C<=E.
+
+%worlds () (remove-right-preserves-leq _ _ _ _).
+%total { } (remove-right-preserves-leq _ _ _ _).
+
+
+%theorem remove-right-preserves-disjoint :
+	forall*	{A} {B} {C} {D} {E}
+	forall	{L: disjoint A D}
+		{R: remove A B C}
+		{RP: remove D B E}
+	exists	{LP: disjoint C E}
+	true.
+
+- : remove-right-preserves-disjoint A^D A-B=C D-B=E C^E
+    <- remove-implies-leq A-B=C C<=A
+    <- remove-implies-leq D-B=E E<=D
+    <- disjoint-respects-geq A^D C<=A E<=D C^E.
+
+%worlds () (remove-right-preserves-disjoint _ _ _ _).
+%total { } (remove-right-preserves-disjoint _ _ _ _).
+
+
+%theorem remove-right-distributes-over-intersection* :
+	forall*	{A} {B} {C} {D} {E} {F} {G}
+	forall	{U: intersection A B C}
+		{R: remove C D E}
+		{RA: remove A D F}
+		{RB: remove B D G}
+	exists	{U: intersection F G E}
+	true.
+
+%theorem remove-right-distributes-over-intersection/L :
+	forall*	{A} {B} {C} {D} {E} {F} {G} {X} {Y} {B?}
+	forall	{U: intersection A B C}
+		{R: remove C D E}
+		{RA: remove A D F}
+		{RB: remove B D G}
+		{RF: remove F E X}
+		{RG: remove G E Y}
+		{D?: disjoint? X Y B?}
+	exists	{D: disjoint X Y}
+	true.
+
+- : remove-right-distributes-over-intersection/L _ _ _ _ _ _ 
+	(disjoint?/yes D) D.
+
+- : remove-right-distributes-over-intersection/L
+	A^B=C C-D=E A-D=F B-D=G F-E=X G-E=Y (disjoint?/no XM YM) X^Y
+    <- remove-implies-disjoint F-E=X E^X
+    <- disjoint-symmetric E^X X^E
+    <- disjoint-member-implies-not-member XM X^E ENM
+    <- remove-implies-leq F-E=X X<=F
+    <- remove-implies-leq G-E=Y Y<=G
+    <- member-respects-leq XM X<=F FM
+    <- member-respects-leq YM Y<=G GM
+    <- remove-implies-disjoint A-D=F D^F
+    <- disjoint-symmetric D^F F^D
+    <- disjoint-member-implies-not-member FM F^D DNM
+    <- union-total* D E H DUE=H
+    <- union-preserves-not-member* DNM ENM DUE=H HNM
+    <- remove-implies-leq-union C-D=E DUE=H C<=H
+    <- not-member-respects-geq HNM C<=H CNM
+    <- remove-implies-leq A-D=F F<=A
+    <- remove-implies-leq B-D=G G<=B
+    <- member-respects-leq FM F<=A AM
+    <- member-respects-leq GM G<=B BM
+    <- intersection-preserves-member AM BM A^B=C CM
+    <- member-not-member-contradiction CM CNM FALSE
+    <- false-implies-disjoint FALSE X^Y.
+		
+%worlds () (remove-right-distributes-over-intersection/L _ _ _ _ _ _ _ _).
+%total { } (remove-right-distributes-over-intersection/L _ _ _ _ _ _ _ _).
+
+- : remove-right-distributes-over-intersection* A^B=C C-D=E A-D=F B-D=G F^G=E
+    <- intersection-implies-leq A^B=C C<=A C<=B
+    <- remove-right-preserves-leq C<=A C-D=E A-D=F E<=F
+    <- remove-right-preserves-leq C<=B C-D=E B-D=G E<=G
+    <- remove-total* F E X F-E=X
+    <- remove-total* G E Y G-E=Y 
+    <- remove-subset-implies-union F-E=X E<=F EUX=F
+    <- remove-subset-implies-union G-E=Y E<=G EUY=G
+    <- disjoint?-total X^Y?
+    <- remove-right-distributes-over-intersection/L 
+	A^B=C C-D=E A-D=F B-D=G F-E=X G-E=Y X^Y? X^Y
+    <- intersection-characterization EUX=F EUY=G X^Y F^G=E.
+
+%worlds () (remove-right-distributes-over-intersection* _ _ _ _ _).
+%total { } (remove-right-distributes-over-intersection* _ _ _ _ _).
+
+
+%theorem remove-right-distributes-over-intersection :
+	forall*	{A} {B} {C} {D} {E}
+	forall	{U: intersection A B C}
+		{R: remove C D E}
+	exists	{F} {G}
+		{RA: remove A D F}
+		{RB: remove B D G}
+		{U: intersection F G E}
+	true.
+
+- : remove-right-distributes-over-intersection U R _ _ RA RB UP
+    <- remove-total RA
+    <- remove-total RB
+    <- remove-right-distributes-over-intersection* U R RA RB UP.
+
+%worlds () (remove-right-distributes-over-intersection _ _ _ _ _ _ _).
+%total { } (remove-right-distributes-over-intersection _ _ _ _ _ _ _).
+
