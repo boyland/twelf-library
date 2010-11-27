@@ -399,6 +399,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (false-implies-lookup _ %{=>}% F^N=D).
 %total {} (false-implies-lookup _ _).
 
+
 %theorem lookup-respects-eq :
 	forall* {M} {N} {D} {MP} {NP} {DP}
 	forall {L:lookup M N D} {EM:eq M MP} {EN:nat`eq N NP} {ED:data`eq D DP}
@@ -409,6 +410,42 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds (WORLDS) (lookup-respects-eq M^N=D M=M' N=N' D=D' %{=>}% M'^N'=D').
 %total {} (lookup-respects-eq _ _ _ _ _).
+%reduces X = Y (lookup-respects-eq X _ _ _ Y).
+
+
+%theorem meta-reduces-lookup :
+	forall*	{M1} {M2} {N1} {N2} {D1} {D2}
+	forall	{F: void}
+		{L1: lookup M1 N1 D1}
+		{L2: lookup M2 N2 D2}
+	true.
+
+%worlds () (meta-reduces-lookup _ _ _).
+%total { } (meta-reduces-lookup _ _ _).
+%reduces X < Y (meta-reduces-lookup _ X Y).
+
+
+%theorem lookup/>-inversion :
+	forall*	{N1} {D1} {M1} {N2} {D2} {N0}
+	forall	{L: lookup (map/+ N1 D1 M1) N2 D2}
+		{P: plus (s N0) N1 N2}
+	exists	{LP: lookup M1 N0 D2}
+	true. 
+
+- : lookup/>-inversion (LEQ:lookup (map/+ N _ _) N _) P L
+    <- plus-implies-gt P nat`eq/ N>N
+    <- gt-anti-reflexive N>N F
+    <- false-implies-lookup F L
+    <- meta-reduces-lookup F L LEQ.
+
+- : lookup/>-inversion (lookup/> LP P) PX LPX
+    <- plus-right-cancels P PX nat`eq/ nat`eq/ SN0=SNX
+    <- succ-cancels SN0=SNX N0=NX
+    <- lookup-respects-eq LP eq/ N0=NX data`eq/ LPX.
+
+%worlds () (lookup/>-inversion _ _ _).
+%total { } (lookup/>-inversion _ _ _).
+%reduces Y < X (lookup/>-inversion X _ Y).
 
 
 %theorem lookup-deterministic :
@@ -1850,39 +1887,19 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %reduces U = U' (update-respects-eq U _ _ _ _ U').
 
 
+%% a technical lemma to help prove reduction arguments
 
-%%% technical lemmas to help prove reduction arguments
+%theorem meta-reduces-update :
+	forall*	{M1} {M2} {N1} {N2} {D1} {D2} {M1P} {M2P}
+	forall	{F: void}
+		{L1: update M1 N1 D1 M1P}
+		{L2: update M2 N2 D2 M2P}
+	true.
 
+%worlds (WORLDS) (meta-reduces-update _ _ _).
+%total { } (meta-reduces-update _ _ _).
+%reduces X < Y (meta-reduces-update _ X Y).
 
-update-eq : {M1} {N1} {D1} {M1'} {M2} {N2} {D2} {M2'}
-            update M1 N1 D1 M1' -> update M2 N2 D2 M2' -> type.
-update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
-
-
-%theorem false-implies-update-eq :
-	forall* {M1} {N1} {D1} {M1'} {M2} {N2} {D2} {M2'} {U} {U'}
-        forall {F:void}
-	exists {UE:update-eq M1 N1 D1 M1'  M2 N2 D2 M2' U U'}
-        true.
-
-%worlds (WORLDS) (false-implies-update-eq _ _).
-%total { } (false-implies-update-eq _ _).
-
-
-%theorem meta-update-eq :
-	forall* {M1} {N1} {D1} {M1'} {M2} {N2} {D2} {M2'}
-	forall {U} {U'} {UE:update-eq M1 N1 D1 M1'  M2 N2 D2 M2' U U'}
-        true.
-
-- : meta-update-eq U U (update-eq/).
-
-%worlds (WORLDS) (meta-update-eq _ _ _).
-%total { } (meta-update-eq _ _ _).
-%reduces U = U' (meta-update-eq U U' _).
-
-
-
-%%% inversion lemmas
 
 %theorem update/=-inversion :
 	forall* {N1} {D1} {M1} {N2} {D2} {M2}
@@ -1941,29 +1958,24 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 
 % a little more complex than might be expected
 % because we want to prove reduction
-- : update/>-inversion (update/= nat`eq/: update (map/+ N D1 M1) N D2 
-                                                 (map/+ N D2 M1))
-                       N0+1+N=N M1 U' E
+- : update/>-inversion (U: update (map/+ N D1 M1) N D2 (map/+ N D2 M1))
+                       N0+1+N=N M1 UP E
     <- plus-implies-gt N0+1+N=N nat`eq/ N>N
     <- gt-anti-reflexive N>N F
     <- false-implies-eq F E
-    <- false-implies-update F U'
-    <- false-implies-update-eq F
-       (UE:update-eq (map/+ N D1 M1) N D2 (map/+ N D2 M1)
-                     (map/+ N D1 M1) N D2 (map/+ N D1 M1) _ _)
-    <- meta-update-eq (update/= nat`eq/) (update/> U' N0+1+N=N) UE.
+    <- false-implies-update F UP
+    <- meta-reduces-update F UP U.
 
-- : update/>-inversion (update/< N3+1+N2=N1: update (map/+ N1 D1 M1) _ _ _) 
-                       N0+1+N1=N2 M1 U' E
+- : update/>-inversion 
+	(update/< N3+1+N2=N1: update (map/+ N1 D1 M1) N2 D2 _) 
+        N0+1+N1=N2 M1 UP E
     <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
     <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
     <- nat`gt-anti-symmetric N1>N2 N2>N1 F
-    <- false-implies-update F U'
+    <- false-implies-update F UP
     <- false-implies-eq F E
-    <- false-implies-update-eq F
-       (UE:update-eq (map/+ N1 D1 M1) N2 D2 (map/+ N2 D2 (map/+ N3 D1 M1))
-                     (map/+ N1 D1 M1) N2 D2 (map/+ N1 D1 M1) _ _)
-    <- meta-update-eq (update/< N3+1+N2=N1) (update/> U' N0+1+N1=N2) UE.
+    <- meta-reduces-update 
+	F UP (update/< N3+1+N2=N1: update (map/+ N1 D1 M1) N2 D2 _).
 
 - : update/>-inversion (update/> U N0+1+N1=N2) N0P+1+N1=N2 _ UP eq/ 
     <- nat`plus-right-cancels N0+1+N1=N2 N0P+1+N1=N2 nat`eq/ nat`eq/ N0+1=N0P+1
@@ -1972,7 +1984,7 @@ update-eq/ : update-eq M1 N1 D1 M1' M1 N1 D1 M1' U U.
 
 %worlds (WORLDS) (update/>-inversion _ _ _ _ _).
 %total { } (update/>-inversion _ _ _ _ _).
-%reduces U' < U (update/>-inversion U _ _ U' _).
+%reduces UP < U (update/>-inversion U _ _ UP _).
 
 
 %theorem update-deterministic :
