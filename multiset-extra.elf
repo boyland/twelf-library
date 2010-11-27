@@ -18,20 +18,20 @@
                                               S1+S4=S5 S2+S4=S6 S5*S6=S7
     <- union-total S1+S4=S5
     <- union-total S2+S4=S6
-    <- intersection-total S5*S6=S7'
+    <- intersection-total S5*S6=S7P
     <- union-implies-leq S2+S4=S6 _ S4<=S6
     <- leq-implies-intersection S4<=S6 S4*S6=S4
     <- intersection-total S1*S6=S8
     <- intersection-total S1*S4=S9
-    <- intersection-right-distributes-over-union* S1+S4=S5 S5*S6=S7'
-                                                  S1*S6=S8 S4*S6=S4 S8+S4=S7'
+    <- intersection-right-distributes-over-union* S1+S4=S5 S5*S6=S7P
+                                                  S1*S6=S8 S4*S6=S4 S8+S4=S7P
     <- intersection-left-distributes-over-union* S2+S4=S6 S1*S6=S8
                                                  S1*S2=S3 S1*S4=S9 S3+S9=S8
     <- intersection-implies-leq S1*S4=S9 _ S9<=S4
     <- leq-implies-union S9<=S4 S9+S4=S4
-    <- union-associative* S3+S9=S8 S8+S4=S7' S9+S4=S4 S3+S4=S7'
-    <- union-deterministic S3+S4=S7' S3+S4=S7 eq/ eq/ S7'=S7 
-    <- intersection-respects-eq S5*S6=S7' eq/ eq/ S7'=S7 S5*S6=S7.
+    <- union-associative* S3+S9=S8 S8+S4=S7P S9+S4=S4 S3+S4=S7P
+    <- union-deterministic S3+S4=S7P S3+S4=S7 eq/ eq/ S7P=S7 
+    <- intersection-respects-eq S5*S6=S7P eq/ eq/ S7P=S7 S5*S6=S7.
 
 %worlds () (union-right-distributes-over-intersection _ _ _ _ _ _ _).
 %total { } (union-right-distributes-over-intersection _ _ _ _ _ _ _).

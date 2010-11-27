@@ -18,8 +18,8 @@
  eqdata : data -> data -> type.
  eqdata/ : eqdata D D.
  %theorem false-implies-eqdata : 
-	forall* {D} {D'} forall {F:void} exists {E:eqdata D D'} true.
- %worlds () (false-implies-eqdata _ %{=>}% D=D').
+	forall* {D} {DP} forall {F:void} exists {E:eqdata D DP} true.
+ %worlds () (false-implies-eqdata _ %{=>}% D=DP).
  %total {} (false-implies-eqdata _ _).
 
  E.g.

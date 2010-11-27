@@ -7,7 +7,7 @@ Retrofit rat to use eq/ne/eq?
 
 The definition of rat assumes that nat and rat use different
 identifiers which is convenient for writing proofs using
-both but is inconvenient for `functors'.
+both but is inconvenient for functors.
 %}%
 
 

@@ -8,7 +8,7 @@
  This is an "adequate" representation of the non-negative rationals:
  It is layered directly on the representation of the positive rational
  numbers.  It is not as complete as the latter signature,
- because I'm lazy.
+ because I am lazy.
 %}%
 
 %{%
@@ -504,10 +504,10 @@ END_ELF
         exists {E:eq Q1 Q2}
         true.
 
-- : add-right-cancels Q1+Q2=Q3 Q1'+Q2'=Q3' Q2=Q2' Q3=Q3' Q1=Q1'
+- : add-right-cancels Q1+Q2=Q3 Q1P+Q2P=Q3P Q2=Q2P Q3=Q3P Q1=Q1P
     <- add-commutative Q1+Q2=Q3 Q2+Q1=Q3
-    <- add-commutative Q1'+Q2'=Q3' Q2'+Q1'=Q3'
-    <- add-left-cancels Q2+Q1=Q3 Q2'+Q1'=Q3'  Q2=Q2' Q3=Q3' Q1=Q1'.
+    <- add-commutative Q1P+Q2P=Q3P Q2P+Q1P=Q3P
+    <- add-left-cancels Q2+Q1=Q3 Q2P+Q1P=Q3P  Q2=Q2P Q3=Q3P Q1=Q1P.
 
 %worlds () (add-right-cancels _ _ _ _ _).
 %total { } (add-right-cancels _ _ _ _ _).

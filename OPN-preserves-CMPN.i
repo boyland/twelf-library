@@ -11,7 +11,7 @@
  *	forall* {X1} {X2} {X3} {X4} {X5}
  *      forall {G:CMPN X2 X4}
  *             {O1:OPN X1 X2 X3} {O2:OPN X1 X4 X5}
- *      exists {G':CMPN X3 X5}
+ *      exists {GP:CMPN X3 X5}
  *	true.
  * OPN-commutative OPN-total CMPN-transitive
  * OP(,) OPN CMPN CMP(,)

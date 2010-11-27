@@ -41,15 +41,15 @@ divrem/s : divrem M (s N-) (s Q) R
 
 
 %theorem divrem-respects-eq :
-	forall* {M} {N} {Q} {R} {M'} {N'} {Q'} {R'}
+	forall* {M} {N} {Q} {R} {MP} {NP} {QP} {RP}
 	forall {D:divrem M N Q R} 
-               {E1:eq M M'} {E2:eq N N'} {E3:eq Q Q'} {E4:eq R R'}
-	exists {D':divrem M' N' Q' R'}
+               {E1:eq M MP} {E2:eq N NP} {E3:eq Q QP} {E4:eq R RP}
+	exists {DP:divrem MP NP QP RP}
 	true.
 
 - : divrem-respects-eq D eq/ eq/ eq/ eq/ D.
 
-%worlds () (divrem-respects-eq M/N=Q,R M=M' N=N' Q=Q' R=R' %{=>}% M'/N'=Q',R').
+%worlds () (divrem-respects-eq M/N=Q,R M=MP N=NP Q=QP R=RP %{=>}% MP/NP=QP,RP).
 %total {} (divrem-respects-eq _ _ _ _ _ _).
 
 
@@ -76,8 +76,8 @@ divrem/s : divrem M (s N-) (s Q) R
     <- plus-commutative D+N=M N+D=M
     <- plus-implies-gt N+D=M eq/ M>D
     <- meta-gt M D M>D
-    <- compare-total* D N-1 C' CMP'
-    <- divrem-total** D N-1 C' CMP' Q R D/N=Q,R.
+    <- compare-total* D N-1 CP CMPP
+    <- divrem-total** D N-1 CP CMPP Q R D/N=Q,R.
 
 %worlds () (divrem-total** M N-1 C MCN %{=>}% Q R M/N=Q,R).
 %total (M) (divrem-total** M _ _ _ _ _ _).
@@ -100,37 +100,37 @@ divrem/s : divrem M (s N-) (s Q) R
 
 
 %theorem divrem-deterministic :
-	forall* {M} {N} {Q} {R} {M'} {N'} {Q'} {R'}
-	forall {D:divrem M N Q R} {D':divrem M' N' Q' R'}
-	       {E1:eq M M'} {E2:eq N N'}
-	exists {E3:eq Q Q'} {E4:eq R R'}
+	forall* {M} {N} {Q} {R} {MP} {NP} {QP} {RP}
+	forall {D:divrem M N Q R} {DP:divrem MP NP QP RP}
+	       {E1:eq M MP} {E2:eq N NP}
+	exists {E3:eq Q QP} {E4:eq R RP}
 	true.
 
 %abbrev divrem-unique = divrem-deterministic.
 
 - : divrem-deterministic (divrem/z _) (divrem/z _) eq/ eq/ eq/ eq/.
 
-- : divrem-deterministic (divrem/s D/N=Q,R D+N=M) (divrem/s D'/N=Q',R' D'+N=M)
-                         eq/ eq/ SQ=SQ' R=R'
-    <- plus-right-cancels D+N=M D'+N=M eq/ eq/ D=D'
-    <- divrem-deterministic D/N=Q,R  D'/N=Q',R' D=D' eq/ Q=Q' R=R'
-    <- succ-deterministic Q=Q' SQ=SQ'.
+- : divrem-deterministic (divrem/s D/N=Q,R D+N=M) (divrem/s DP/N=QP,RP DP+N=M)
+                         eq/ eq/ SQ=SQP R=RP
+    <- plus-right-cancels D+N=M DP+N=M eq/ eq/ D=DP
+    <- divrem-deterministic D/N=Q,R  DP/N=QP,RP D=DP eq/ Q=QP R=RP
+    <- succ-deterministic Q=QP SQ=SQP.
 
 %% contradiction cases:
 
-- : divrem-deterministic (divrem/z N>M) (divrem/s _ D+N=M) eq/ eq/ Q=Q' R=R'
+- : divrem-deterministic (divrem/z N>M) (divrem/s _ D+N=M) eq/ eq/ Q=QP R=RP
     <- plus-commutative D+N=M N+D=M
     <- plus-gt-contradiction N+D=M N>M F
-    <- false-implies-eq F Q=Q'
-    <- false-implies-eq F R=R'.
+    <- false-implies-eq F Q=QP
+    <- false-implies-eq F R=RP.
 
-- : divrem-deterministic (divrem/s _ D+N=M) (divrem/z N>M) eq/ eq/ Q=Q' R=R'
+- : divrem-deterministic (divrem/s _ D+N=M) (divrem/z N>M) eq/ eq/ Q=QP R=RP
     <- plus-commutative D+N=M N+D=M
     <- plus-gt-contradiction N+D=M N>M F
-    <- false-implies-eq F Q=Q'
-    <- false-implies-eq F R=R'.
+    <- false-implies-eq F Q=QP
+    <- false-implies-eq F R=RP.
 
-%worlds () (divrem-deterministic M/N=Q,R M'/N'=Q'/R' M=M' N=N' %{=>}% Q=Q' R=R').
+%worlds () (divrem-deterministic M/N=Q,R MP/NP=QP/RP M=MP N=NP %{=>}% Q=QP R=RP).
 %total (D) (divrem-deterministic D _ _ _ _ _).
 
 

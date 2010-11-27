@@ -64,9 +64,9 @@ domain/+ : domain M S ->
 
 - : domain-deterministic domain/0 domain/0 eq/ set`eq/.
 
-- : domain-deterministic (domain/+ D1) (domain/+ D2) eq/ SE'
+- : domain-deterministic (domain/+ D1) (domain/+ D2) eq/ SEP
     <- domain-deterministic D1 D2 eq/ SE
-    <- set`map/+-preserves-eq nat`eq/ unit`eq/ SE SE'.
+    <- set`map/+-preserves-eq nat`eq/ unit`eq/ SE SEP.
 
 %worlds () (domain-deterministic _ _ _ _).
 %total (A) (domain-deterministic A _ _ _).
@@ -447,7 +447,7 @@ domain/+ : domain M S ->
 - : update-commute-domain (update/0) domain/0 (domain/+ domain/0)
 	(set`update/0).
 
-% NB: we can't use %unique for coverage for both this and the next case.
+% NB: we cannot use %unique for coverage for both this and the next case.
 - : update-commute-domain (update/= nat`eq/) (domain/+ D1) (domain/+ D2) SU
     <- domain-deterministic D1 D2 eq/ S1=S2
     <- set`map/+-preserves-eq nat`eq/ unit`eq/ S1=S2 SE

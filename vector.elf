@@ -6,7 +6,7 @@
 
 %{%
 This signature implements vectors of a arbitrary ring
-(we don't even require either operation to be invertible).
+(we do not even require either operation to be invertible).
 The vectors carry their length around so that we can
 ensure that operations succeed.
 
@@ -22,8 +22,8 @@ data : type.
 data`eq : data -> data -> type
 data`eq/ : data`eq X X.
 %theorem data`false-implies-eq : 
-	forall* {X} {X'} forall {F:void} exists {E:data`eq X X'} true.
-%worlds () (data`false-implies-eq _ %{=>}% X=X').
+	forall* {X} {XP} forall {F:void} exists {E:data`eq X XP} true.
+%worlds () (data`false-implies-eq _ %{=>}% X=XP).
 %total {} (data`false-implies-eq _ _).
 
 If ARITH is defined, it also assumes the existence of add and mul operations
@@ -545,8 +545,8 @@ dot/+ :
     <- succ-implies-gt-zero _ GT.
 
 - : get-implies-gt (get/+ G) GT
-    <- get-implies-gt G GT'
-    <- succ-preserves-gt GT' GT.
+    <- get-implies-gt G GTP
+    <- succ-preserves-gt GTP GT.
 
 %worlds () (get-implies-gt _ _).
 %total (G) (get-implies-gt G _).
@@ -632,8 +632,8 @@ dot/+ :
 - : set-deterministic set/0 set/0 _ _ data`eq/ eq/.
 
 - : set-deterministic (set/+ G1) (set/+ G2) eq/ nat`eq/ data`eq/ EQ
-    <- set-deterministic G1 G2 eq/ nat`eq/ data`eq/ EQ'
-    <- vector/+-preserves-eq data`eq/ EQ' EQ.
+    <- set-deterministic G1 G2 eq/ nat`eq/ data`eq/ EQP
+    <- vector/+-preserves-eq data`eq/ EQP EQ.
 
 %worlds () (set-deterministic _ _ _ _ _ _).
 %total (G) (set-deterministic G _ _ _ _ _).
@@ -649,8 +649,8 @@ dot/+ :
     <- succ-implies-gt-zero _ GT.
 
 - : set-implies-gt (set/+ G) GT
-    <- set-implies-gt G GT'
-    <- succ-preserves-gt GT' GT.
+    <- set-implies-gt G GTP
+    <- succ-preserves-gt GTP GT.
 
 %worlds () (set-implies-gt _ _).
 %total (G) (set-implies-gt G _).
@@ -737,9 +737,9 @@ dot/+ :
 
 - : set-preserves-get (get/+ G) set/0 _ (get/+ G).
 
-- : set-preserves-get (get/+ G) (set/+ S) I1+1<>I2+1 (get/+ G')
+- : set-preserves-get (get/+ G) (set/+ S) I1+1<>I2+1 (get/+ GP)
     <- nat`succ-preserves-ne-converse I1+1<>I2+1 I1<>I2
-    <- set-preserves-get G S I1<>I2 G'.
+    <- set-preserves-get G S I1<>I2 GP.
 
 %worlds () (set-preserves-get _ _ _ _).
 %total (G) (set-preserves-get G _ _ _).
@@ -761,9 +761,9 @@ dot/+ :
 
 - : set-preserves-get-converse (get/+ G) set/0 _ (get/+ G).
 
-- : set-preserves-get-converse (get/+ G) (set/+ S) I1+1<>I2+1 (get/+ G')
+- : set-preserves-get-converse (get/+ G) (set/+ S) I1+1<>I2+1 (get/+ GP)
     <- nat`succ-preserves-ne-converse I1+1<>I2+1 I1<>I2
-    <- set-preserves-get-converse G S I1<>I2 G'.
+    <- set-preserves-get-converse G S I1<>I2 GP.
 
 %worlds () (set-preserves-get-converse _ _ _ _).
 %total (G) (set-preserves-get-converse G _ _ _).
@@ -1045,10 +1045,10 @@ dot/+ :
         exists {E:eq Q1 Q2}
         true.
 
-- : add-right-cancels V1+V2=V3 V1'+V2'=V3' V2=V2' V3=V3' V1=V1'
+- : add-right-cancels V1+V2=V3 V1P+V2P=V3P V2=V2P V3=V3P V1=V1P
     <- add-commutative V1+V2=V3 V2+V1=V3
-    <- add-commutative V1'+V2'=V3' V2'+V1'=V3'
-    <- add-left-cancels V2+V1=V3 V2'+V1'=V3'  V2=V2' V3=V3' V1=V1'.
+    <- add-commutative V1P+V2P=V3P V2P+V1P=V3P
+    <- add-left-cancels V2+V1=V3 V2P+V1P=V3P  V2=V2P V3=V3P V1=V1P.
 
 %worlds () (add-right-cancels _ _ _ _ _).
 %total { } (add-right-cancels _ _ _ _ _).
@@ -1135,8 +1135,8 @@ dot/+ :
     <- data`mul-left-zero _ ZERO*Q=ZERO
     <- data`mul-deterministic ZERO*Q=ZERO ZERO*Q=R data`eq/ data`eq/ ZERO=R
     <- scale-left-zero ZERO*V=Z Z=0
-    <- vector/+-preserves-eq ZERO=R eq/ V'=V
-    <- zero?-respects-eq (zero?/+ Z=0) V'=V bool`eq/ Z?.
+    <- vector/+-preserves-eq ZERO=R eq/ VP=V
+    <- zero?-respects-eq (zero?/+ Z=0) VP=V bool`eq/ Z?.
 
 %worlds () (scale-left-zero _ _).
 %total (S) (scale-left-zero S _).

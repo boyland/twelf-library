@@ -57,13 +57,13 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 
 %worlds () (remove-respects-eq S1-S2=S3 S1=T1 S2=T2 S3=T3 %{=>}% T1-T2=T3).
 %total {} (remove-respects-eq _ _ _ _ _).
-%reduces R = R' (remove-respects-eq R _ _ _ R').
+%reduces R = RP (remove-respects-eq R _ _ _ RP).
 
 %theorem remove/=-inversion :
 	forall* {N1} {S1} {N2} {S2} {S}
 	forall {R:remove (set/+ N1 S1) (set/+ N2 S2) S}
                {E:nat`eq N1 N2}
-        exists {S3} {R':remove S1 S2 S3} {SH:shift N1 S3 S}
+        exists {S3} {RP:remove S1 S2 S3} {SH:shift N1 S3 S}
 	true.
 
 - : remove/=-inversion (remove/= S3<<N1=S S1-S2=S3 nat`eq/) nat`eq/
@@ -84,22 +84,22 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 
 %worlds () (remove/=-inversion _ _ _ _ _).
 %total { } (remove/=-inversion _ _ _ _ _).
-%reduces R < R' (remove/=-inversion R' _ _ R _).
+%reduces R < RP (remove/=-inversion RP _ _ R _).
 
 
 %theorem remove/<-inversion :
 	forall* {N1} {S1} {N2} {S2} {S} {N0}
 	forall {R:remove (set/+ N1 S1) (set/+ N2 S2) S}
                {P:plus (s N0) N1 N2}
-        exists {S3} {R':remove S1 (set/+ N0 S2) S3} {E:eq (set/+ N1 S3) S}
+        exists {S3} {RP:remove S1 (set/+ N0 S2) S3} {E:eq (set/+ N1 S3) S}
 	true.
 
-- : remove/<-inversion (remove/< S1-S0'2=S3 N0'+1+N1=N2) N0+1+N1=N2 
+- : remove/<-inversion (remove/< S1-S0P2=S3 N0P+1+N1=N2) N0+1+N1=N2 
                        _ S1-S02=S3 eq/
-    <- plus-right-cancels N0'+1+N1=N2 N0+1+N1=N2 nat`eq/ nat`eq/ N0'+1=N0+1
-    <- succ-cancels N0'+1=N0+1 N0'=N0
-    <- set/+-preserves-eq N0'=N0 eq/ S0'2=S02
-    <- remove-respects-eq S1-S0'2=S3 eq/ S0'2=S02 eq/ S1-S02=S3.
+    <- plus-right-cancels N0P+1+N1=N2 N0+1+N1=N2 nat`eq/ nat`eq/ N0P+1=N0+1
+    <- succ-cancels N0P+1=N0+1 N0P=N0
+    <- set/+-preserves-eq N0P=N0 eq/ S0P2=S02
+    <- remove-respects-eq S1-S0P2=S3 eq/ S0P2=S02 eq/ S1-S02=S3.
 
 - : remove/<-inversion (remove/= _ S1-S2=S3 nat`eq/) N0+1+N=N _ S1-S02=S3 S13=S
     <- plus-implies-gt N0+1+N=N nat`eq/ N>N
@@ -120,22 +120,22 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 
 %worlds () (remove/<-inversion _ _ _ _ _).
 %total { } (remove/<-inversion _ _ _ _ _).
-%reduces R < R' (remove/<-inversion R' _ _ R _).
+%reduces R < RP (remove/<-inversion RP _ _ R _).
 
 
 %theorem remove/>-inversion :
 	forall* {N1} {S1} {N2} {S2} {S} {N3}
 	forall {R:remove (set/+ N1 S1) (set/+ N2 S2) S}
                {P:plus (s N3) N2 N1}
-        exists {S3} {R':remove (set/+ N3 S1) S2 S3} {SH:shift N2 S3 S}
+        exists {S3} {RP:remove (set/+ N3 S1) S2 S3} {SH:shift N2 S3 S}
 	true.
 
-- : remove/>-inversion (remove/> S3<<N2=S2S3 S3'1-S2=S3 N3'+1+N2=N1)
+- : remove/>-inversion (remove/> S3<<N2=S2S3 S3P1-S2=S3 N3P+1+N2=N1)
                        N3+1+N2=N1 _ S31-S2=S3 S3<<N2=S2S3
-    <- plus-right-cancels N3'+1+N2=N1 N3+1+N2=N1 nat`eq/ nat`eq/ N3'+1=N3+1
-    <- succ-cancels N3'+1=N3+1 N3'=N3
-    <- set/+-preserves-eq N3'=N3 eq/ S3'1=S31
-    <- remove-respects-eq S3'1-S2=S3 S3'1=S31 eq/ eq/ S31-S2=S3.
+    <- plus-right-cancels N3P+1+N2=N1 N3+1+N2=N1 nat`eq/ nat`eq/ N3P+1=N3+1
+    <- succ-cancels N3P+1=N3+1 N3P=N3
+    <- set/+-preserves-eq N3P=N3 eq/ S3P1=S31
+    <- remove-respects-eq S3P1-S2=S3 S3P1=S31 eq/ eq/ S31-S2=S3.
 
 - : remove/>-inversion (remove/= _ S1-S2=S3 nat`eq/) N3+1+N=N _ R SH
     <- plus-implies-gt N3+1+N=N nat`eq/ N>N
@@ -155,7 +155,7 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 
 %worlds () (remove/>-inversion _ _ _ _ _).
 %total { } (remove/>-inversion _ _ _ _ _).
-%reduces R < R' (remove/>-inversion R' _ _ R _).
+%reduces R < RP (remove/>-inversion RP _ _ R _).
 
 
 %theorem remove-total* :
@@ -206,8 +206,8 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
     <- shift-total S3<<N2=S2S3.
 
 %worlds () (remove-total* _ _ _ _) (remove-set/+-total _ _ _ _ _).
-%total {(S1 S1') (S2 S2')} (remove-total* S1 S2 _ _) 
-                           (remove-set/+-total _ S1' S2' _ _).
+%total {(S1 S1P) (S2 S2P)} (remove-total* S1 S2 _ _) 
+                           (remove-set/+-total _ S1P S2P _ _).
 
 
 %abbrev remove-total = remove-total* _ _ _.
@@ -232,21 +232,21 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 
 - : remove-deterministic (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/) R eq/ eq/ 
                          S1S3=T
-    <- remove/=-inversion R nat`eq/ _ S1-S2=S3' S3'<<N1=T
-    <- remove-deterministic S1-S2=S3 S1-S2=S3' eq/ eq/ S3=S3'
-    <- shift-deterministic S3<<N1=S1S3 S3'<<N1=T nat`eq/ S3=S3' S1S3=T.
+    <- remove/=-inversion R nat`eq/ _ S1-S2=S3P S3P<<N1=T
+    <- remove-deterministic S1-S2=S3 S1-S2=S3P eq/ eq/ S3=S3P
+    <- shift-deterministic S3<<N1=S1S3 S3P<<N1=T nat`eq/ S3=S3P S1S3=T.
 
 - : remove-deterministic (remove/< S1-S02=S3 N0+1+N1=N2) R eq/ eq/ S13=T
-    <- remove/<-inversion R N0+1+N1=N2 _ S1-S02=S3' S13'=T
-    <- remove-deterministic S1-S02=S3 S1-S02=S3' eq/ eq/ S3=S3'
-    <- set/+-preserves-eq nat`eq/ S3=S3' S13=S13'
-    <- eq-transitive S13=S13' S13'=T S13=T.
+    <- remove/<-inversion R N0+1+N1=N2 _ S1-S02=S3P S13P=T
+    <- remove-deterministic S1-S02=S3 S1-S02=S3P eq/ eq/ S3=S3P
+    <- set/+-preserves-eq nat`eq/ S3=S3P S13=S13P
+    <- eq-transitive S13=S13P S13P=T S13=T.
 
 - : remove-deterministic (remove/> S3<<N2=S2S3 S31-S2=S3 N3+1+N2=N1) R eq/ eq/
                          S2S3=T
-    <- remove/>-inversion R N3+1+N2=N1 _ S31-S2=S3' S3'<<N2=T
-    <- remove-deterministic S31-S2=S3 S31-S2=S3' eq/ eq/ S3=S3'
-    <- shift-deterministic S3<<N2=S2S3 S3'<<N2=T nat`eq/ S3=S3' S2S3=T.
+    <- remove/>-inversion R N3+1+N2=N1 _ S31-S2=S3P S3P<<N2=T
+    <- remove-deterministic S31-S2=S3 S31-S2=S3P eq/ eq/ S3=S3P
+    <- shift-deterministic S3<<N2=S2S3 S3P<<N2=T nat`eq/ S3=S3P S2S3=T.
 
 %worlds () (remove-deterministic _ _ _ _ _).
 %total (R) (remove-deterministic R _ _ _ _).

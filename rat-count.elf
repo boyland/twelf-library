@@ -139,18 +139,18 @@ rat2nat/frac :
 	true.
 
 - : rat2nat-deterministic 
-     (rat2nat/whole N*2=2N) (rat2nat/whole N*2=2N') equ/ TWON=2N'
-    <- times-deterministic N*2=2N N*2=2N' nat`eq/ nat`eq/ TWON=2N'.     
+     (rat2nat/whole N*2=2N) (rat2nat/whole N*2=2NP) equ/ TWON=2NP
+    <- times-deterministic N*2=2N N*2=2NP nat`eq/ nat`eq/ TWON=2NP.     
 
 - : rat2nat-deterministic
      (rat2nat/frac TWON+1=TWON1 N*2=2N P2N R2N)
-     (rat2nat/frac TWON'+1=TWON1' N'*2=2N' P2N' R2N') equ/ TWON1=TWON1'
-    <- rat2nat-deterministic R2N R2N' equ/ N2=N2'
-    <- natpair`pair-preserves-eq nat`eq/ N2=N2' N1,N2=N1,N2'
-    <- pair2nat-deterministic P2N P2N' N1,N2=N1,N2' N=N'
-    <- times-deterministic N*2=2N N'*2=2N' N=N' nat`eq/ TWON=2N'
+     (rat2nat/frac TWONP+1=TWON1P NP*2=2NP P2NP R2NP) equ/ TWON1=TWON1P
+    <- rat2nat-deterministic R2N R2NP equ/ N2=N2P
+    <- natpair`pair-preserves-eq nat`eq/ N2=N2P N1,N2=N1,N2P
+    <- pair2nat-deterministic P2N P2NP N1,N2=N1,N2P N=NP
+    <- times-deterministic N*2=2N NP*2=2NP N=NP nat`eq/ TWON=2NP
     <- plus-deterministic 
-       TWON+1=TWON1 TWON'+1=TWON1' TWON=2N' nat`eq/ TWON1=TWON1'. 
+       TWON+1=TWON1 TWONP+1=TWON1P TWON=2NP nat`eq/ TWON1=TWON1P. 
 
 %worlds () (rat2nat-deterministic _ _ _ _).
 %total (R) (rat2nat-deterministic R _ _ _).
@@ -164,36 +164,36 @@ rat2nat/frac :
 	true.
 
 - : nat2rat-deterministic 
-     (rat2nat/whole N*2=2N) (rat2nat/whole N'*2=2N) nat`eq/ WN=WN'
-    <- times-right-cancels N*2=2N N'*2=2N nat`eq/ nat`eq/ N=N'
-    <- whole-preserves-eq N=N' WN=WN'.
+     (rat2nat/whole N*2=2N) (rat2nat/whole NP*2=2N) nat`eq/ WN=WNP
+    <- times-right-cancels N*2=2N NP*2=2N nat`eq/ nat`eq/ N=NP
+    <- whole-preserves-eq N=NP WN=WNP.
 
 - : nat2rat-deterministic 
-     (rat2nat/whole N*2=X) (rat2nat/frac TWON+1=X N'*2=2N _ _) nat`eq/ R=R'
+     (rat2nat/whole N*2=X) (rat2nat/frac TWON+1=X NP*2=2N _ _) nat`eq/ R=RP
     <- div-can-be-constructed N*2=X X/2=N,0
-    <- divrem-can-be-constructed N'*2=2N TWON+1=X (gt/1) X/2=N',1
-    <- divrem-deterministic X/2=N,0 X/2=N',1 nat`eq/ nat`eq/ N=N' ZERO=ONE
+    <- divrem-can-be-constructed NP*2=2N TWON+1=X (gt/1) X/2=NP,1
+    <- divrem-deterministic X/2=N,0 X/2=NP,1 nat`eq/ nat`eq/ N=NP ZERO=ONE
     <- nat`eq-contradiction ZERO=ONE F
-    <- false-implies-equ F R=R'.
+    <- false-implies-equ F R=RP.
 
 - : nat2rat-deterministic 
-     (rat2nat/frac TWON+1=X N'*2=2N _ _) (rat2nat/whole N*2=X) nat`eq/ R'=R
+     (rat2nat/frac TWON+1=X NP*2=2N _ _) (rat2nat/whole N*2=X) nat`eq/ RP=R
     <- div-can-be-constructed N*2=X X/2=N,0
-    <- divrem-can-be-constructed N'*2=2N TWON+1=X (gt/1) X/2=N',1
-    <- divrem-deterministic X/2=N,0 X/2=N',1 nat`eq/ nat`eq/ N=N' ZERO=ONE
+    <- divrem-can-be-constructed NP*2=2N TWON+1=X (gt/1) X/2=NP,1
+    <- divrem-deterministic X/2=N,0 X/2=NP,1 nat`eq/ nat`eq/ N=NP ZERO=ONE
     <- nat`eq-contradiction ZERO=ONE F
-    <- false-implies-equ F R'=R.
+    <- false-implies-equ F RP=R.
 
 - : nat2rat-deterministic 
      (rat2nat/frac TWON+1=Z  N*2=2N   P2N  R2N) 
-     (rat2nat/frac TWON'+1=Z N'*2=2N' P2N' R2N') nat`eq/ NR=NR'
+     (rat2nat/frac TWONP+1=Z NP*2=2NP P2NP R2NP) nat`eq/ NR=NRP
     <- divrem-can-be-constructed N*2=2N TWON+1=Z (gt/1) Z/2=N,1
-    <- divrem-can-be-constructed N'*2=2N' TWON'+1=Z (gt/1) Z/2=N',1
-    <- divrem-deterministic Z/2=N,1 Z/2=N',1 nat`eq/ nat`eq/ N=N' _
-    <- nat2pair-deterministic P2N P2N' N=N' N1,N2=N1',N2'
-    <- natpair`pair-eq-implies-eq N1,N2=N1',N2' N1=N1' N2=N2'
-    <- nat2rat-deterministic R2N R2N' N2=N2' R=R'
-    <- frac-preserves-equ N1=N1' R=R' NR=NR'.
+    <- divrem-can-be-constructed NP*2=2NP TWONP+1=Z (gt/1) Z/2=NP,1
+    <- divrem-deterministic Z/2=N,1 Z/2=NP,1 nat`eq/ nat`eq/ N=NP _
+    <- nat2pair-deterministic P2N P2NP N=NP N1,N2=N1P,N2P
+    <- natpair`pair-eq-implies-eq N1,N2=N1P,N2P N1=N1P N2=N2P
+    <- nat2rat-deterministic R2N R2NP N2=N2P R=RP
+    <- frac-preserves-equ N1=N1P R=RP NR=NRP.
 
 %worlds () (nat2rat-deterministic _ _ _ _).
 %total (D) (nat2rat-deterministic D _ _ _).

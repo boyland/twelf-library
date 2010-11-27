@@ -158,8 +158,8 @@ END_ELF
 %%% Theorems about not, and, or
 
 %{%
-These boolean connectives aren't as useful
-as they might seem.  Currently I don't prove
+These boolean connectives are not as useful
+as they might seem.  Currently I do not prove
 many things about them.
 %}%
 

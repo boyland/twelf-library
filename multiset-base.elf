@@ -50,9 +50,9 @@ count/z : not-member M N -> count M N z.
 add : map -> nat -> map -> type.
 
 
-add/0 : not-member M N -> update M N z M' -> add M N M'.
+add/0 : not-member M N -> update M N z MP -> add M N MP.
 
-add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
+add/+ : lookup M N C -> update M N (s C) MP -> add M N MP.
 
 
 
@@ -129,9 +129,9 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 
 - : count-deterministic (count/z _) (count/z _) _ _ nat`eq/.
 
-- : count-deterministic (count/s L) (count/s L') eq/ nat`eq/ SC=sC'
-    <- lookup-deterministic L L' eq/ nat`eq/ C=C'
-    <- succ-deterministic C=C' SC=sC'.
+- : count-deterministic (count/s L) (count/s LP) eq/ nat`eq/ SC=sCP
+    <- lookup-deterministic L LP eq/ nat`eq/ C=CP
+    <- succ-deterministic C=CP SC=sCP.
 
 - : count-deterministic (count/z F) (count/s L) eq/ nat`eq/ E
     <- not-member-lookup-not-equal F L N<>N
@@ -164,9 +164,9 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 
 
 %theorem false-implies-add :
-	forall*	{M} {N} {M'}
+	forall*	{M} {N} {MP}
 	forall	{F:void}
-	exists	{A:add M N M'}
+	exists	{A:add M N MP}
 	true.
 
 %worlds () (false-implies-add _ _).
@@ -174,13 +174,13 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 
 
 %theorem add-respects-eq :
-	forall*	{M1} {N1} {M1'} 
-		{M2} {N2} {M2'}
-	forall	{A1: add M1 N1 M1'}
+	forall*	{M1} {N1} {M1P} 
+		{M2} {N2} {M2P}
+	forall	{A1: add M1 N1 M1P}
 		{EM: eq M1 M2}
 		{EN: nat`eq N1 N2}
-		{EM': eq M1' M2'}
-	exists	{A2: add M2 N2 M2'}
+		{EMP: eq M1P M2P}
+	exists	{A2: add M2 N2 M2P}
 	true.
 
 - : add-respects-eq A eq/ nat`eq/ eq/ A.
@@ -191,8 +191,8 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 
 %theorem add-total* :
 	forall	{M} {N}
-	exists	{M'}
-		{A:add M N M'}
+	exists	{MP}
+		{A:add M N MP}
 	true.
 
 %abbrev add-total = add-total* _ _ _.
@@ -200,8 +200,8 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 %theorem add-total/L :
 	forall*	{M} {N} {B}
 	forall	{M?:member? M N B}
-	exists	{M'}
-		{A:add M N M'}
+	exists	{MP}
+		{A:add M N MP}
 	true.
 
 - : add-total/L (member?/out MF) _ (add/0 MF MU)
@@ -222,19 +222,19 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 
 
 %theorem add-deterministic:
-	forall*	{M1} {N1} {M1'} 
-		{M2} {N2} {M2'}
-	forall	{A1: add M1 N1 M1'}
-		{A2: add M2 N2 M2'}
+	forall*	{M1} {N1} {M1P} 
+		{M2} {N2} {M2P}
+	forall	{A1: add M1 N1 M1P}
+		{A2: add M2 N2 M2P}
 		{EM: eq M1 M2}
 		{EN: nat`eq N1 N2}
-	exists	{EM': eq M1' M2'}
+	exists	{EMP: eq M1P M2P}
 	true.
 
 %abbrev add-unique = add-deterministic.
 
-- : add-deterministic (add/0 _ U) (add/0 _ U') eq/ nat`eq/ EM'
-    <- update-deterministic U U' eq/ nat`eq/ nat`eq/ EM'.
+- : add-deterministic (add/0 _ U) (add/0 _ UP) eq/ nat`eq/ EMP
+    <- update-deterministic U UP eq/ nat`eq/ nat`eq/ EMP.
 
 - : add-deterministic (add/0 NM _) (add/+ M _) eq/ nat`eq/ EM
     <- not-member-lookup-not-equal NM M NE
@@ -246,10 +246,10 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
     <- nat`ne-anti-reflexive NE F
     <- false-implies-eq F EM.
 
-- : add-deterministic (add/+ ML1 U1) (add/+ ML2 U2) EM EN EM'
+- : add-deterministic (add/+ ML1 U1) (add/+ ML2 U2) EM EN EMP
     <- lookup-deterministic ML1 ML2 EM EN EC
     <- succ-deterministic EC SEC
-    <- update-deterministic U1 U2 EM EN SEC EM'.
+    <- update-deterministic U1 U2 EM EN SEC EMP.
 
 %worlds () (add-deterministic _ _ _ _ _).
 %total { } (add-deterministic _ _ _ _ _).
@@ -277,33 +277,33 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 - : add-commutes/L A0 A1 nat`eq?/yes _ A0 A1.
 
 - : add-commutes/L (add/0 NM1 U01) (add/0 NM2 U12) (nat`eq?/no N1<>N2) _
-		   (add/0 NM2' U02) (add/0 NM1' U32)
-    <- update-preserves-not-member-converse NM2 U01 NM2'
+		   (add/0 NM2P U02) (add/0 NM1P U32)
+    <- update-preserves-not-member-converse NM2 U01 NM2P
     <- update-total U02
-    <- update-preserves-not-member NM1 U02 N1<>N2 NM1'
+    <- update-preserves-not-member NM1 U02 N1<>N2 NM1P
     <- update-commutes* U01 U12 N1<>N2 U02 U32.
 
 - : add-commutes/L (add/0 NM1 U01) (add/+ L2 U12) (nat`eq?/no N1<>N2) _
-		   (add/+ L2' U02) (add/0 NM1' U32)
+		   (add/+ L2P U02) (add/0 NM1P U32)
     <- nat`ne-symmetric N1<>N2 N2<>N1
-    <- update-preserves-lookup-converse L2 U01 N2<>N1 L2'
+    <- update-preserves-lookup-converse L2 U01 N2<>N1 L2P
     <- update-total U02
-    <- update-preserves-not-member NM1 U02 N1<>N2 NM1'
+    <- update-preserves-not-member NM1 U02 N1<>N2 NM1P
     <- update-commutes* U01 U12 N1<>N2 U02 U32.
 
 - : add-commutes/L (add/+ L1 U01) (add/0 NM2 U12) (nat`eq?/no N1<>N2) _
-		   (add/0 NM2' U02) (add/+ L1' U32)
-    <- update-preserves-not-member-converse NM2 U01 NM2'
+		   (add/0 NM2P U02) (add/+ L1P U32)
+    <- update-preserves-not-member-converse NM2 U01 NM2P
     <- update-total U02
-    <- update-preserves-lookup L1 U02 N1<>N2 L1'
+    <- update-preserves-lookup L1 U02 N1<>N2 L1P
     <- update-commutes* U01 U12 N1<>N2 U02 U32.
 
 - : add-commutes/L (add/+ L1 U01) (add/+ L2 U12) (nat`eq?/no N1<>N2) _
-		   (add/+ L2' U02) (add/+ L1' U32)
+		   (add/+ L2P U02) (add/+ L1P U32)
     <- nat`ne-symmetric N1<>N2 N2<>N1
-    <- update-preserves-lookup-converse L2 U01 N2<>N1 L2'
+    <- update-preserves-lookup-converse L2 U01 N2<>N1 L2P
     <- update-total U02
-    <- update-preserves-lookup L1 U02 N1<>N2 L1'
+    <- update-preserves-lookup L1 U02 N1<>N2 L1P
     <- update-commutes* U01 U12 N1<>N2 U02 U32.
 
 %worlds () (add-commutes/L _ _ _ _ _ _).
@@ -318,77 +318,77 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 
 
 %theorem count-add-implies-count :
-	forall* {M} {N} {C} {M'}
+	forall* {M} {N} {C} {MP}
 	forall	{K:count M N C}
-		{A:add M N M'}
-	exists	{K':count M' N (s C)}
+		{A:add M N MP}
+	exists	{KP:count MP N (s C)}
 	true.
 
-- : count-add-implies-count (count/z NM) A K'
+- : count-add-implies-count (count/z NM) A KP
     <- update-total U    
-    <- add-deterministic (add/0 NM U) A eq/ nat`eq/ EM'
+    <- add-deterministic (add/0 NM U) A eq/ nat`eq/ EMP
     <- update-implies-lookup U L
-    <- count-respects-eq (count/s L) EM' nat`eq/ nat`eq/ K'.
+    <- count-respects-eq (count/s L) EMP nat`eq/ nat`eq/ KP.
 
-- : count-add-implies-count (count/s L) A K'
+- : count-add-implies-count (count/s L) A KP
     <- update-total U    
-    <- add-deterministic (add/+ L U) A eq/ nat`eq/ EM'
-    <- update-implies-lookup U L'
-    <- count-respects-eq (count/s L') EM' nat`eq/ nat`eq/ K'.
+    <- add-deterministic (add/+ L U) A eq/ nat`eq/ EMP
+    <- update-implies-lookup U LP
+    <- count-respects-eq (count/s LP) EMP nat`eq/ nat`eq/ KP.
 
 %worlds () (count-add-implies-count _ _ _).
 %total { } (count-add-implies-count _ _ _).
 
 
  %theorem update-preserves-count :
-	forall* {M} {N} {C} {M'} {N'} {C'}
+	forall* {M} {N} {C} {MP} {NP} {CP}
 	forall	{K:count M N C}
-		{A:update M N' C' M'}
-		{NE: nat`ne N N'}
-	exists	{K':count M' N C}
+		{A:update M NP CP MP}
+		{NE: nat`ne N NP}
+	exists	{KP:count MP N C}
 	true.
 
- - : update-preserves-count (count/z NM) U NE (count/z NM')
-     <- update-preserves-not-member NM U NE NM'.
+ - : update-preserves-count (count/z NM) U NE (count/z NMP)
+     <- update-preserves-not-member NM U NE NMP.
 
- - : update-preserves-count (count/s L) U NE (count/s L')
-     <- update-preserves-lookup L U NE L'.
+ - : update-preserves-count (count/s L) U NE (count/s LP)
+     <- update-preserves-lookup L U NE LP.
 
  %worlds () (update-preserves-count _ _ _ _).
  %total { } (update-preserves-count _ _ _ _).
 
 
 %theorem add-preserves-count :
-	forall* {M} {N} {C} {M'} {N'}
+	forall* {M} {N} {C} {MP} {NP}
 	forall	{K:count M N C}
-		{A:add M N' M'}
-		{NE: nat`ne N N'}
-	exists	{K':count M' N C}
+		{A:add M NP MP}
+		{NE: nat`ne N NP}
+	exists	{KP:count MP N C}
 	true.
 
-- : add-preserves-count K (add/0 _ U) NE K'
-    <- update-preserves-count K U NE K'.
+- : add-preserves-count K (add/0 _ U) NE KP
+    <- update-preserves-count K U NE KP.
 
-- : add-preserves-count K (add/+ _ U) NE K'
-    <- update-preserves-count K U NE K'.
+- : add-preserves-count K (add/+ _ U) NE KP
+    <- update-preserves-count K U NE KP.
 
 %worlds () (add-preserves-count _ _ _ _).
 %total { } (add-preserves-count _ _ _ _).
 
 
 %theorem add-preserves-count-converse :
-	forall* {M} {N} {C} {M'} {N'}
-	forall	{K':count M' N C}
-		{A:add M N' M'}
-		{NE: nat`ne N N'}
+	forall* {M} {N} {C} {MP} {NP}
+	forall	{KP:count MP N C}
+		{A:add M NP MP}
+		{NE: nat`ne N NP}
 	exists	{K:count M N C}
 	true.
 	
 - : add-preserves-count-converse K2 A NE K1
-    <- count-total K1'
-    <- add-preserves-count K1' A NE K2'
-    <- count-deterministic K2' K2 eq/ nat`eq/ EQ
-    <- count-respects-eq K1' eq/ nat`eq/ EQ K1.
+    <- count-total K1P
+    <- add-preserves-count K1P A NE K2P
+    <- count-deterministic K2P K2 eq/ nat`eq/ EQ
+    <- count-respects-eq K1P eq/ nat`eq/ EQ K1.
 
 %worlds () (add-preserves-count-converse _ _ _ _).
 %total { } (add-preserves-count-converse _ _ _ _).
@@ -402,33 +402,33 @@ add/+ : lookup M N C -> update M N (s C) M' -> add M N M'.
 	exists	{C1: count M1 N1 C}
 	true.
 
-- : shift-preserves-count-converse (count/z MF) MS P (count/z MF')
-    <- shift-preserves-not-member-converse* MF MS P MF'.
+- : shift-preserves-count-converse (count/z MF) MS P (count/z MFP)
+    <- shift-preserves-not-member-converse* MF MS P MFP.
 
-- : shift-preserves-count-converse (count/s ML) MS P (count/s ML')
-    <- shift-preserves-lookup-converse* ML MS P ML'.
+- : shift-preserves-count-converse (count/s ML) MS P (count/s MLP)
+    <- shift-preserves-lookup-converse* ML MS P MLP.
 
 %worlds () (shift-preserves-count-converse _ _ _ _).
 %total { } (shift-preserves-count-converse _ _ _ _).
 
 
 %theorem shift-preserves-add-converse :
-	forall* {N} {M1} {N1} {M2} {N2} {M2'}
-	forall	{A2: add M2 N2 M2'}
+	forall* {N} {M1} {N1} {M2} {N2} {M2P}
+	forall	{A2: add M2 N2 M2P}
 		{MS: shift N M1 M2}
 		{P: plus (s N) N1 N2}
-	exists	{M1'}
-		{MS': shift N M1' M2'}
-		{A1: add M1 N1 M1'}
+	exists	{M1P}
+		{MSP: shift N M1P M2P}
+		{A1: add M1 N1 M1P}
 	true.
 
-- : shift-preserves-add-converse (add/+ ML MU) MS P _ MS' (add/+ ML' MU')
-    <- shift-preserves-update-converse MU MS P _ MS' MU'
-    <- shift-preserves-lookup-converse* ML MS P ML'.
+- : shift-preserves-add-converse (add/+ ML MU) MS P _ MSP (add/+ MLP MUP)
+    <- shift-preserves-update-converse MU MS P _ MSP MUP
+    <- shift-preserves-lookup-converse* ML MS P MLP.
 
-- : shift-preserves-add-converse (add/0 MF MU) MS P _ MS' (add/0 MF' MU')
-    <- shift-preserves-update-converse MU MS P _ MS' MU'
-    <- shift-preserves-not-member-converse* MF MS P MF'.
+- : shift-preserves-add-converse (add/0 MF MU) MS P _ MSP (add/0 MFP MUP)
+    <- shift-preserves-update-converse MU MS P _ MSP MUP
+    <- shift-preserves-not-member-converse* MF MS P MFP.
 
 %worlds () (shift-preserves-add-converse _ _ _ _ _ _).
 %total { } (shift-preserves-add-converse _ _ _ _ _ _).

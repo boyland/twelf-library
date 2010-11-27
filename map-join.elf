@@ -1418,7 +1418,7 @@ END_ELF
 
 %{%
 #ifdef DATA_JOIN_COMMUTATIVE
-/* being lazy: donPt want to do the hard work again */
+/* being lazy: don't want to do the hard work again */
 %}%
 
 %theorem fresh-join-right-preserves-lookup* :
@@ -2072,11 +2072,11 @@ END_ELF
                 (leq/> M513<=M4 N5+1+N4=N1)
     <- nat`plus-swap-succ N5+1+N4=N1 N5+N4+1=N1
     <- nat`plus-associative-converse N5+N4+1=N1 N0+1+N1=N2 
-                                     N6' N0+1+N5=N6' N6'+N4+1=N2
-    <- nat`plus-swap-succ-converse N6'+N4+1=N2 N6'+1+N4=N2
-    <- nat`plus-right-cancels N6'+1+N4=N2 N6+1+N4=N2 nat`eq/ nat`eq/ N6'+1=N6+1
-    <- nat`succ-cancels N6'+1=N6+1 N6'=N6
-    <- nat`plus-respects-eq N0+1+N5=N6' nat`eq/ nat`eq/ N6'=N6 N0+1+N5=N6
+                                     N6P N0+1+N5=N6P N6P+N4+1=N2
+    <- nat`plus-swap-succ-converse N6P+N4+1=N2 N6P+1+N4=N2
+    <- nat`plus-right-cancels N6P+1+N4=N2 N6+1+N4=N2 nat`eq/ nat`eq/ N6P+1=N6+1
+    <- nat`succ-cancels N6P+1=N6+1 N6P=N6
+    <- nat`plus-respects-eq N0+1+N5=N6P nat`eq/ nat`eq/ N6P=N6 N0+1+N5=N6
     <- join-is-lub (join/< M1+M022=M3 N0+1+N5=N6) M511<=M4 M622<=M4 M513<=M4.
 
 - : join-is-lub (join/> _ N3+1+N=N) (leq/= _ _ nat`eq/) (leq/= _ _ nat`eq/) L
@@ -2106,10 +2106,10 @@ END_ELF
                 (leq/> M623<=M4 N6+1+N4=N2)
     <- nat`plus-swap-succ N6+1+N4=N2 N6+N4+1=N2
     <- nat`plus-associative-converse N6+N4+1=N2 N3+1+N2=N1 
-                                     N5' N3+1+N6=N5' N5'+N4+1=N1
+                                     N5P N3+1+N6=N5P N5P+N4+1=N1
     <- nat`plus-swap-succ N5+1+N4=N1 N5+N4+1=N1
-    <- nat`plus-right-cancels N5'+N4+1=N1 N5+N4+1=N1 nat`eq/ nat`eq/ N5'=N5
-    <- nat`plus-respects-eq N3+1+N6=N5' nat`eq/ nat`eq/ N5'=N5 N3+1+N6=N5
+    <- nat`plus-right-cancels N5P+N4+1=N1 N5+N4+1=N1 nat`eq/ nat`eq/ N5P=N5
+    <- nat`plus-respects-eq N3+1+N6=N5P nat`eq/ nat`eq/ N5P=N5 N3+1+N6=N5
     <- join-is-lub (join/> M311+M2=M3 N3+1+N6=N5) M511<=M4 M622<=M4 M623<=M4.
 
 %worlds (WORLDS) (join-is-lub _ _ _ _).
@@ -2122,12 +2122,12 @@ END_ELF
 	true.
 
 - : join-idempotent S+S=S
-    <- join-total S+S=S'
-    <- join-implies-leq* S+S=S' S<=S'
+    <- join-total S+S=SP
+    <- join-implies-leq* S+S=SP S<=SP
     <- leq-reflexive _ S<=S
-    <- join-is-lub S+S=S' S<=S S<=S S'<=S
-    <- leq-anti-symmetric S'<=S S<=S' S'=S
-    <- join-respects-eq S+S=S' eq/ eq/ S'=S S+S=S.
+    <- join-is-lub S+S=SP S<=S S<=S SP<=S
+    <- leq-anti-symmetric SP<=S S<=SP SP=S
+    <- join-respects-eq S+S=SP eq/ eq/ SP=S S+S=S.
 
 %worlds (WORLDS) (join-idempotent _).
 %total { } (join-idempotent _).
@@ -2309,10 +2309,10 @@ END_ELF
                              (leq/= M3<=M5 D1<=D1 nat`eq/)
     <- nat`plus-swap-succ N5+1+N1=N4 N5+N1+1=N4
     <- nat`plus-associative-converse N5+N1+1=N4 N6+1+N4=N2 
-                                     N0' N6+1+N5=N0' N0'+N1+1=N2
+                                     N0P N6+1+N5=N0P N0P+N1+1=N2
     <- nat`plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
-    <- nat`plus-right-cancels N0'+N1+1=N2 N0+N1+1=N2 nat`eq/ nat`eq/ N0'=N0
-    <- nat`plus-respects-eq N6+1+N5=N0' nat`eq/ nat`eq/ N0'=N0 N6+1+N5=N0
+    <- nat`plus-right-cancels N0P+N1+1=N2 N0+N1+1=N2 nat`eq/ nat`eq/ N0P=N0
+    <- nat`plus-respects-eq N6+1+N5=N0P nat`eq/ nat`eq/ N0P=N0 N6+1+N5=N0
     <- join-left-preserves-leq* (leq/> M622<=M4 N6+1+N5=N0) 
                                 M1+M022=M3 M1+M544=M5 M3<=M5
     <- data`leq-reflexive _ D1<=D1.
@@ -2325,10 +2325,10 @@ END_ELF
                              (leq/> M513<=M5 N5+1+N4=N1)
     <- nat`plus-swap-succ N5+1+N4=N1 N5+N4+1=N1
     <- nat`plus-associative-converse N5+N4+1=N1 N0+1+N1=N2 
-                                     N6' N0+1+N5=N6' N6'+N4+1=N2
+                                     N6P N0+1+N5=N6P N6P+N4+1=N2
     <- nat`plus-swap-succ N6+1+N4=N2 N6+N4+1=N2
-    <- nat`plus-right-cancels N6'+N4+1=N2 N6+N4+1=N2 nat`eq/ nat`eq/ N6'=N6
-    <- nat`plus-respects-eq N0+1+N5=N6' nat`eq/ nat`eq/ N6'=N6 N0+1+N5=N6
+    <- nat`plus-right-cancels N6P+N4+1=N2 N6+N4+1=N2 nat`eq/ nat`eq/ N6P=N6
+    <- nat`plus-respects-eq N0+1+N5=N6P nat`eq/ nat`eq/ N6P=N6 N0+1+N5=N6
     <- join-left-preserves-leq* M622<=M4 
        ((join/< M1+M022=M3 N0+1+N5=N6):join (map/+ N5 D1 M1) (map/+ N6 D2 M2)
                                             (map/+ N5 D1 M3))

@@ -35,7 +35,7 @@
 %}%
 
 %% 'join' and 'meet' and converted using CPP,
-%% but some names don't quite work:
+%% but some names do not quite work:
 
 %abbrev union/= = [U] [E:nat`eq N1 N2] union/= U unit`union/ E.
 %abbrev intersection/= = [I] [E:nat`eq N1 N2] intersection/= I unit`union/ E.

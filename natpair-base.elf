@@ -251,17 +251,17 @@ nat2pair : nat -> pair -> type = [N] [P] pair2nat P N.
 - : pair2nat-deterministic
 	(pair2nat/XX Z3+Y0=Z Z2+X2=Z3 X0*2=X2 Z1*4=Z2 
                      (P2N:pair2nat (pair/ X1 Y1) Z1) Y/2=Y1,Y0 X/2=X1,X0)
-	(pair2nat/XX Z3'+Y0'=Z' Z2'+X2'=Z3' X0'*2=X2' Z1'*4=Z2' 
-                     (P2N':pair2nat (pair/ X1' Y1')Z1') Y/2=Y1',Y0' X/2=X1',X0')
-        eq/ Z=Z'
-    <- divrem-deterministic X/2=X1,X0 X/2=X1',X0' nat`eq/ nat`eq/ X1=X1' X0=X0'
-    <- divrem-deterministic Y/2=Y1,Y0 Y/2=Y1',Y0' nat`eq/ nat`eq/ Y1=Y1' Y0=Y0'
-    <- pair-preserves-eq X1=X1' Y1=Y1' X1,Y1=X1',Y1'
-    <- pair2nat-deterministic P2N P2N' X1,Y1=X1',Y1' Z1=Z1'
-    <- times-deterministic Z1*4=Z2 Z1'*4=Z2' Z1=Z1' nat`eq/ Z2=Z2'
-    <- times-deterministic X0*2=X2 X0'*2=X2' X0=X0' nat`eq/ X2=X2'
-    <- plus-deterministic Z2+X2=Z3 Z2'+X2'=Z3' Z2=Z2' X2=X2' Z3=Z3'
-    <- plus-deterministic Z3+Y0=Z Z3'+Y0'=Z' Z3=Z3' Y0=Y0' Z=Z'.
+	(pair2nat/XX Z3P+Y0P=ZP Z2P+X2P=Z3P X0P*2=X2P Z1P*4=Z2P 
+                     (P2NP:pair2nat (pair/ X1P Y1P)Z1P) Y/2=Y1P,Y0P X/2=X1P,X0P)
+        eq/ Z=ZP
+    <- divrem-deterministic X/2=X1,X0 X/2=X1P,X0P nat`eq/ nat`eq/ X1=X1P X0=X0P
+    <- divrem-deterministic Y/2=Y1,Y0 Y/2=Y1P,Y0P nat`eq/ nat`eq/ Y1=Y1P Y0=Y0P
+    <- pair-preserves-eq X1=X1P Y1=Y1P X1,Y1=X1P,Y1P
+    <- pair2nat-deterministic P2N P2NP X1,Y1=X1P,Y1P Z1=Z1P
+    <- times-deterministic Z1*4=Z2 Z1P*4=Z2P Z1=Z1P nat`eq/ Z2=Z2P
+    <- times-deterministic X0*2=X2 X0P*2=X2P X0=X0P nat`eq/ X2=X2P
+    <- plus-deterministic Z2+X2=Z3 Z2P+X2P=Z3P Z2=Z2P X2=X2P Z3=Z3P
+    <- plus-deterministic Z3+Y0=Z Z3P+Y0P=ZP Z3=Z3P Y0=Y0P Z=ZP.
 
 %worlds () (pair2nat-deterministic _ _ _ _).
 %total (D) (pair2nat-deterministic D _ _ _).
@@ -306,19 +306,19 @@ nat2pair : nat -> pair -> type = [N] [P] pair2nat P N.
 %worlds () (nat2pair-deterministic/0 _ _).
 %total (D) (nat2pair-deterministic/0 D _).
 
-- : nat2pair-deterministic N2P N2P' nat`eq/ X,Y=X',Y'
+- : nat2pair-deterministic N2P N2PP nat`eq/ X,Y=XP,YP
     <- nat2pair-deterministic/0 N2P X,Y=0,0
-    <- nat2pair-deterministic/0 N2P' X',Y'=0,0
-    <- eq-symmetric X',Y'=0,0 ZERO,ZERO=X',Y'
-    <- eq-transitive X,Y=0,0 ZERO,ZERO=X',Y' X,Y=X',Y'.
+    <- nat2pair-deterministic/0 N2PP XP,YP=0,0
+    <- eq-symmetric XP,YP=0,0 ZERO,ZERO=XP,YP
+    <- eq-transitive X,Y=0,0 ZERO,ZERO=XP,YP X,Y=XP,YP.
 
 - : nat2pair-deterministic
 	(pair2nat/XX Z3+Y0=Z Z2+X2=Z3 X0*2=X2 Z1*4=Z2 
                      (P2N:pair2nat (pair/ X1 Y1) Z1) Y/2=Y1,Y0 X/2=X1,X0)
-	(pair2nat/XX Z3'+Y0'=Z Z2'+X2'=Z3' X0'*2=X2' Z1'*4=Z2' 
-                     (P2N':pair2nat (pair/ X1' Y1') Z1') 
-                     Y'/2=Y1',Y0' X'/2=X1',X0')
-        nat`eq/ X,Y=X',Y'
+	(pair2nat/XX Z3P+Y0P=Z Z2P+X2P=Z3P X0P*2=X2P Z1P*4=Z2P 
+                     (P2NP:pair2nat (pair/ X1P Y1P) Z1P) 
+                     YP/2=Y1P,Y0P XP/2=X1P,X0P)
+        nat`eq/ X,Y=XP,YP
     <- plus-associative Z2+X2=Z3 Z3+Y0=Z R X2+Y0=R Z2+R=Z
     <- divrem-implies-gt X/2=X1,X0 TWO>X0
     <- divrem-implies-gt Y/2=Y1,Y0 TWO>Y0
@@ -328,30 +328,30 @@ nat2pair : nat -> pair -> type = [N] [P] pair2nat P N.
     <- plus-preserves-ge* TWO>=X2 ONE>=Y0 2+1=3 X2+Y0=R THREE>=R
     <- ge-implies-succ-gt THREE>=R FOUR>R
     <- divrem-can-be-constructed Z1*4=Z2 Z2+R=Z FOUR>R Z/4=Z1,R
-    <- plus-associative Z2'+X2'=Z3' Z3'+Y0'=Z R' X2'+Y0'=R' Z2'+R'=Z
-    <- divrem-implies-gt X'/2=X1',X0' TWO>X0'
-    <- divrem-implies-gt Y'/2=Y1',Y0' TWO>Y0'
-    <- succ-gt-implies-ge TWO>X0' ONE>=X0'
-    <- succ-gt-implies-ge TWO>Y0' ONE>=Y0'
-    <- times-right-preserves-ge* ONE>=X0' 1*2=2 X0'*2=X2' TWO>=X2'
-    <- plus-preserves-ge* TWO>=X2' ONE>=Y0' 2+1=3 X2'+Y0'=R' THREE>=R'
-    <- ge-implies-succ-gt THREE>=R' FOUR>R'
-    <- divrem-can-be-constructed Z1'*4=Z2' Z2'+R'=Z FOUR>R' Z/4=Z1',R'
-    <- divrem-deterministic Z/4=Z1,R Z/4=Z1',R' nat`eq/ nat`eq/ Z1=Z1' R=R'
+    <- plus-associative Z2P+X2P=Z3P Z3P+Y0P=Z RP X2P+Y0P=RP Z2P+RP=Z
+    <- divrem-implies-gt XP/2=X1P,X0P TWO>X0P
+    <- divrem-implies-gt YP/2=Y1P,Y0P TWO>Y0P
+    <- succ-gt-implies-ge TWO>X0P ONE>=X0P
+    <- succ-gt-implies-ge TWO>Y0P ONE>=Y0P
+    <- times-right-preserves-ge* ONE>=X0P 1*2=2 X0P*2=X2P TWO>=X2P
+    <- plus-preserves-ge* TWO>=X2P ONE>=Y0P 2+1=3 X2P+Y0P=RP THREE>=RP
+    <- ge-implies-succ-gt THREE>=RP FOUR>RP
+    <- divrem-can-be-constructed Z1P*4=Z2P Z2P+RP=Z FOUR>RP Z/4=Z1P,RP
+    <- divrem-deterministic Z/4=Z1,R Z/4=Z1P,RP nat`eq/ nat`eq/ Z1=Z1P R=RP
     <- divrem-can-be-constructed X0*2=X2 X2+Y0=R TWO>Y0 R/2=X0,Y0
-    <- divrem-can-be-constructed X0'*2=X2' X2'+Y0'=R' TWO>Y0' R'/2=X0',Y0'
-    <- divrem-deterministic R/2=X0,Y0 R'/2=X0',Y0' R=R' nat`eq/ X0=X0' Y0=Y0'
-    <- nat2pair-deterministic P2N P2N' Z1=Z1' X1,Y1=X1',Y1'
-    <- pair-eq-implies-eq X1,Y1=X1',Y1' X1=X1' Y1=Y1'
+    <- divrem-can-be-constructed X0P*2=X2P X2P+Y0P=RP TWO>Y0P RP/2=X0P,Y0P
+    <- divrem-deterministic R/2=X0,Y0 RP/2=X0P,Y0P R=RP nat`eq/ X0=X0P Y0=Y0P
+    <- nat2pair-deterministic P2N P2NP Z1=Z1P X1,Y1=X1P,Y1P
+    <- pair-eq-implies-eq X1,Y1=X1P,Y1P X1=X1P Y1=Y1P
     <- divrem-can-be-inverted X/2=X1,X0 XM X1*2=XM XM+X0=X
     <- divrem-can-be-inverted Y/2=Y1,Y0 YM Y1*2=YM YM+Y0=Y
-    <- divrem-can-be-inverted X'/2=X1',X0' XM' X1'*2=XM' XM'+X0'=X'
-    <- divrem-can-be-inverted Y'/2=Y1',Y0' YM' Y1'*2=YM' YM'+Y0'=Y'
-    <- times-deterministic X1*2=XM X1'*2=XM' X1=X1' nat`eq/ XM=XM'
-    <- plus-deterministic XM+X0=X XM'+X0'=X' XM=XM' X0=X0' X=X'
-    <- times-deterministic Y1*2=YM Y1'*2=YM' Y1=Y1' nat`eq/ YM=YM'
-    <- plus-deterministic YM+Y0=Y YM'+Y0'=Y' YM=YM' Y0=Y0' Y=Y'
-    <- pair-preserves-eq X=X' Y=Y' X,Y=X',Y'.
+    <- divrem-can-be-inverted XP/2=X1P,X0P XMP X1P*2=XMP XMP+X0P=XP
+    <- divrem-can-be-inverted YP/2=Y1P,Y0P YMP Y1P*2=YMP YMP+Y0P=YP
+    <- times-deterministic X1*2=XM X1P*2=XMP X1=X1P nat`eq/ XM=XMP
+    <- plus-deterministic XM+X0=X XMP+X0P=XP XM=XMP X0=X0P X=XP
+    <- times-deterministic Y1*2=YM Y1P*2=YMP Y1=Y1P nat`eq/ YM=YMP
+    <- plus-deterministic YM+Y0=Y YMP+Y0P=YP YM=YMP Y0=Y0P Y=YP
+    <- pair-preserves-eq X=XP Y=YP X,Y=XP,YP.
 
 %worlds () (nat2pair-deterministic _ _ _ _).
 %total (D) (nat2pair-deterministic D _ _ _).

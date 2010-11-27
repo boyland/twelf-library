@@ -31,7 +31,7 @@ END_ELF
 %theorem succ-preserves-ge :
 	forall* {M} {N}
 	forall {G:ge M N}
-	exists {G':ge (s M) (s N)}
+	exists {GP:ge (s M) (s N)}
 	true.
 
 - : succ-preserves-ge (ge/= eq/) (ge/= eq/).
@@ -45,7 +45,7 @@ END_ELF
 
 %theorem succ-preserves-ge-converse :
 	forall* {M} {N}
-	forall {G':ge (s M) (s N)}
+	forall {GP:ge (s M) (s N)}
 	exists {G:ge M N}
 	true.
 
@@ -61,7 +61,7 @@ END_ELF
 %theorem ge-succ-implies-gt :
 	forall* {N1} {N2}
 	forall {G:ge N1 (s N2)}
-        exists {G':gt N1 N2}
+        exists {GP:gt N1 N2}
 	true.
 
 - : ge-succ-implies-gt (ge/= eq/) (gt/1).
@@ -76,7 +76,7 @@ END_ELF
 %theorem ge-implies-succ-gt :
 	forall* {N1} {N2}
 	forall {G:ge N1 N2}
-	exists {G':gt (s N1) N2}
+	exists {GP:gt (s N1) N2}
 	true.
 
 - : ge-implies-succ-gt N1>=N2 N1+1>N2
@@ -90,7 +90,7 @@ END_ELF
 %theorem succ-gt-implies-ge :
 	forall* {N1} {N2}
 	forall {G:gt (s N1) N2}
-        exists {G':ge N1 N2}
+        exists {GP:ge N1 N2}
 	true.
 
 - : succ-gt-implies-ge (gt/1) (ge/= eq/).
@@ -103,7 +103,7 @@ END_ELF
 
 %theorem gt-implies-ge-succ :
 	forall* {N1} {N2}
-        forall {G':gt N1 N2}
+        forall {GP:gt N1 N2}
 	exists {G:ge N1 (s N2)}
 	true.
 
@@ -288,7 +288,7 @@ END_ELF
 %theorem succ-preserves-ne :
 	forall* {M} {N}
 	forall {D:ne M N}
-	exists {D':ne (s M) (s N)}
+	exists {DP:ne (s M) (s N)}
 	true.
 
 - : succ-preserves-ne (ne/< N>M) (ne/< N+1>M+1)
@@ -303,7 +303,7 @@ END_ELF
 
 %theorem succ-preserves-ne-converse :
 	forall* {M} {N}
-	forall {D':ne (s M) (s N)}
+	forall {DP:ne (s M) (s N)}
 	exists {D:ne M N}
 	true.
 
@@ -332,7 +332,7 @@ END_ELF
 #undef OP_COMMUTATIVE
 %}%
 
-/* times doesn't preserve ne */
+/* times does not preserve ne */
 
 
 

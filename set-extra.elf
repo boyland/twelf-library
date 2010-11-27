@@ -23,32 +23,32 @@
 
 
 %theorem add-preserves-member :
-	forall* {S} {N1} {N2} {S'}
+	forall* {S} {N1} {N2} {SP}
 	forall	{SM: lookup S N1 unit/}
-		{SA: update S N2 unit/ S'}
-	exists	{SM': lookup S' N1 unit/}
+		{SA: update S N2 unit/ SP}
+	exists	{SMP: lookup SP N1 unit/}
 	true.
 
 %theorem add-preserves-member/L :
-	forall* {S} {N1} {N2} {S'} {B}
+	forall* {S} {N1} {N2} {SP} {B}
 	forall	{SM: lookup S N1 unit/}
-		{SA: update S N2 unit/ S'}
+		{SA: update S N2 unit/ SP}
 		{EQ?: nat`eq? N1 N2 B}
-	exists	{SM': lookup S' N1 unit/}
+	exists	{SMP: lookup SP N1 unit/}
 	true.
 
-- : add-preserves-member/L SM SA (nat`eq?/no NE) SM'
-    <- update-preserves-lookup SM SA NE SM'.
+- : add-preserves-member/L SM SA (nat`eq?/no NE) SMP
+    <- update-preserves-lookup SM SA NE SMP.
 
-- : add-preserves-member/L _ SA (nat`eq?/yes) SM'
-    <- update-implies-lookup SA SM'.
+- : add-preserves-member/L _ SA (nat`eq?/yes) SMP
+    <- update-implies-lookup SA SMP.
 
 %worlds () (add-preserves-member/L _ _ _ _).
 %total { } (add-preserves-member/L _ _ _ _).
 
-- : add-preserves-member SM SA SM'
+- : add-preserves-member SM SA SMP
     <- nat`eq?-total EQ?
-    <- add-preserves-member/L SM SA EQ? SM'.
+    <- add-preserves-member/L SM SA EQ? SMP.
 
 %worlds () (add-preserves-member _ _ _).
 %total { } (add-preserves-member _ _ _).
@@ -65,20 +65,20 @@
                                               S1+S4=S5 S2+S4=S6 S5*S6=S7
     <- union-total S1+S4=S5
     <- union-total S2+S4=S6
-    <- intersection-total S5*S6=S7'
+    <- intersection-total S5*S6=S7P
     <- union-implies-leq S2+S4=S6 _ S4<=S6
     <- leq-implies-intersection S4<=S6 S4*S6=S4
     <- intersection-total S1*S6=S8
     <- intersection-total S1*S4=S9
-    <- intersection-right-distributes-over-union* S1+S4=S5 S5*S6=S7'
-                                                  S1*S6=S8 S4*S6=S4 S8+S4=S7'
+    <- intersection-right-distributes-over-union* S1+S4=S5 S5*S6=S7P
+                                                  S1*S6=S8 S4*S6=S4 S8+S4=S7P
     <- intersection-left-distributes-over-union* S2+S4=S6 S1*S6=S8
                                                  S1*S2=S3 S1*S4=S9 S3+S9=S8
     <- intersection-implies-leq S1*S4=S9 _ S9<=S4
     <- leq-implies-union S9<=S4 S9+S4=S4
-    <- union-associative* S3+S9=S8 S8+S4=S7' S9+S4=S4 S3+S4=S7'
-    <- union-deterministic S3+S4=S7' S3+S4=S7 eq/ eq/ S7'=S7 
-    <- intersection-respects-eq S5*S6=S7' eq/ eq/ S7'=S7 S5*S6=S7.
+    <- union-associative* S3+S9=S8 S8+S4=S7P S9+S4=S4 S3+S4=S7P
+    <- union-deterministic S3+S4=S7P S3+S4=S7 eq/ eq/ S7P=S7 
+    <- intersection-respects-eq S5*S6=S7P eq/ eq/ S7P=S7 S5*S6=S7.
 
 %worlds () (union-right-distributes-over-intersection _ _ _ _ _ _ _).
 %total { } (union-right-distributes-over-intersection _ _ _ _ _ _ _).
@@ -327,8 +327,8 @@ END_ELF
 	exists {M:lookup S3 N unit/}
 	true.
 
-- : union-left-preserves-member* M U M'
-    <- union-left-affects-lookup M U _ M'.
+- : union-left-preserves-member* M U MP
+    <- union-left-affects-lookup M U _ MP.
 
 %worlds () (union-left-preserves-member* _ _ _).
 %total { } (union-left-preserves-member* _ _ _).
@@ -341,8 +341,8 @@ END_ELF
         exists {M:lookup S3 N unit/}
         true.
 
-- : union-right-preserves-member* M U M'
-    <- union-right-affects-lookup M U _ M'.
+- : union-right-preserves-member* M U MP
+    <- union-right-affects-lookup M U _ MP.
 
 %worlds () (union-right-preserves-member* _ _ _).
 %total { } (union-right-preserves-member* _ _ _).
@@ -415,9 +415,9 @@ END_ELF
 	(union/L) (intersection/L) 
 	size/0 SZ2 SZ3 size/0 
 	plus/z P
-    <- plus-right-identity _ P'
+    <- plus-right-identity _ PP
     <- size-deterministic SZ2 SZ3 eq/ N2=N3
-    <- plus-respects-eq P' N2=N3 nat`eq/ nat`eq/ P.
+    <- plus-respects-eq PP N2=N3 nat`eq/ nat`eq/ P.
 
 - : union-intersection-size
 	union/L intersection/R

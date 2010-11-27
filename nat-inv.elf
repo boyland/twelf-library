@@ -67,10 +67,10 @@ END_ELF
 	forall* {Y} {Z} {XY} {XZ} {YZ} {XYZ} {Z-}
 	forall {TXY:times XY Z XYZ} {TY:times Y Z YZ}
                {M:minus XYZ YZ XZ} {EZ:eq Z (s Z-)}
-        exists {X} {M':minus XY Y X} {TX:times X Z XZ}
+        exists {X} {MP:minus XY Y X} {TX:times X Z XZ}
         true.
 
-% minus isn't total, so this is harder.
+% minus is not total, so this is harder.
 - : times-right-factors-over-minus XY*Z=YZ Y*Z=YZ plus/z eq/ 
                                    z ZERO+Y=XY times/z
     <- times-right-cancels* XY*Z=YZ Y*Z=YZ eq/ eq/ XY=Y

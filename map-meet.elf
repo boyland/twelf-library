@@ -1,4 +1,4 @@
-%%%% Map ``multiplication''
+%%%% Map "multiplication"
 
 %{%
 #define MAP_MEET 1
@@ -1158,10 +1158,10 @@ END_ELF
                 M000<=S1M3
     <- plus-swap-succ N3+1+N1=N2 N3+N1+1=N2
     <- plus-associative-converse N3+N1+1=N2 N6+1+N2=N0 
-                                 N5' N6+1+N3=N5' N5'+N1+1=N0
+                                 N5P N6+1+N3=N5P N5P+N1+1=N0
     <- plus-swap-succ N5+1+N1=N0 N5+N1+1=N0
-    <- plus-right-cancels N5'+N1+1=N0 N5+N1+1=N0 nat`eq/ nat`eq/ N5'=N5
-    <- plus-respects-eq N6+1+N3=N5' nat`eq/ nat`eq/ N5'=N5 N6+1+N3=N5
+    <- plus-right-cancels N5P+N1+1=N0 N5+N1+1=N0 nat`eq/ nat`eq/ N5P=N5
+    <- plus-respects-eq N6+1+N3=N5P nat`eq/ nat`eq/ N5P=N5 N6+1+N3=N5
     <- plus-swap-succ N6+1+N3=N5 N6+N3+1=N5
     <- plus-commutative N6+N3+1=N5 N3+1+N6=N5
     <- shift-left-preserves-leq* M600<=M2 (shift/+ N3+1+N6=N5) M500<=M322
@@ -1203,12 +1203,12 @@ END_ELF
 	true.
 
 - : meet-idempotent S*S=S
-    <- meet-total S*S=S'
-    <- meet-implies-leq* S*S=S' S'<=S
+    <- meet-total S*S=SP
+    <- meet-implies-leq* S*S=SP SP<=S
     <- leq-reflexive _ S<=S
-    <- meet-is-glb S*S=S' S<=S S<=S S<=S'
-    <- leq-anti-symmetric S'<=S S<=S' S'=S
-    <- meet-respects-eq S*S=S' eq/ eq/ S'=S S*S=S.
+    <- meet-is-glb S*S=SP S<=S S<=S S<=SP
+    <- leq-anti-symmetric SP<=S S<=SP SP=S
+    <- meet-respects-eq S*S=SP eq/ eq/ SP=S S*S=S.
 
 %worlds (WORLDS) (meet-idempotent _).
 %total { } (meet-idempotent _).

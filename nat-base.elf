@@ -243,14 +243,14 @@ compare/> : compare M N greater <- gt M N.
 
 
 %theorem succ-implies-gt  : 
-	forall* {X} {X'}
-	forall {E:eq X (s X')}
-	exists {G:gt X X'}
+	forall* {X} {XP}
+	forall {E:eq X (s XP)}
+	exists {G:gt X XP}
 	true.
 
 - : succ-implies-gt eq/ gt/1.
 
-%worlds () (succ-implies-gt X=sX' %{=>}% X>X').
+%worlds () (succ-implies-gt X=sXP %{=>}% X>XP).
 %total {} (succ-implies-gt _ _).
 
 
@@ -301,14 +301,14 @@ compare/> : compare M N greater <- gt M N.
 %theorem gt-implies-positive :
         forall* {M} {N} 
         forall {G:gt M N} 
-        exists {M'} {E:eq M (s M')}
+        exists {MP} {E:eq M (s MP)}
         true.
 
 - : gt-implies-positive gt/1 M eq/.
 
 - : gt-implies-positive (gt/> (G:gt M N)) M eq/.
 
-%worlds () (gt-implies-positive M>N %{=>}% M' M=sM').
+%worlds () (gt-implies-positive M>N %{=>}% MP M=sMP).
 %total {} (gt-implies-positive _ _ _).
 
 
@@ -319,8 +319,8 @@ compare/> : compare M N greater <- gt M N.
         true.
 
 - : gt-anti-reflexive* (s M) (G:gt (s M) (s M)) F
-     <- succ-preserves-gt-converse G G'
-     <- gt-anti-reflexive* M G' F.
+     <- succ-preserves-gt-converse G GP
+     <- gt-anti-reflexive* M GP F.
 
 %worlds () (gt-anti-reflexive* M M>M %{=>}% _).
 %total M (gt-anti-reflexive* M _ _).
@@ -400,7 +400,7 @@ compare/> : compare M N greater <- gt M N.
 %theorem succ-preserves-compare :
 	forall* {M} {N} {C}
 	forall {CMP:compare M N C}
-	exists {CMP':compare (s M) (s N) C}
+	exists {CMPP:compare (s M) (s N) C}
 	true.
 
 - : succ-preserves-compare compare/= compare/=.
@@ -528,8 +528,8 @@ compare/> : compare M N greater <- gt M N.
 
 - : plus-total* _ _ _ plus/z.
 
-- : plus-total* (s N1') N2 (s N3) (plus/s P)
-    <- plus-total* N1' N2 N3 P.
+- : plus-total* (s N1P) N2 (s N3) (plus/s P)
+    <- plus-total* N1P N2 N3 P.
 
 %worlds () (plus-total* N1 N2 %{=>}% N3 N1+N2=N3).
 %total N1 (plus-total* N1 _ _ _).
@@ -539,10 +539,10 @@ compare/> : compare M N greater <- gt M N.
 
 
 %theorem plus-deterministic: 
-	forall* {N1:nat} {N1':nat} {N2:nat} {N2':nat} {N3:nat} {N3':nat}
-        forall {P:plus N1 N2 N3} {P':plus N1' N2' N3'}
-	       {E1:eq N1 N1'} {E2:eq N2 N2'}
-        exists {E3:eq N3 N3'}
+	forall* {N1:nat} {N1P:nat} {N2:nat} {N2P:nat} {N3:nat} {N3P:nat}
+        forall {P:plus N1 N2 N3} {PP:plus N1P N2P N3P}
+	       {E1:eq N1 N1P} {E2:eq N2 N2P}
+        exists {E3:eq N3 N3P}
         true.
 
 %abbrev plus-unique = plus-deterministic.
@@ -551,11 +551,11 @@ compare/> : compare M N greater <- gt M N.
 
 - : plus-deterministic 
         (plus/s (P:plus N1 N2 N3)) 
-        (plus/s (P':plus N1' N2' N3')) 
-        E1 E2 (E:eq (s N3) (s N3'))
-     <- succ-cancels E1 E1'
-     <- plus-deterministic P P' E1' E2 E'
-     <- succ-deterministic E' E.
+        (plus/s (PP:plus N1P N2P N3P)) 
+        E1 E2 (E:eq (s N3) (s N3P))
+     <- succ-cancels E1 E1P
+     <- plus-deterministic P PP E1P E2 EP
+     <- succ-deterministic EP E.
 
 %worlds () (plus-deterministic _ _ _ _ _).
 %total (P) (plus-deterministic P _ _ _ _).
@@ -614,42 +614,42 @@ compare/> : compare M N greater <- gt M N.
 
 
 %theorem plus-left-decrease:
-	forall* {M:nat} {N:nat} {O':nat}
-	forall {P:plus (s M) N O'}
-	exists {O} {E:eq O' (s O)} {Q:plus M N O}
+	forall* {M:nat} {N:nat} {SO:nat}
+	forall {P:plus (s M) N SO}
+	exists {O} {E:eq SO (s O)} {Q:plus M N O}
 	true.
 
 - : plus-left-decrease (plus/s M+N=O) O eq/ M+N=O.
 
-%worlds () (plus-left-decrease SM+N=O' %{=>}% O O'=sO M+N=O).
+%worlds () (plus-left-decrease SM+N=OP %{=>}% O OP=sO M+N=O).
 %total {} (plus-left-decrease _ _ _ _).
 
 
 %theorem plus-right-decrease:
-	forall* {M:nat} {N:nat} {O':nat}
-	forall {P:plus M (s N) O'}
-	exists {O} {E:eq O' (s O)} {Q:plus M N O}
+	forall* {M:nat} {N:nat} {SO:nat}
+	forall {P:plus M (s N) SO}
+	exists {O} {E:eq SO (s O)} {Q:plus M N O}
 	true.
 
 - : plus-right-decrease (plus/z) N eq/ (plus/z).
 
 - : {M+sN=O: plus M (s N) O} {sM+N=O:plus (s M) N O} {sM+N=X:plus (s M) N X}
     plus-right-decrease (plus/s M+sN=O) _ eq/ sM+N=O
-    <- plus-right-decrease M+sN=O O' O=sO' M+N=O'
+    <- plus-right-decrease M+sN=O OP O=sOP M+N=OP
     <- plus-total sM+N=X
-    <- plus-deterministic (plus/s M+N=O') sM+N=X eq/ eq/ SO'=X
-    <- eq-transitive O=sO' SO'=X O=X
+    <- plus-deterministic (plus/s M+N=OP) sM+N=X eq/ eq/ SOP=X
+    <- eq-transitive O=sOP SOP=X O=X
     <- eq-symmetric O=X X=O
     <- plus-respects-eq sM+N=X eq/ eq/ X=O sM+N=O.
 
-%worlds () (plus-right-decrease M+sN=O' %{=>}% O O'=sO M+N=O).
+%worlds () (plus-right-decrease M+sN=OP %{=>}% O OP=sO M+N=O).
 %total P (plus-right-decrease P _ _ _).
 
 
 %theorem plus-swap-succ:
 	forall* {N1} {N2} {N3}
 	forall {P:plus (s N1) N2 N3}
-	exists {P':plus N1 (s N2) N3}
+	exists {PP:plus N1 (s N2) N3}
 	true.
 
 - : plus-swap-succ (plus/s N1+N2=N3-) N1+sN2=N3
@@ -662,7 +662,7 @@ compare/> : compare M N greater <- gt M N.
 %theorem plus-swap-succ-converse:
 	forall* {N1} {N2} {N3}
 	forall {P:plus N1 (s N2) N3}
-	exists {P':plus (s N1) N2 N3}
+	exists {PP:plus (s N1) N2 N3}
 	true.
 
 - : plus-swap-succ-converse N1+sN2=N3 SN1+N2=N3
@@ -677,7 +677,7 @@ compare/> : compare M N greater <- gt M N.
 %theorem plus-left-preserves-positive:
 	forall* {N1} {N2} {N3} {N1-}
 	forall {P:plus N1 N2 N3} {E:eq N1 (s N1-)}
-        exists {N3-} {E':eq N3 (s N3-)}
+        exists {N3-} {EP:eq N3 (s N3-)}
 	true.
 
 - : plus-left-preserves-positive (plus/s N1-+N2=N3-) eq/ _ eq/.
@@ -689,7 +689,7 @@ compare/> : compare M N greater <- gt M N.
 %theorem plus-right-preserves-positive:
 	forall* {N1} {N2} {N3} {N2-}
 	forall {P:plus N1 N2 N3} {E:eq N2 (s N2-)}
-	exists {N3-} {E':eq N3 (s N3-)}
+	exists {N3-} {EP:eq N3 (s N3-)}
 	true.
 
 - : plus-right-preserves-positive N1+N2=N3 N2=sN2- N3- N3=sN3-
@@ -730,9 +730,9 @@ compare/> : compare M N greater <- gt M N.
 
 
 %theorem plus-associative :
-	forall* {X:nat} {Y:nat} {Z:nat} {X':nat} {Z':nat}
-        forall {P1:plus X Y X'} {P2:plus X' Z Z'}
-	exists {Y':nat} {Q1:plus Y Z Y'} {Q2:plus X Y' Z'}
+	forall* {X:nat} {Y:nat} {Z:nat} {XP:nat} {ZP:nat}
+        forall {P1:plus X Y XP} {P2:plus XP Z ZP}
+	exists {YP:nat} {Q1:plus Y Z YP} {Q2:plus X YP ZP}
 	true.
 
 - : plus-associative plus/z (P2:plus N2 N3 N23) N23 P2 plus/z.
@@ -782,15 +782,15 @@ END_ELF
     <- eq-symmetric X2=Z Z=X2
     <- eq-transitive X1=Z Z=X2 X1=X2.
 
-- : {sZ'=Z:eq (s Z') Z} {sZ'=sZ'':eq (s Z') (s Z'')}
+- : {sZP=Z:eq (s ZP) Z} {sZP=sZPP:eq (s ZP) (s ZPP)}
     plus-right-cancels* Z Z X1+sY=Z X2+sY=Z eq/ eq/ X1=X2
-    <- plus-right-decrease X1+sY=Z Z' Z=sZ' X1+Y=Z'
-    <- plus-right-decrease X2+sY=Z Z'' Z=sZ'' X2+Y=Z''
-    <- eq-symmetric Z=sZ' sZ'=Z
-    <- eq-transitive sZ'=Z Z=sZ'' sZ'=sZ''
-    <- succ-cancels sZ'=sZ'' Z'=Z''
-    <- meta-eq Z (s Z') Z=sZ'
-    <- plus-right-cancels* Z' Z'' X1+Y=Z' X2+Y=Z'' eq/ Z'=Z'' X1=X2.
+    <- plus-right-decrease X1+sY=Z ZP Z=sZP X1+Y=ZP
+    <- plus-right-decrease X2+sY=Z ZPP Z=sZPP X2+Y=ZPP
+    <- eq-symmetric Z=sZP sZP=Z
+    <- eq-transitive sZP=Z Z=sZPP sZP=sZPP
+    <- succ-cancels sZP=sZPP ZP=ZPP
+    <- meta-eq Z (s ZP) Z=sZP
+    <- plus-right-cancels* ZP ZPP X1+Y=ZP X2+Y=ZPP eq/ ZP=ZPP X1=X2.
 
 %worlds () (plus-right-cancels* Z1 Z2 X1+Y1=Z1 X2+Y2=Z2 Y1=Y2 Z1=Z2 %{=>}% X1=X2).
 %total Z (plus-right-cancels* Z _ _ _ _ _ _).
@@ -844,8 +844,8 @@ END_ELF
 %}%
 
 %theorem plus-implies-gt:
-        forall* {M} {N} {O} {M'}
-        forall {P:plus M N O} {E:eq M (s M')}
+        forall* {M} {N} {O} {MP}
+        forall {P:plus M N O} {E:eq M (s MP)}
         exists {G:gt O N}
         true.
 
@@ -853,7 +853,7 @@ END_ELF
     <- succ-implies-gt-zero _ X>0
     <- plus-right-preserves-gt* X>0 X+Y=Z plus/z Z>Y.
 
-%worlds () (plus-implies-gt X+Y=Z X=sX' %{=>}% Z>Y).
+%worlds () (plus-implies-gt X+Y=Z X=sXP %{=>}% Z>Y).
 %total {} (plus-implies-gt _ _ _).
 
 
@@ -925,9 +925,9 @@ END_ELF
 
 - : times-total* z N2 z times/z.
 
-- : times-total* (s X) Y Z (times/s X*Y=Z' Z'+Y=Z)
-    <- times-total* X Y Z' X*Y=Z'
-    <- plus-total Z'+Y=Z.
+- : times-total* (s X) Y Z (times/s X*Y=ZP ZP+Y=Z)
+    <- times-total* X Y ZP X*Y=ZP
+    <- plus-total ZP+Y=Z.
 
 %worlds () (times-total* N1 N2 %{=>}% N3 N1*N2=N3).
 %total (N1) (times-total* N1 _ _ _).
@@ -937,20 +937,20 @@ END_ELF
 
 
 %theorem times-deterministic :
-        forall* {N1:nat} {N1':nat} {N2:nat} {N2':nat} {N3:nat} {N3':nat}
-        forall {P:times N1 N2 N3} {P':times N1' N2' N3'}
-               {E1:eq N1 N1'} {E2:eq N2 N2'}
-        exists {E3:eq N3 N3'}
+        forall* {N1:nat} {N1P:nat} {N2:nat} {N2P:nat} {N3:nat} {N3P:nat}
+        forall {P:times N1 N2 N3} {PP:times N1P N2P N3P}
+               {E1:eq N1 N1P} {E2:eq N2 N2P}
+        exists {E3:eq N3 N3P}
         true.
 
 %abbrev times-unique = times-deterministic.
 
 - : times-deterministic (times/z) (times/z) eq/ eq/ eq/.
 
-- : times-deterministic (times/s X*Y=Z1 Z1+Y=Z1') 
-                        (times/s X*Y=Z2 Z2+Y=Z2') eq/ eq/ Z1'=Z2'
+- : times-deterministic (times/s X*Y=Z1 Z1+Y=Z1P) 
+                        (times/s X*Y=Z2 Z2+Y=Z2P) eq/ eq/ Z1P=Z2P
     <- times-deterministic X*Y=Z1 X*Y=Z2 eq/ eq/ Z1=Z2
-    <- plus-deterministic Z1+Y=Z1' Z2+Y=Z2' Z1=Z2 eq/ Z1'=Z2'.
+    <- plus-deterministic Z1+Y=Z1P Z2+Y=Z2P Z1=Z2 eq/ Z1P=Z2P.
 
 %worlds () (times-deterministic X1*Y1=Z1 X2*Y2=Z2 X1=X2 Y1=Y2 %{=>}% Z1=Z2).
 %total P (times-deterministic P _ _ _ _).
@@ -1023,33 +1023,33 @@ END_ELF
 
 
 %theorem times-preserves-positive*:
-        forall* {M} {N} {P} {M'} {N'}
-        forall {T:times M N P} {M+:eq M (s M')} {N+:eq N (s N')}
-        exists {P'} {P+:eq P (s P')}
+        forall* {M} {N} {P} {MP} {NP}
+        forall {T:times M N P} {M+:eq M (s MP)} {N+:eq N (s NP)}
+        exists {PP} {P+:eq P (s PP)}
         true.
 
-- : times-preserves-positive* M*N=P M=sM' N=sN' P' P=sP'
-    <- times-respects-eq M*N=P M=sM' N=sN' eq/ (times/s M'*sN'=O' O'+sN'=P)
-    <- plus-right-decrease O'+sN'=P P' P=sP' _.
+- : times-preserves-positive* M*N=P M=sMP N=sNP PP P=sPP
+    <- times-respects-eq M*N=P M=sMP N=sNP eq/ (times/s MP*sNP=OP OP+sNP=P)
+    <- plus-right-decrease OP+sNP=P PP P=sPP _.
 
-%worlds () (times-preserves-positive* M*N=P M=sM' N=sN' %{=>}% P' P=sP').
+%worlds () (times-preserves-positive* M*N=P M=sMP N=sNP %{=>}% PP P=sPP).
 %total {} (times-preserves-positive* _ _ _ _ _).
 
 
 %theorem times-positive-implies-positive :
-	forall* {M} {N} {P} {P'}
-	forall {T:times M N P} {P+:eq P (s P')}
-        exists {M'} {M+:eq M (s M')} {N'}  {N+:eq N (s N')}
+	forall* {M} {N} {P} {PP}
+	forall {T:times M N P} {P+:eq P (s PP)}
+        exists {MP} {M+:eq M (s MP)} {NP}  {N+:eq N (s NP)}
 	true.
 
-- : times-positive-implies-positive (times/s M'*N=T plus/z) 
-                                    eq/ M' eq/ P' eq/.
+- : times-positive-implies-positive (times/s MP*N=T plus/z) 
+                                    eq/ MP eq/ PP eq/.
 
-- : times-positive-implies-positive (times/s M'*N=sT' (plus/s T'+N=P'))
-                                    eq/ M' eq/ N' N=sN'
-    <- times-positive-implies-positive M'*N=sT' eq/ _ _ N' N=sN'.
+- : times-positive-implies-positive (times/s MP*N=sTP (plus/s TP+N=PP))
+                                    eq/ MP eq/ NP N=sNP
+    <- times-positive-implies-positive MP*N=sTP eq/ _ _ NP N=sNP.
 
-%worlds () (times-positive-implies-positive M*N=P P=sP' %{=>}% M' M=sM' N' N=sN').
+%worlds () (times-positive-implies-positive M*N=P P=sPP %{=>}% MP M=sMP NP N=sNP).
 %total T (times-positive-implies-positive T _ _ _ _ _).
 
 
@@ -1124,9 +1124,9 @@ END_ELF
 - : times-commutative times/z T
     <- (times-right-zero N2 T).
 
-- : {T1: times N1' N2 N3'} {P2: plus N3' N2 N3}
-               {T1c: times N2 N1' N3'} {P2c: plus N2 N3' N3}
-	       {Tc: times N2 (s N1') N3}
+- : {T1: times N1P N2 N3P} {P2: plus N3P N2 N3}
+               {T1c: times N2 N1P N3P} {P2c: plus N2 N3P N3}
+	       {Tc: times N2 (s N1P) N3}
        times-commutative (times/s T1 P2) Tc
     <- plus-commutative P2 P2c
     <- times-commutative T1 T1c
@@ -1177,15 +1177,15 @@ END_ELF
 - : {T2:times N2 N3 N23}
       times-associative times/z times/z N23 T2 times/z
     <- times-total T2.
--  : {T1:times N1' N2 N1'2} {P2:plus N1'2 N2 N12}
+-  : {T1:times N1P N2 N1P2} {P2:plus N1P2 N2 N12}
                  {T3:times N12 N3 N123} {T4:times N2 N3 N23}
-		 {T5:times N1' N23 N1'23} {P6:plus N1'23 N23 N123}
-                 {T7:times N1'2 N3 N1'23}
+		 {T5:times N1P N23 N1P23} {P6:plus N1P23 N23 N123}
+                 {T7:times N1P2 N3 N1P23}
        times-associative (times/s T1 P2) T3 N23 T4 (times/s T5 P6)
-    <- times-right-distributes-over-plus P2 T3 N1'23 N23 T7 T4 P6
-    <- times-associative T1 T7 N23' T4' T5'
-    <- times-deterministic T4' T4 eq/ eq/ N23'=N23
-    <- times-respects-eq T5' eq/ N23'=N23 eq/ T5.
+    <- times-right-distributes-over-plus P2 T3 N1P23 N23 T7 T4 P6
+    <- times-associative T1 T7 N23P T4P T5P
+    <- times-deterministic T4P T4 eq/ eq/ N23P=N23
+    <- times-respects-eq T5P eq/ N23P=N23 eq/ T5.
 
 %worlds () (times-associative _ _ _ _ _).
 %total T1 (times-associative T1 _ _ _ _).
@@ -1205,14 +1205,14 @@ END_ELF
 
 - : times-right-cancels times/z times/z EY eq/ eq/.
 
-- :              {T1:times X1 (s Y1) Z1'} {P1: plus Z1' (s Y1) Z1}
-                 {T2:times X2 (s Y2) Z2'} {P2: plus Z2' (s Y2) Z2}
+- :              {T1:times X1 (s Y1) Z1P} {P1: plus Z1P (s Y1) Z1}
+                 {T2:times X2 (s Y2) Z2P} {P2: plus Z2P (s Y2) Z2}
                  {EY: eq Y1 Y2} {EZ: eq Z1 Z2} {EX: eq X1 X2}
-       times-right-cancels (times/s T1 P1) (times/s T2 P2) EY EZ EX'
-    <- succ-deterministic EY EY'
-    <- plus-right-cancels P1 P2 EY' EZ EZ'
-    <- times-right-cancels T1 T2 EY EZ' EX
-    <- succ-deterministic EX EX'.
+       times-right-cancels (times/s T1 P1) (times/s T2 P2) EY EZ EXP
+    <- succ-deterministic EY EYP
+    <- plus-right-cancels P1 P2 EYP EZ EZP
+    <- times-right-cancels T1 T2 EY EZP EX
+    <- succ-deterministic EX EXP.
 
 %worlds () (times-right-cancels X1*sY1=Z1 X2*sY2=Z2 Y1=Y2 Z1=Z2 %{=>}% X1=X2).
 %total T1 (times-right-cancels T1 _ _ _ _).
@@ -1361,25 +1361,25 @@ END_ELF
         exists {GP:gt P1 P2}
         true.
 
-- : {0=0': eq z _}
+- : {0=0P: eq z _}
     times-preserves-gt (M1>M2:gt M1 M2) (N1>0:gt N1 z) (M1*N1=P1:times M1 N1 P1)
-                       M2*0=0' P1>0'
-    <- gt-implies-positive M1>M2 M1' M1=sM1'
-    <- times-respects-eq M1*N1=P1 M1=sM1' eq/ eq/ SM1'*N1=P1
+                       M2*0=0P P1>0P
+    <- gt-implies-positive M1>M2 M1P M1=sM1P
+    <- times-respects-eq M1*N1=P1 M1=sM1P eq/ eq/ SM1P*N1=P1
     <- times-right-zero M2 M2*0=0
-    <- times-deterministic M2*0=0 M2*0=0' eq/ eq/ 0=0'
-    <- times-right-zero (s M1') SM1'*0=0
-    <- times-left-preserves-gt N1>0 SM1'*N1=P1 SM1'*0=0 P1>0
-    <- gt-respects-eq P1>0 eq/ 0=0' P1>0'.
+    <- times-deterministic M2*0=0 M2*0=0P eq/ eq/ 0=0P
+    <- times-right-zero (s M1P) SM1P*0=0
+    <- times-left-preserves-gt N1>0 SM1P*N1=P1 SM1P*0=0 P1>0
+    <- gt-respects-eq P1>0 eq/ 0=0P P1>0P.
 
-- : times-preserves-gt M1>M2 (N1>sN2':gt N1 (s N2')) M1*N1=P1 M2*sN2'=P2 P1>P2
-    <- gt-implies-positive M1>M2 M1' M1=sM1'
-    <- times-respects-eq M1*N1=P1 M1=sM1' eq/ eq/ SM1'*N1=P1
-    <- times-total (SM1'*sN2'=PX:times (s M1') (s N2') _)
-    <- times-left-preserves-gt N1>sN2' SM1'*N1=P1 SM1'*sN2'=PX P1>PX
-    <- eq-symmetric M1=sM1' SM1'=M1
-    <- times-respects-eq SM1'*sN2'=PX SM1'=M1 eq/ eq/ M1*sN2'=PX
-    <- times-right-preserves-gt M1>M2 M1*sN2'=PX M2*sN2'=P2 PX>P2
+- : times-preserves-gt M1>M2 (N1>sN2P:gt N1 (s N2P)) M1*N1=P1 M2*sN2P=P2 P1>P2
+    <- gt-implies-positive M1>M2 M1P M1=sM1P
+    <- times-respects-eq M1*N1=P1 M1=sM1P eq/ eq/ SM1P*N1=P1
+    <- times-total (SM1P*sN2P=PX:times (s M1P) (s N2P) _)
+    <- times-left-preserves-gt N1>sN2P SM1P*N1=P1 SM1P*sN2P=PX P1>PX
+    <- eq-symmetric M1=sM1P SM1P=M1
+    <- times-respects-eq SM1P*sN2P=PX SM1P=M1 eq/ eq/ M1*sN2P=PX
+    <- times-right-preserves-gt M1>M2 M1*sN2P=PX M2*sN2P=P2 PX>P2
     <- gt-transitive P1>PX PX>P2 P1>P2.
 
 %worlds () (times-preserves-gt M1>M2 N1>N2 M1*N1=P1 M2*N2=P2 %{=>}% P1>P2).
