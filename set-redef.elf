@@ -62,6 +62,13 @@
 %abbrev disjoint-member-contradiction = disjoint-lookup-contradiction.
 %abbrev disjoint-member-implies-not-member = disjoint-lookup-implies-not-member.
 
+%abbrev intersection-preserves-member =
+	[MA: member A N] [MB:member B N]
+	[I: intersection A B C]
+	[MC: member C N]
+	intersection-meets-lookup* MA MB I unit`union/ MC.
+
+
 %% using "add"
 
 %abbrev false-implies-add = false-implies-update.
