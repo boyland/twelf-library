@@ -41,7 +41,7 @@ CLEANFILES = ${GEN} *.tgz tmp.elf
 
 SOURCE = std.elf ${BSRC} ${NATSRC} ${NATPSRC} ${RATSRC} ${RAT0SRC} ${OPSRC} \
 	${MAPSRC} ${SETSRC} ${MSETSRC} ${RAT0VSRC} ${NATVSRC} ${VSRC} \
-	Makefile ${GN} ${REC}
+	Makefile ${GN} ${REC} README
 
 .PHONY: output
 output : std.elf ${GEN}
@@ -94,7 +94,7 @@ multiset.elf : ${MSETSRC} ${MAPSRC}
 DIST = www/.
 DISTELF = std.elf bool.elf pair.elf \
             nat.elf natpair.elf rat.elf set.elf multiset.elf \
-	    rat0.elf natvector.elf rat0vector.elf
+	    rat0.elf natvector.elf rat0vector.elf README
 
 DISTFILES = ${DISTELF} map.elf \
             library.tgz map.tgz source.tgz
