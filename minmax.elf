@@ -429,6 +429,8 @@ END_ELF
 	exists {E3:eq X3 Y3}
 	true.
 
+%abbrev max-unique = max-deterministic.
+
 - : max-deterministic (max/=) (max/=) eq/ eq/ eq/.
 
 - : max-deterministic (max/=) (max/> X>X) eq/ eq/ eq/.
