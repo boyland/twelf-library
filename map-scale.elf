@@ -56,6 +56,8 @@ scale/+ : scale S (map/+ N D M) (map/+ N DP MP)
 	exists {SE:eq SM1 SM2}
 	true.
 
+%abbrev scale-unique = scale-deterministic.
+
 - : scale-deterministic scale/0 scale/0 scalar`eq/ eq/ eq/.
 
 - : scale-deterministic (scale/+ S*M=SM1 S*D=D1) (scale/+ S*M=SM2 S*D=D2)
