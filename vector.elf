@@ -27,7 +27,7 @@ data`eq/ : data`eq X X.
 %total {} (data`false-implies-eq _ _).
 
 If ARITH is defined, it also assumes the existence of add and mul operations
-and that these operators are deterministic/total/commutative/associative.
+and that these operators are unique/total/commutative/associative.
 
 This file is intended to be copied and modified to apply to specific
 data types.  If/when Twelf gets a module system, this signature
@@ -450,6 +450,8 @@ dot/+ :
 	exists {EB:bool`eq B1 B2}
 	true.
 
+%abbrev zero?-unique = zero?-deterministic.
+
 - : zero?-deterministic _ _ _ bool`eq/.
 
 - : zero?-deterministic (zero?/+ Z1?) (zero?/+ Z2?) eq/ E
@@ -525,6 +527,8 @@ dot/+ :
 		{EN: nat`eq I1 I2}
 	exists	{ED: data`eq X1 X2}
 	true.
+
+%abbrev get-unique = get-deterministic.
 
 - : get-deterministic get/0 get/0 _ _ data`eq/.
 
@@ -628,6 +632,8 @@ dot/+ :
 		{ED: data`eq X1 X2}
 	exists	{ER: eq V3 V4}
 	true.
+
+%abbrev set-unique = set-deterministic.
 
 - : set-deterministic set/0 set/0 _ _ data`eq/ eq/.
 
@@ -826,11 +832,13 @@ dot/+ :
 	exists {E3:eq V3a V3b}
 	true.
 
+%abbrev add-unique = add-deterministic.
+
 - : add-deterministic add/0 add/0 eq/ eq/ eq/.
 
 - : add-deterministic (add/+ Q1+Q2=Q3 V1+V2=V3) (add/+ Q1+Q2=Q4 V1+V2=V4)
 		      eq/ eq/ E
-    <- data`add-deterministic Q1+Q2=Q3 Q1+Q2=Q4 data`eq/ data`eq/ Q3=Q4
+    <- data`add-unique Q1+Q2=Q3 Q1+Q2=Q4 data`eq/ data`eq/ Q3=Q4
     <- add-deterministic V1+V2=V3 V1+V2=V4 eq/ eq/ V3=V4
     <- vector/+-preserves-eq Q3=Q4 V3=V4 E.
 
@@ -1108,11 +1116,13 @@ dot/+ :
 	exists {E3:eq V3a V3b}
 	true.
 
+%abbrev scale-unique = scale-deterministic.
+
 - : scale-deterministic scale/0 _ data`eq/ eq/ eq/.
 
 - : scale-deterministic (scale/+ Q1*Q2=Q3a Q1*V2=V3a) 
                         (scale/+ Q1*Q2=Q3b Q1*V2=V3b) data`eq/ eq/ Va=Vb
-    <- data`mul-deterministic Q1*Q2=Q3a Q1*Q2=Q3b data`eq/ data`eq/ Q3a=Q3b
+    <- data`mul-unique Q1*Q2=Q3a Q1*Q2=Q3b data`eq/ data`eq/ Q3a=Q3b
     <- scale-deterministic Q1*V2=V3a Q1*V2=V3b data`eq/ eq/ V3a=V3b
     <- vector/+-preserves-eq Q3a=Q3b V3a=V3b Va=Vb.
 
@@ -1133,7 +1143,7 @@ dot/+ :
 
 - : scale-left-zero (scale/+ ZERO*Q=R ZERO*V=Z) Z?
     <- data`mul-left-zero _ ZERO*Q=ZERO
-    <- data`mul-deterministic ZERO*Q=ZERO ZERO*Q=R data`eq/ data`eq/ ZERO=R
+    <- data`mul-unique ZERO*Q=ZERO ZERO*Q=R data`eq/ data`eq/ ZERO=R
     <- scale-left-zero ZERO*V=Z Z=0
     <- vector/+-preserves-eq ZERO=R eq/ VP=V
     <- zero?-respects-eq (zero?/+ Z=0) VP=V bool`eq/ Z?.
@@ -1471,14 +1481,16 @@ dot/+ :
 	exists {E3:data`eq R3 R3P}
 	true.
 
+%abbrev dot-unique = dot-deterministic.
+
 - : dot-deterministic dot/0 dot/0 eq/ eq/ data`eq/.
 
 - : dot-deterministic (dot/+ R1*R2=R3 V1*V2=S3 R3+S3=T3)
                       (dot/+ R1*R2=R3P V1*V2=S3P R3P+S3P=T3P)
                       eq/ eq/ T3=T3P
-    <- data`mul-deterministic R1*R2=R3 R1*R2=R3P data`eq/ data`eq/ R3=R3P
+    <- data`mul-unique R1*R2=R3 R1*R2=R3P data`eq/ data`eq/ R3=R3P
     <- dot-deterministic V1*V2=S3 V1*V2=S3P eq/ eq/ S3=S3P
-    <- data`add-deterministic R3+S3=T3 R3P+S3P=T3P R3=R3P S3=S3P T3=T3P.
+    <- data`add-unique R3+S3=T3 R3P+S3P=T3P R3=R3P S3=S3P T3=T3P.
 
 %worlds () (dot-deterministic _ _ _ _ _).
 %total (D) (dot-deterministic D _ _ _ _).
