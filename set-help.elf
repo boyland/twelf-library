@@ -77,6 +77,16 @@
  %total { } (unit`eq-transitive _ _ _).
 
 
+ %theorem unit`false-implies-eq? :
+        forall* {X1} {X2} {B}
+        forall {F:void}
+        exists {G:unit`eq? X1 X2 B}
+        true.
+
+ %worlds () (unit`false-implies-eq? _ _).
+ %total { } (unit`false-implies-eq? _ _).
+
+
  %theorem unit`false-implies-ne :
         forall* {X1} {X2}
         forall {F:void}
@@ -140,12 +150,45 @@
  %total { } (unit`eq?-total* _ _ _ _).
 
 
-
  %abbrev unit`leq = unit`eq.
+ %abbrev unit`nle = unit`ne.
+
+ unit`leq? : unit -> unit -> bool -> type.
+ 
+ unit`leq?/yes : unit`leq U1 U2 -> unit`leq? U1 U2 true.
+
+ unit`leq?/no  : unit`nle U1 U2 -> unit`leq? U1 U2 false.
+
+
+ %theorem unit`false-implies-leq? :
+	forall* {U1} {U2} {B}
+	forall	{F: void}
+	exists	{L: unit`leq? U1 U2 B}
+	true.
+
+ %worlds () (unit`false-implies-leq? _ _).
+ %total { } (unit`false-implies-leq? _ _).
+
+
  %abbrev unit`false-implies-leq = unit`false-implies-eq.
+ %abbrev unit`false-implies-nle = unit`false-implies-ne.
  %abbrev unit`leq-reflexive = unit`eq-reflexive.
  %abbrev unit`leq-transitive = unit`eq-transitive.
+ %abbrev unit`leq-nle-contradiction = unit`eq-ne-implies-false.
 
+
+ %theorem unit`leq-respects-eq :
+	forall* {U1} {U2} {V1} {V2}
+	forall	{L1: unit`leq U1 U2}
+		{E1: unit`eq U1 V1}
+		{E2: unit`eq U2 V2}
+	exists  {L2: unit`leq V1 V2}
+	true.
+
+ - : unit`leq-respects-eq L _ _ L.
+
+ %worlds () (unit`leq-respects-eq _ _ _ _).
+ %total { } (unit`leq-respects-eq _ _ _ _).
 
  %theorem unit`leq-anti-symmetric :
 	forall* {U1} {U2}
@@ -157,6 +200,29 @@
 
  %worlds () (unit`leq-anti-symmetric _ _ _).
  %total { } (unit`leq-anti-symmetric _ _ _).
+
+ %theorem unit`nle-implies-ne :
+	forall*	{U1} {U2}
+	forall	{N: unit`nle U1 U2}
+	exists	{N: unit`ne U1 U2}
+	true.
+
+ %worlds () (unit`nle-implies-ne _ _).
+ %total { } (unit`nle-implies-ne _ _).
+
+
+ %theorem unit`leq?-total* :
+	forall	{U1} {U2}
+	exists	{B}
+		{L: unit`leq? U1 U2 B}
+	true.
+
+ %abbrev unit`leq?-total = unit`leq?-total* _ _ _.
+
+ - : unit`leq?-total (unit`leq?/yes unit`eq/).
+
+ %worlds () (unit`leq?-total* _ _ _ _).
+ %total { } (unit`leq?-total* _ _ _ _).
 
 
  unit`join : unit -> unit -> unit -> type.
@@ -172,6 +238,21 @@
 
  %worlds () (unit`false-implies-join _ _).
  %total { } (unit`false-implies-join _ _).
+
+
+ %theorem unit`join-respects-eq :
+	forall* {U1} {U2} {U3} {V1} {V2} {V3}
+	forall	{J:unit`join U1 U2 U3}
+		{E1:unit`eq U1 V1} 
+		{E2:unit`eq U2 V2}
+        	{E3:unit`eq U3 V3}
+	exists	{K:unit`join V1 V2 V3}
+	true.
+
+ - : unit`join-respects-eq J _ _ _ J.
+
+ %worlds () (unit`join-respects-eq _ _ _ _ _).
+ %total { } (unit`join-respects-eq _ _ _ _ _).
 
 
  %theorem unit`join-deterministic :
@@ -301,6 +382,7 @@
  
  %abbrev unit`meet = unit`join.
  %abbrev unit`false-implies-meet = unit`false-implies-join.
+ %abbrev unit`meet-respects-eq = unit`join-respects-eq.
  %abbrev unit`meet-deterministic = unit`join-deterministic.
  %abbrev unit`meet-total* = unit`join-total*.
  %abbrev unit`meet-commutative = unit`join-commutative.
