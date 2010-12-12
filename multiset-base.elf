@@ -2,7 +2,7 @@
 
 
 %{%
-#define DATA_NE
+#define DATA_NE 1
 #define DATA_JOIN_IMPLIES_LEQ 1
 #define DATA_JOIN_IS_LUB 1
 #define DATA_JOIN_PRESERVES_LEQ 1
@@ -11,6 +11,7 @@
 #define DATA_JOIN_COMMUTATIVE 1
 #define DATA_JOIN_ASSOCIATIVE 1
 #define DATA_LEQ 1
+#define DATA_NLE 1
 #define DATA_MEET_IMPLIES_LEQ 1
 #define DATA_MEET_IS_GLB 1
 #define DATA_MEET_PRESERVES_LEQ 1
