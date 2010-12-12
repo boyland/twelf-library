@@ -17,43 +17,24 @@ map/+ : nat -> data -> map -> map.
 %%%% Relations on maps
 
 
-
-eq : map -> map -> type.
-
-
-eq/ : eq M M.
-
-
-%{%
-#ifdef DATA_NE
-%}%
-
-ne : map -> map -> type.
-
-
-ne/L : ne map/0 (map/+ _ _ _).
-
-ne/R : ne (map/+ _ _ _) map/0.
-
-ne/N : nat`ne N1 N2 -> ne (map/+ N1 _ _) (map/+ N2 _ _).
-
-ne/D : data`ne D1 D2 -> ne (map/+ _ D1 _) (map/+ _ D2 _).
-
-ne/+ : ne M1 M2 -> ne (map/+ _ _ M1) (map/+ _ _ M2).
-
+% equality is defined assuming "ne" is available,
+% but 'ne' may be isufficiently inhabited to
+% prove things about.
 
 
 eq? : map -> map -> bool -> type.
 
+%abbrev eq : map -> map -> type = [M1] [M2] eq? M1 M2 true.
 
-eq?/yes : eq? X X true.
+%abbrev ne : map -> map -> type = [M1] [M2] eq? M1 M2 false.
 
-eq?/no : eq? X Y false
-    <- ne X Y.
 
-%{%
-#endif
-%}%
+eq?/yes : eq M M.
+
+%abbrev eq/ = eq?/yes.
+
+%abbrev eq?/no : ne M1 M2 -> eq? M1 M2 false = [x] x.
+
 
 
 lookup : map -> nat -> data -> type.
@@ -79,6 +60,19 @@ fresh/> : fresh (map/+ N _ F) M
     <- plus (s M1) N M
     <- fresh F M1.
 
+
+
+ne/< : lookup M1 N D -> fresh M2 N -> ne M1 M2.
+
+ne/> : fresh M1 N -> lookup M2 N D -> ne M1 M2.
+
+%{
+#ifdef DATA_NE
+%}%
+ne/= : lookup M1 N D1 -> lookup M2 N D2 -> data`ne D1 D2 -> ne M1 M2.
+%{%
+#endif
+%}%
 
 
 domain? : map -> nat -> bool -> type.
@@ -187,43 +181,102 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total {} (meta-eq _ _ _).
 %reduces M = N (meta-eq M N _).
 
-%theorem false-implies-eq : 
-	forall* {M} {MP} forall {F:void} exists {E:eq M MP} true.
-%worlds (WORLDS) (false-implies-eq _ %{=>}% M=MP).
-%total {} (false-implies-eq _ _).
+
+%theorem false-implies-eq? :
+	forall*	{M1} {M2} {B}
+	forall	{F:void}
+	exists	{E: eq? M1 M2 B}
+	true.
+
+%worlds (WORLDS) (false-implies-eq? _ _).
+%total { } (false-implies-eq? _ _).
+
+%abbrev false-implies-eq = false-implies-eq?.
+
+%abbrev false-implies-ne = false-implies-eq?.
+
 
 %theorem eq-reflexive : forall {M} exists {E:eq M M} true.
+
 - : eq-reflexive _ eq/.
+
 %worlds (WORLDS) (eq-reflexive M %{=>}% M=M).
 %total {} (eq-reflexive _ _).
 
-%theorem eq-symmetric :
-	forall* {M} {MP}
-	forall {E1:eq M MP}
-	exists {E2:eq MP M}
+
+%theorem eq?-symmetric :
+	forall*	{M1} {M2} {B}
+	forall	{E1: eq? M1 M2 B}
+	exists	{E2: eq? M2 M1 B}
 	true.
-- : eq-symmetric eq/ eq/.
-%worlds (WORLDS) (eq-symmetric M=MP %{=>}% MP=M).
-%total {} (eq-symmetric _ _).
+
+- : eq?-symmetric eq/ eq/.
+
+- : eq?-symmetric (ne/< L F) (ne/> F L).
+
+- : eq?-symmetric (ne/> F L) (ne/< L F).
+
+%{%
+#ifdef DATA_NE
+%}%
+- : eq?-symmetric (ne/= L1 L2 NE) (ne/= L2 L1 NEs)
+    <- data`ne-symmetric NE NEs.
+%{%
+#endif
+%}%
+
+%worlds (WORLDS) (eq?-symmetric _ _).
+%total { } (eq?-symmetric _ _).
+
+%abbrev eq-symmetric = eq?-symmetric.
+
+%abbrev ne-symmetric = eq?-symmetric.
+
 
 %theorem eq-transitive:
 	forall* {M1} {M2} {M3}
 	forall {E12:eq M1 M2} {E23:eq M2 M3}
 	exists {E13:eq M1 M3}
 	true.
+
 - : eq-transitive eq/ eq/ eq/.
+
 %worlds (WORLDS) (eq-transitive M1=M2 M2=M3 %{=>}% M1=M3).
 %total {} (eq-transitive _ _ _).
 
 
-%theorem map/+-preserves-eq :
-	forall* {N} {NP} {D} {DP} {F} {FP}
-	forall {EN:nat`eq N NP} {ED:data`eq D DP} {EF:eq F FP}
-	exists {E:eq (map/+ N D F) (map/+ NP DP FP)}
+%theorem map/+-preserves-eq? :
+	forall* {N} {NP} {D} {DP} {F} {FP} {B}
+	forall {EN:nat`eq N NP} {ED:data`eq D DP} {EF:eq? F FP B}
+	exists {E:eq? (map/+ N D F) (map/+ NP DP FP) B}
 	true.
-- : map/+-preserves-eq nat`eq/ data`eq/ eq/ eq/.
-%worlds (WORLDS) (map/+-preserves-eq N=NP D=DP F=FP %{=>}% NDF=NPDPFP).
-%total {} (map/+-preserves-eq _ _ _ _).
+
+- : map/+-preserves-eq? nat`eq/ data`eq/ eq/ eq/.
+
+- : map/+-preserves-eq? nat`eq/ data`eq/ (ne/< L F) 
+	(ne/< (lookup/> L P) (fresh/> F P))
+    <- plus-total P.
+
+- : map/+-preserves-eq? nat`eq/ data`eq/ (ne/> F L) 
+	(ne/> (fresh/> F P) (lookup/> L P))
+    <- plus-total P.
+
+%{%
+#ifdef DATA_NE
+%}%
+- : map/+-preserves-eq? nat`eq/ data`eq/ (ne/= L1 L2 NE)
+	(ne/= (lookup/> L1 P) (lookup/> L2 P) NE)
+    <- plus-total P.
+%{%
+#endif
+%}%
+
+%worlds (WORLDS) (map/+-preserves-eq? _ _ _ _).
+%total { } (map/+-preserves-eq? _ _ _ _).
+
+%abbrev map/+-preserves-eq = map/+-preserves-eq?.
+
+%abbrev map/+-preserves-ne = map/+-preserves-eq?.
 
 
 %theorem map/+-preserves-eq-converse :
@@ -257,134 +310,6 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (eq-contradiction _ _).
 %total {} (eq-contradiction _ _).
 
-
-%{%
-#ifdef DATA_NE
-%}%
-
-%%% Theorems about ne
-
-
-%theorem false-implies-ne :
-	forall* {M1} {M2}
-	forall {F:void}
-	exists {N:ne M1 M2}
-	true.
-
-%worlds (WORLDS) (false-implies-ne _ _).
-%total { } (false-implies-ne _ _).
-
-
-%theorem ne-respects-eq :
-	forall* {M11} {M12} {M21} {M22}
-	forall {N1:ne M11 M12} {E1:eq M11 M21} {E2:eq M12 M22}
-	exists {N2:ne M21 M22}
-	true.
-
-- : ne-respects-eq N eq/ eq/ N.
-
-%worlds (WORLDS) (ne-respects-eq _ _ _ _).
-%total { } (ne-respects-eq _ _ _ _).
-
-
-%theorem ne-anti-reflexive :
-	forall* {M}
-	forall {N:ne M M}
-	exists {F:void}
-	true.
-
-- : ne-anti-reflexive (ne/N N) F
-    <- nat`ne-anti-reflexive N F.
-
-- : ne-anti-reflexive (ne/D N) F
-    <- data`ne-anti-reflexive N F.
-
-- : ne-anti-reflexive (ne/+ N) F
-    <- ne-anti-reflexive N F.
-
-%worlds (WORLDS) (ne-anti-reflexive _ _).
-%total (N) (ne-anti-reflexive N _).
-
-
-%theorem ne-symmetric :
-	forall* {M1} {M2}
-	forall {N1:ne M1 M2}
-	exists {N2:ne M2 M1}
-	true.
-
-- : ne-symmetric ne/L ne/R.
-
-- : ne-symmetric ne/R ne/L.
-
-- : ne-symmetric (ne/N N1) (ne/N N2)
-    <- nat`ne-symmetric N1 N2.
-
-- : ne-symmetric (ne/D N1) (ne/D N2)
-    <- data`ne-symmetric N1 N2.
-
-- : ne-symmetric (ne/+ N1) (ne/+ N2)
-    <- ne-symmetric N1 N2.
-
-%worlds (WORLDS) (ne-symmetric _ _).
-%total (N) (ne-symmetric N _).
-
-
-%theorem eq-ne-implies-false :
-        forall* {X} {Y}
-        forall {D1:eq X Y} {D2:ne X Y}
-        exists {F:void}
-        true.
-
-- : eq-ne-implies-false eq/ X<>X F
-    <- ne-anti-reflexive X<>X F.
-
-%worlds (WORLDS) (eq-ne-implies-false _ _ _).
-%total { } (eq-ne-implies-false _ _ _).
-
-
-%theorem eq?-total* :
-        forall {M} {N}
-        exists {B} {T:eq? M N B}
-        true.
-
-%abbrev eq?-total = eq?-total* _ _ _.
-
-%theorem eq?-total/+ :
-	forall* {N1} {D1} {N2} {D2} {M2} {EN} {ED} {EM}
-	forall {M1} 
-	       {EN?:nat`eq? N1 N2 EN}
-	       {ED?:data`eq? D1 D2 ED}
-	       {EM?:eq? M1 M2 EM}
-	exists {B}
-	       {E?:eq? (map/+ N1 D1 M1) (map/+ N2 D2 M2) B}
-	true.
-
-- : eq?-total eq?/yes.
-
-- : eq?-total (eq?/no ne/L).
-
-- : eq?-total (eq?/no ne/R).
-
-- : eq?-total E?
-    <- nat`eq?-total EN?
-    <- data`eq?-total ED?
-    <- eq?-total EM?
-    <- eq?-total/+ _ EN? ED? EM? _ E?.
-
-- : eq?-total/+ _ (nat`eq?/yes) (data`eq?/yes) (eq?/yes) _ eq?/yes.
-
-- : eq?-total/+ _ (nat`eq?/no N) _ _ _ (eq?/no (ne/N N)).
-
-- : eq?-total/+ _ _ (data`eq?/no N) _ _ (eq?/no (ne/D N)).
-
-- : eq?-total/+ _ _ _ (eq?/no N) _ (eq?/no (ne/+ N)).
-
-%worlds (WORLDS)   (eq?-total* _ _ _ _) (eq?-total/+ _ _ _ _ _ _).
-%total (M W) (eq?-total* M _ _ _) (eq?-total/+ W _ _ _ _ _).
-
-%{%
-#endif
-%}%
 
 
 %%% Theorems about lookup
@@ -519,29 +444,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 	exists {NM:ne M1 M2}
 	true.
 
-%theorem lookup-ne-implies-ne/L :
-	forall* {M1} {N1} {D1} {M2} {N2} {D2} {B}
-	forall {L1:lookup M1 N1 D1}
-	       {L2:lookup M2 N2 D2}
-	       {EN:nat`eq N1 N2}
-	       {ND:data`ne D1 D2}
-	       {EM?:eq? M1 M2 B}
-	exists {NM:ne M1 M2}
-	true.
-
-- : lookup-ne-implies-ne L1 L2 EN ND NM
-    <- eq?-total EM?
-    <- lookup-ne-implies-ne/L L1 L2 EN ND EM? NM.
-
-- : lookup-ne-implies-ne/L L1 L2 _ _ (eq?/no NM) NM.
-
-- : lookup-ne-implies-ne/L L1 L2 nat`eq/ D1<>D2 eq?/yes NM
-    <- lookup-deterministic L1 L2 eq/ nat`eq/ D1=D2
-    <- data`eq-ne-implies-false D1=D2 D1<>D2 F
-    <- false-implies-ne F NM.
-
-%worlds (WORLDS) (lookup-ne-implies-ne/L _ _ _ _ _ _).
-%total { } (lookup-ne-implies-ne/L _ _ _ _ _ _).
+- : lookup-ne-implies-ne L1 L2 nat`eq/ NE (ne/= L1 L2 NE).
 
 %worlds (WORLDS) (lookup-ne-implies-ne _ _ _ _ _).
 %total { } (lookup-ne-implies-ne _ _ _ _ _).
@@ -669,9 +572,6 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (plus-right-preserves-fresh* _ _ _ _).
 %total {} (plus-right-preserves-fresh* _ _ _ _).
 
-%{%
-#ifdef DATA_NE
-%}%
 
 %theorem fresh-lookup-implies-ne :
 	forall* {M1} {N1} {M2} {N2} {D2}
@@ -681,31 +581,114 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 	exists {NM:ne M1 M2}
 	true.
 
-%theorem fresh-lookup-implies-ne/L :
-	forall* {M1} {N1} {M2} {N2} {D2} {B}
-	forall {L1:fresh M1 N1}
-	       {L2:lookup M2 N2 D2}
-	       {EN:nat`eq N1 N2}
-	       {EM?:eq? M1 M2 B}
-	exists {NM:ne M1 M2}
-	true.
-
-- : fresh-lookup-implies-ne F1 L2 EN NM
-    <- eq?-total EM?
-    <- fresh-lookup-implies-ne/L F1 L2 EN EM? NM.
-
-- : fresh-lookup-implies-ne/L _ _ _ (eq?/no NM) NM.
-
-- : fresh-lookup-implies-ne/L F1 L2 nat`eq/ eq?/yes NM
-    <- fresh-lookup-not-equal F1 L2 N<>N
-    <- nat`ne-anti-reflexive N<>N F
-    <- false-implies-ne F NM.
-
-%worlds (WORLDS) (fresh-lookup-implies-ne/L _ _ _ _ _).
-%total { } (fresh-lookup-implies-ne/L _ _ _ _ _).
+- : fresh-lookup-implies-ne F L nat`eq/ (ne/> F L).
 
 %worlds (WORLDS) (fresh-lookup-implies-ne _ _ _ _).
 %total { } (fresh-lookup-implies-ne _ _ _ _).
+
+
+
+%%% Theorems about eq?/ne
+
+
+%% false-implies-eq? already done
+
+%theorem eq?-respects-eq :
+	forall* {M11} {M12} {M21} {M22} {B}
+	forall {N1:eq? M11 M12 B} {E1:eq M11 M21} {E2:eq M12 M22}
+	exists {N2:eq? M21 M22 B}
+	true.
+
+%abbrev ne-respects-eq = eq?-respects-eq.
+
+
+%theorem ne-anti-reflexive :
+	forall* {M}
+	forall {N:ne M M}
+	exists {F:void}
+	true.
+
+- : ne-anti-reflexive (ne/< L F) V
+    <- fresh-lookup-not-equal F L N<>N
+    <- nat`eq-ne-implies-false nat`eq/ N<>N V.
+
+- : ne-anti-reflexive (ne/> F L) V
+    <- fresh-lookup-not-equal F L N<>N
+    <- nat`eq-ne-implies-false nat`eq/ N<>N V.
+
+%{%
+#ifdef DATA_NE
+%}%
+- : ne-anti-reflexive (ne/= L1 L2 NE) F
+    <- lookup-deterministic L1 L2 eq/ nat`eq/ EQ
+    <- data`eq-ne-implies-false EQ NE F.
+%{%
+#endif
+%}%
+
+%worlds (WORLDS) (ne-anti-reflexive _ _).
+%total (N) (ne-anti-reflexive N _).
+
+
+%theorem eq-ne-implies-false :
+        forall* {X} {Y}
+        forall {D1:eq X Y} {D2:ne X Y}
+        exists {F:void}
+        true.
+
+- : eq-ne-implies-false eq/ X<>X F
+    <- ne-anti-reflexive X<>X F.
+
+%worlds (WORLDS) (eq-ne-implies-false _ _ _).
+%total { } (eq-ne-implies-false _ _ _).
+
+
+%{%
+#ifdef DATA_NE
+%}%
+%theorem eq?-total* :
+        forall {M} {N}
+        exists {B} {T:eq? M N B}
+        true.
+
+%abbrev eq?-total = eq?-total* _ _ _.
+
+%theorem eq?-total/+ :
+	forall* {N1} {D1} {N2} {D2} {M2} {CMP} {ED} {EM}
+	forall {M1} 
+	       {CN: nat`compare N1 N2 CMP}
+	       {ED?:data`eq? D1 D2 ED}
+	       {EM?:eq? M1 M2 EM}
+	exists {B}
+	       {E?:eq? (map/+ N1 D1 M1) (map/+ N2 D2 M2) B}
+	true.
+
+- : eq?-total eq?/yes.
+
+- : eq?-total (ne/< (lookup/= nat`eq/) fresh/0).
+
+- : eq?-total (ne/> fresh/0 (lookup/= nat`eq/)).
+
+- : eq?-total E?
+    <- nat`compare-total EC
+    <- data`eq?-total ED?
+    <- eq?-total EM?
+    <- eq?-total/+ _ EC ED? EM? _ E?.
+
+- : eq?-total/+ _ (nat`compare/=) (data`eq?/yes) EQ? _ EQP?
+    <- map/+-preserves-eq? nat`eq/ data`eq/ EQ? EQP?.
+
+- : eq?-total/+ _ (nat`compare/=) (data`eq?/no NE) _ _
+	(ne/= (lookup/= nat`eq/) (lookup/= nat`eq/) NE).
+
+- : eq?-total/+ _ (nat`compare/< N2>N1) _ _ _ 
+	(ne/< (lookup/= nat`eq/) (fresh/< N2>N1)).
+
+- : eq?-total/+ _ (nat`compare/> N1>N2) _ _ _ 
+	(ne/> (fresh/< N1>N2) (lookup/= nat`eq/) ).
+
+%worlds (WORLDS)   (eq?-total* _ _ _ _) (eq?-total/+ _ _ _ _ _ _).
+%total (M W) (eq?-total* M _ _ _) (eq?-total/+ W _ _ _ _ _).
 
 %{%
 #endif
@@ -2848,6 +2831,26 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds (WORLDS) (can-remove _ _ _ _ _ _ _ _).
 %total (L) (can-remove _ L _ _ _ _ _ _).
+
+
+% another version, which requires that you "know" the set is non-empty
+
+%theorem can-remove* :
+        forall* {M} {S}
+	forall	{SZ:size M (s S)}
+	exists	{MP} {N} {D}
+		{SZP:size MP S} 
+                {U:update MP N D M} 
+		{F:fresh MP N}
+	true.
+
+- : can-remove* (size/+ SZ) MP N D SZP U F
+    <- can-remove (size/+ SZ) (lookup/= nat`eq/) MP NP SZPP EQ U F
+    <- succ-cancels EQ EQP
+    <- size-respects-eq SZPP eq/ EQP SZP.
+
+%worlds () (can-remove* _ _ _ _ _ _ _).
+%total { } (can-remove* _ _ _ _ _ _ _).
 
 
 %theorem shift-implies-update :
