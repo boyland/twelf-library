@@ -40,7 +40,7 @@
 %abbrev union/= = [U] [E:nat`eq N1 N2] union/= U unit`union/ E.
 %abbrev intersection/= = [I] [E:nat`eq N1 N2] intersection/= I unit`union/ E.
 
-%abbrev add = [S1] [N] [S2] update S1 N unit/ S2.
+%abbrev add : set -> nat -> set -> type = [S1] [N] [S2] update S1 N unit/ S2.
 
 
 %%% Theorem renamings.
@@ -59,8 +59,13 @@
     [L:member M N] [EM:leq M MP] [LP:member MP N]
     lookup-respects-leq L EM unit/ LP unit`eq/.
 
+%abbrev member-implies-unit-leq =
+    [L:member M N] [LE:leq (set/1 N) M]
+    lookup-implies-unit-leq L LE.
+
 %abbrev disjoint-member-contradiction = disjoint-lookup-contradiction.
 %abbrev disjoint-member-implies-not-member = disjoint-lookup-implies-not-member.
+%abbrev not-member-union-left-preserves-member-converse = not-member-union-left-preserves-lookup-converse.
 
 %abbrev intersection-preserves-member =
 	[MA: member A N] [MB:member B N]
@@ -68,19 +73,32 @@
 	[MC: member C N]
 	intersection-meets-lookup* MA MB I unit`union/ MC.
 
+%abbrev intersection-preserves-member-converse :
+	member C X -> intersection A B C -> member A X -> member B X -> type =
+	[MC] [A^B] [MA] [MB]
+	intersection-meets-lookup-converse 
+		A^B MC unit/ unit/ MA MB unit`union/.
+
 
 %% using "add"
 
 %abbrev false-implies-add = false-implies-update.
-%abbrev add-respects-eq = update-respects-eq.
+%abbrev add-respects-eq 
+	: add S1 X1 T1 -> eq S1 S2 -> nat`eq X1 X2 -> eq T1 T2 -> 
+          add S2 X2 T2 -> type
+	= [A] [ES] [EX] [ET] [AP] update-respects-eq A ES EX unit`eq/ ET AP.
 %abbrev add-deterministic = update-deterministic.
 %abbrev add-total* = update-total*.
 %abbrev add-total = update-total.
+%abbrev member-implies-add = lookup-implies-update.
 %abbrev add-implies-member = update-implies-lookup.
 % should not need NE : %abbrev add-preserves-member = update-preserves-lookup.
 %abbrev add-preserves-fresh = update-preserves-fresh.
 %abbrev add-preserves-membership = update-preserves-membership.
 %abbrev add-overwrites = update-overwrites.
+%abbrev add-member-has-no-effect 
+	: member S1 X -> add S1 X S2 -> eq S1 S2 -> type
+	= [M] [A] [E] update-may-have-no-effect M A E.
 %abbrev add-idempotent = update-idempotent.
 %abbrev add-commutes = update-commutes.
 %abbrev add-commutes* = update-commutes*.
