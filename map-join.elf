@@ -511,6 +511,24 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 %total { } (join-preserves-disjoint* _ _ _ _).
 
 
+%abbrev join-left-preserves-disjoint* = join-preserves-disjoint*.
+
+%theorem join-right-preserves-disjoint* :
+	forall* {M1} {M2} {M3} {M0}
+	forall {D1:disjoint M0 M1} {D2:disjoint M0 M2}
+	       {A:join M1 M2 M3}
+	exists {D3:disjoint M0 M3}
+	true.
+
+- : join-right-preserves-disjoint* D1 D2 U D3
+    <- disjoint-symmetric D1 D1s
+    <- disjoint-symmetric D2 D2s
+    <- join-left-preserves-disjoint* D1s D2s U D3s
+    <- disjoint-symmetric D3s D3.
+
+%worlds (WORLDS) (join-right-preserves-disjoint* _ _ _ _).
+%total { } (join-right-preserves-disjoint* _ _ _ _).
+
 %{%
 Too much work: we need to add a size to prove termination.
 
@@ -617,35 +635,34 @@ Too much work: we need to add a size to prove termination.
 %total { } (shift-right-preserves-join-converse _ _ _ _ _).
 
 
-% this should be a * theorem
-%theorem shift-preserves-join :
+%theorem shift-preserves-join* :
 	forall* {N} {M1} {M2} {M3} {SM1} {SM2} {SM3}
 	forall {A:join M1 M2 M3} 
                {S1:shift N M1 SM1} {S2:shift N M2 SM2} {S3:shift N M3 SM3}
 	exists {SA:join SM1 SM2 SM3}
 	true.
 
-- : shift-preserves-join join/L shift/0 M2<<N=SM2 M2<<N=SM3 Z+SM2=SM3
+- : shift-preserves-join* join/L shift/0 M2<<N=SM2 M2<<N=SM3 Z+SM2=SM3
     <- shift-deterministic M2<<N=SM2 M2<<N=SM3 nat`eq/ eq/ SM2=SM3
     <- join-respects-eq join/L eq/ eq/ SM2=SM3 Z+SM2=SM3.
 
-- : shift-preserves-join join/R M1<<N=SM1 shift/0 M1<<N=SM3 SM1+0=SM3
+- : shift-preserves-join* join/R M1<<N=SM1 shift/0 M1<<N=SM3 SM1+0=SM3
     <- shift-deterministic M1<<N=SM1 M1<<N=SM3 nat`eq/ eq/ SM1=SM3
     <- join-respects-eq join/R eq/ eq/ SM1=SM3 SM1+0=SM3.
 
-- : shift-preserves-join (join/= M1+M2=M3 D1+D2=D3 nat`eq/) 
-                         (shift/+ N+1+N1=N4) (shift/+ N+1+N1=N5) 
-                         (shift/+ N+1+N1=N6)
-                         M411+M522=M633
+- : shift-preserves-join* (join/= M1+M2=M3 D1+D2=D3 nat`eq/) 
+                          (shift/+ N+1+N1=N4) (shift/+ N+1+N1=N5) 
+                          (shift/+ N+1+N1=N6)
+                          M411+M522=M633
     <- plus-deterministic N+1+N1=N4 N+1+N1=N5 nat`eq/ nat`eq/ N4=N5
     <- plus-deterministic N+1+N1=N4 N+1+N1=N6 nat`eq/ nat`eq/ N4=N6
     <- map/+-preserves-eq N4=N6 data`eq/ eq/ M433=M633
     <- join-respects-eq (join/= M1+M2=M3 D1+D2=D3 N4=N5) eq/ eq/ M433=M633
                         M411+M522=M633.
 
-- : shift-preserves-join (join/< M1+M022=M3 N0+1+N1=N2)
-                         (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) 
-                         (shift/+ N+1+N1=N6) M411+M522=M613
+- : shift-preserves-join* (join/< M1+M022=M3 N0+1+N1=N2)
+                          (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) 
+                          (shift/+ N+1+N1=N6) M411+M522=M613
     <- plus-deterministic N+1+N1=N4 N+1+N1=N6 nat`eq/ nat`eq/ N4=N6
     <- plus-swap-succ N+1+N1=N4 N+N1+1=N4
     <- plus-commutative N+N1+1=N4 N1+1+N=N4
@@ -656,9 +673,9 @@ Too much work: we need to add a size to prove termination.
     <- join-respects-eq (join/< M1+M022=M3 N0+1+N4=N5) eq/ eq/ M433=M613
                         M411+M522=M613.
 
-- : shift-preserves-join (join/> M311+M2=M3 N3+1+N2=N1)
-                         (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) 
-                         (shift/+ N+1+N2=N6) M411+M522=M623
+- : shift-preserves-join* (join/> M311+M2=M3 N3+1+N2=N1)
+                          (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) 
+                          (shift/+ N+1+N2=N6) M411+M522=M623
     <- plus-deterministic N+1+N2=N5 N+1+N2=N6 nat`eq/ nat`eq/ N5=N6
     <- plus-swap-succ N+1+N2=N5 N+N2+1=N5
     <- plus-commutative N+N2+1=N5 N2+1+N=N5
@@ -669,8 +686,25 @@ Too much work: we need to add a size to prove termination.
     <- join-respects-eq (join/> M311+M2=M3 N3+1+N5=N4) eq/ eq/ M523=M623
                         M411+M522=M623.
 
-%worlds (WORLDS) (shift-preserves-join _ _ _ _ _).
-%total { } (shift-preserves-join _ _ _ _ _).
+%worlds (WORLDS) (shift-preserves-join* _ _ _ _ _).
+%total { } (shift-preserves-join* _ _ _ _ _).
+
+
+%theorem shift-preserves-join :
+	forall* {N} {M1} {M2} {M3} {SM1} {SM2}
+	forall  {A:join M1 M2 M3} 
+                {S1:shift N M1 SM1} {S2:shift N M2 SM2} 
+	exists	{SM3} 
+		{S3:shift N M3 SM3}
+		{SA:join SM1 SM2 SM3}
+	true.
+
+- : shift-preserves-join J S1 S2 _ S3 JP
+    <- shift-total S3
+    <- shift-preserves-join* J S1 S2 S3 JP.
+
+%worlds (WORLDS) (shift-preserves-join _ _ _ _ _ _).
+%total { } (shift-preserves-join _ _ _ _ _ _).
 
 
 %theorem shift-preserves-join-converse :
@@ -1728,8 +1762,8 @@ END_ELF
     <- plus-commutative N5+N3+1=N4 N3+1+N5=N4
     <- shift-right-preserves-join C13+C1X4=C1 C1X4<<N=CY14 CY1Y3+CY14=CY1
     <- shift-right-preserves-join C23+C2X4=C2 C2X4<<N=CY24 CY2Y3+CY24=CY2
-    <- shift-preserves-join C1X4+C2X4=CX4 C1X4<<N=CY14 C2X4<<N=CY24 
-                           (shift/+ N3+1+N5=N4) CY14+CY24=C4.
+    <- shift-preserves-join* C1X4+C2X4=CX4 C1X4<<N=CY14 C2X4<<N=CY24 
+                             (shift/+ N3+1+N5=N4) CY14+CY24=C4.
 
 - : join-cross-comparable (join/= C1+C2=C Q1+Q2=Q nat`eq/)
                          (join/> CX3+C4=C N5+1+N4=N3) _ _ _ _
@@ -1745,8 +1779,8 @@ END_ELF
     <- plus-commutative N5+N4+1=N3 N4+1+N5=N3
     <- shift-left-preserves-join C1X3+C14=C1 C1X3<<N=CY13 CY13+CY1Y4=CY1
     <- shift-left-preserves-join C2X3+C24=C2 C2X3<<N=CY23 CY23+CY2Y4=CY2
-    <- shift-preserves-join C1X3+C2X3=CX3 C1X3<<N=CY13 C2X3<<N=CY23 
-                           (shift/+ N4+1+N5=N3) CY13+CY23=C3.
+    <- shift-preserves-join* C1X3+C2X3=CX3 C1X3<<N=CY13 C2X3<<N=CY23 
+                             (shift/+ N4+1+N5=N3) CY13+CY23=C3.
 
 
 - : join-cross-comparable (join/< C1+CX2=C N0+1+N1=N2)
@@ -1763,8 +1797,8 @@ END_ELF
     <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
     <- shift-right-preserves-join C13+CX23=C3 CX23<<N=C2Y3 CY1Y3+C2Y3=CY3
     <- shift-right-preserves-join C14+CX24=C4 CX24<<N=C2Y4 CY1Y4+C2Y4=CY4
-    <- shift-preserves-join CX23+CX24=CX2 CX23<<N=C2Y3 CX24<<N=C2Y4 
-			   (shift/+ N1+1+N0=N2) C23+C24=C2.
+    <- shift-preserves-join* CX23+CX24=CX2 CX23<<N=C2Y3 CX24<<N=C2Y4 
+			     (shift/+ N1+1+N0=N2) C23+C24=C2.
 
 - : join-cross-comparable (join/> CX1+C2=C N0+1+N2=N1)
 			 (join/= C3+C4=C Q3+Q4=Q nat`eq/) _ _ _ _
@@ -1780,8 +1814,8 @@ END_ELF
     <- plus-commutative N0+N2+1=N1 N2+1+N0=N1
     <- shift-left-preserves-join CX13+C23=C3 CX13<<N=C1Y3 C1Y3+CY2Y3=CY3
     <- shift-left-preserves-join CX14+C24=C4 CX14<<N=C1Y4 C1Y4+CY2Y4=CY4
-    <- shift-preserves-join CX13+CX14=CX1 CX13<<N=C1Y3 CX14<<N=C1Y4 
-			   (shift/+ N2+1+N0=N1) C13+C14=C1.
+    <- shift-preserves-join* CX13+CX14=CX1 CX13<<N=C1Y3 CX14<<N=C1Y4 
+			     (shift/+ N2+1+N0=N1) C13+C14=C1.
 
 - : join-cross-comparable (join/< C1+CX2=C N0+1+N1=N2)
                          (join/< C3+CX4=C N5+1+N3=N4) _ _ _ _ % NB N1=N3=N
@@ -1797,12 +1831,12 @@ END_ELF
     <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
     <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
     <- shift-right-preserves-join C13+C1X4=C1 C1X4<<N=CY14 CY1Y3+CY14=CY1
-    <- shift-preserves-join CX23+CX2X4=CX2 
+    <- shift-preserves-join* CX23+CX2X4=CX2 
 	CX23<<N=C2Y3 CX2X4<<N=C24 (shift/+ N1+1+N0=N2) C2Y3+C24=C2
     <- shift-right-preserves-join C13+CX23=C3 CX23<<N=C2Y3 CY1Y3+C2Y3=CY3
     <- plus-swap-succ N5+1+N3=N4 N5+N3+1=N4
     <- plus-commutative N5+N3+1=N4 N3+1+N5=N4
-    <- shift-preserves-join C1X4+CX2X4=CX4
+    <- shift-preserves-join* C1X4+CX2X4=CX4
 	C1X4<<N=CY14 CX2X4<<N=C24 (shift/+ N3+1+N5=N4) CY14+C24=C4.
 
 - : join-cross-comparable (join/< C1+CX2=C N0+1+N1=N2)
@@ -1819,11 +1853,11 @@ END_ELF
     <- shift-left-preserves-join C1X3+C14=C1 C1X3<<N=CY13 CY13+CY1Y4=CY1
     <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
     <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
-    <- shift-preserves-join CX2X3+CX24=CX2 
+    <- shift-preserves-join* CX2X3+CX24=CX2 
 	CX2X3<<N=C23 CX24<<N=C2Y4 (shift/+ N1+1+N0=N2) C23+C2Y4=C2
     <- plus-swap-succ N5+1+N4=N3 N5+N4+1=N3
     <- plus-commutative N5+N4+1=N3 N4+1+N5=N3
-    <- shift-preserves-join C1X3+CX2X3=CX3
+    <- shift-preserves-join* C1X3+CX2X3=CX3
 	C1X3<<N=CY13 CX2X3<<N=C23 (shift/+ N4+1+N5=N3) CY13+C23=C3
     <- shift-right-preserves-join C14+CX24=C4 CX24<<N=C2Y4 CY1Y4+C2Y4=CY4.
 
@@ -1841,13 +1875,13 @@ END_ELF
     <- shift-total C2X4<<N=CY24
     <- plus-swap-succ N0+1+N2=N1 N0+N2+1=N1
     <- plus-commutative N0+N2+1=N1 N2+1+N0=N1
-    <- shift-preserves-join CX13+CX1X4=CX1 
+    <- shift-preserves-join* CX13+CX1X4=CX1 
 	CX13<<N=C1Y3 CX1X4<<N=C14 (shift/+ N2+1+N0=N1) C1Y3+C14=C1
     <- shift-right-preserves-join C23+C2X4=C2 C2X4<<N=CY24 CY2Y3+CY24=CY2
     <- shift-left-preserves-join CX13+C23=C3 CX13<<N=C1Y3 C1Y3+CY2Y3=CY3
     <- plus-swap-succ N5+1+N3=N4 N5+N3+1=N4
     <- plus-commutative N5+N3+1=N4 N3+1+N5=N4
-    <- shift-preserves-join CX1X4+C2X4=CX4
+    <- shift-preserves-join* CX1X4+C2X4=CX4
 	CX1X4<<N=C14 C2X4<<N=CY24 (shift/+ N3+1+N5=N4) C14+CY24=C4.
 
 - : join-cross-comparable (join/> CX1+C2=C N0+1+N2=N1)
@@ -1863,12 +1897,12 @@ END_ELF
     <- shift-total C2X3<<N=CY23
     <- plus-swap-succ N0+1+N2=N1 N0+N2+1=N1
     <- plus-commutative N0+N2+1=N1 N2+1+N0=N1
-    <- shift-preserves-join CX1X3+CX14=CX1 
+    <- shift-preserves-join* CX1X3+CX14=CX1 
 	CX1X3<<N=C13 CX14<<N=C1Y4 (shift/+ N2+1+N0=N1) C13+C1Y4=C1
     <- shift-left-preserves-join C2X3+C24=C2 C2X3<<N=CY23 CY23+CY2Y4=CY2
     <- plus-swap-succ N5+1+N4=N3 N5+N4+1=N3
     <- plus-commutative N5+N4+1=N3 N4+1+N5=N3
-    <- shift-preserves-join CX1X3+C2X3=CX3
+    <- shift-preserves-join* CX1X3+C2X3=CX3
 	CX1X3<<N=C13 C2X3<<N=CY23 (shift/+ N4+1+N5=N3) C13+CY23=C3
     <- shift-left-preserves-join CX14+C24=C4 CX14<<N=C1Y4 C1Y4+CY2Y4=CY4.
 
