@@ -10,23 +10,7 @@
 
 remove : set -> set -> set -> type.
 
-remove/L : remove set/0 _ set/0.
-
-remove/R : remove S set/0 S.
-
-remove/= : remove (set/+ N1 S1) (set/+ N2 S2) S1S3
-    <- nat`eq N1 N2
-    <- remove S1 S2 S3
-    <- shift N1 S3 S1S3.
-
-remove/< : remove (set/+ N1 S1) (set/+ N2 S2) (set/+ N1 S3)
-    <- plus (s N0) N1 N2
-    <- remove S1 (set/+ N0 S2) S3.
-
-remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
-    <- plus (s N3) N2 N1
-    <- remove (set/+ N3 S1) S2 S3
-    <- shift N2 S3 S2S3.
+remove/ : leq C A -> disjoint B C -> union B C D -> leq A D -> remove A B C.
 
 
 
@@ -59,158 +43,78 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 %total {} (remove-respects-eq _ _ _ _ _).
 %reduces R = RP (remove-respects-eq R _ _ _ RP).
 
-%theorem remove/=-inversion :
-	forall* {N1} {S1} {N2} {S2} {S}
-	forall {R:remove (set/+ N1 S1) (set/+ N2 S2) S}
-               {E:nat`eq N1 N2}
-        exists {S3} {RP:remove S1 S2 S3} {SH:shift N1 S3 S}
-	true.
-
-- : remove/=-inversion (remove/= S3<<N1=S S1-S2=S3 nat`eq/) nat`eq/
-                       _ S1-S2=S3 S3<<N1=S.
-
-- : remove/=-inversion (remove/< S1-S02=S3 N0+1+N=N) nat`eq/ _ R SH
-    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
-    <- gt-anti-reflexive N>N F
-    <- false-implies-eq F S02=S2
-    <- remove-respects-eq S1-S02=S3 eq/ S02=S2 eq/ R
-    <- false-implies-shift F SH.
-
-- : remove/=-inversion (remove/> S3<<N=S S31-S2=S3 N3+1+N=N) nat`eq/ _ R S3<<N=S
-    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
-    <- gt-anti-reflexive N>N F
-    <- false-implies-eq F S31=S1
-    <- remove-respects-eq S31-S2=S3 S31=S1 eq/ eq/ R.
-
-%worlds () (remove/=-inversion _ _ _ _ _).
-%total { } (remove/=-inversion _ _ _ _ _).
-%reduces R < RP (remove/=-inversion RP _ _ R _).
-
-
-%theorem remove/<-inversion :
-	forall* {N1} {S1} {N2} {S2} {S} {N0}
-	forall {R:remove (set/+ N1 S1) (set/+ N2 S2) S}
-               {P:plus (s N0) N1 N2}
-        exists {S3} {RP:remove S1 (set/+ N0 S2) S3} {E:eq (set/+ N1 S3) S}
-	true.
-
-- : remove/<-inversion (remove/< S1-S0P2=S3 N0P+1+N1=N2) N0+1+N1=N2 
-                       _ S1-S02=S3 eq/
-    <- plus-right-cancels N0P+1+N1=N2 N0+1+N1=N2 nat`eq/ nat`eq/ N0P+1=N0+1
-    <- succ-cancels N0P+1=N0+1 N0P=N0
-    <- set/+-preserves-eq N0P=N0 eq/ S0P2=S02
-    <- remove-respects-eq S1-S0P2=S3 eq/ S0P2=S02 eq/ S1-S02=S3.
-
-- : remove/<-inversion (remove/= _ S1-S2=S3 nat`eq/) N0+1+N=N _ S1-S02=S3 S13=S
-    <- plus-implies-gt N0+1+N=N nat`eq/ N>N
-    <- gt-anti-reflexive N>N F
-    <- false-implies-eq F S2=S02
-    <- remove-respects-eq S1-S2=S3 eq/ S2=S02 eq/ S1-S02=S3 
-    <- false-implies-eq F S13=S.
-
-- : remove/<-inversion (remove/> _ S31-S2=S3 N3+1+N2=N1) N0+1+N1=N2 _ S1-S02=S3
-                       S13=S
-    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
-    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
-    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
-    <- false-implies-eq F S31=S1
-    <- false-implies-eq F S2=S02
-    <- remove-respects-eq S31-S2=S3 S31=S1 S2=S02 eq/ S1-S02=S3
-    <- false-implies-eq F S13=S.
-
-%worlds () (remove/<-inversion _ _ _ _ _).
-%total { } (remove/<-inversion _ _ _ _ _).
-%reduces R < RP (remove/<-inversion RP _ _ R _).
-
-
-%theorem remove/>-inversion :
-	forall* {N1} {S1} {N2} {S2} {S} {N3}
-	forall {R:remove (set/+ N1 S1) (set/+ N2 S2) S}
-               {P:plus (s N3) N2 N1}
-        exists {S3} {RP:remove (set/+ N3 S1) S2 S3} {SH:shift N2 S3 S}
-	true.
-
-- : remove/>-inversion (remove/> S3<<N2=S2S3 S3P1-S2=S3 N3P+1+N2=N1)
-                       N3+1+N2=N1 _ S31-S2=S3 S3<<N2=S2S3
-    <- plus-right-cancels N3P+1+N2=N1 N3+1+N2=N1 nat`eq/ nat`eq/ N3P+1=N3+1
-    <- succ-cancels N3P+1=N3+1 N3P=N3
-    <- set/+-preserves-eq N3P=N3 eq/ S3P1=S31
-    <- remove-respects-eq S3P1-S2=S3 S3P1=S31 eq/ eq/ S31-S2=S3.
-
-- : remove/>-inversion (remove/= _ S1-S2=S3 nat`eq/) N3+1+N=N _ R SH
-    <- plus-implies-gt N3+1+N=N nat`eq/ N>N
-    <- gt-anti-reflexive N>N F
-    <- false-implies-eq F S1=S31
-    <- remove-respects-eq S1-S2=S3 S1=S31 eq/ eq/ R
-    <- false-implies-shift F SH.
-
-- : remove/>-inversion (remove/< S1-S02=S3 N0+1+N1=N2) N3+1+N2=N1 _ R SH
-    <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
-    <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
-    <- nat`gt-anti-symmetric N1>N2 N2>N1 F
-    <- false-implies-eq F S1=S31
-    <- false-implies-eq F S02=S2
-    <- remove-respects-eq S1-S02=S3 S1=S31 S02=S2 eq/ R
-    <- false-implies-shift F SH.
-
-%worlds () (remove/>-inversion _ _ _ _ _).
-%total { } (remove/>-inversion _ _ _ _ _).
-%reduces R < RP (remove/>-inversion RP _ _ R _).
-
 
 %theorem remove-total* :
 	forall {S1} {S2}
 	exists {S3} {R:remove S1 S2 S3}
 	true.
 
-%theorem remove-set/+-total :
-        forall* {N1} {N2} {C}
-	forall {CMP:nat`compare N1 N2 C} 
-               {S1} {S2}
-        exists {S3} {R:remove (set/+ N1 S1) (set/+ N2 S2) S3}
+%abbrev remove-total = remove-total* _ _ _.
+
+%theorem remove-total/L1 :
+        forall* {A} {B} 
+	forall	{N}
+	       	{S: size A N}
+        exists	{C} 
+		{R:remove A B C}
 	true.
 
-- : remove-total* set/0 _ _ remove/L.
+%theorem remove-total/L2 :
+        forall* {B} {A} {AP} {CP} {X} {B?}
+	forall  {AD: add AP X A}
+		{R: remove AP B CP}
+		{D?: member? B X B?}
+        exists	{C} 
+		{R:remove A B C}
+	true.
 
-- : remove-total* _ set/0 _ remove/R.
+- : remove-total/L2 AP+X=A
+	(remove/ CP<=AP B^CP BUCP=DP AP<=DP) (member?/in X<-B) CP 
+	(remove/ CP<=A B^CP BUCP=DP A<=DP)
+    <- add-implies-unit-union AP+X=A APUX=A
+    <- union-implies-leq APUX=A AP<=A X<=A
+    <- leq-transitive CP<=AP AP<=A CP<=A
+    <- union-implies-leq BUCP=DP B<=DP CP<=DP
+    <- member-respects-leq X<-B B<=DP X<-DP
+    <- member-implies-unit-leq X<-DP X<=DP
+    <- union-is-lub APUX=A AP<=DP X<=DP A<=DP.
 
-- : remove-total* (set/+ N1 S1) (set/+ N2 S2) S3 R
-    <- nat`compare-total CMP
-    <- remove-set/+-total CMP S1 S2 S3 R.
+- : remove-total/L2 AP+X=A
+	(remove/ CP<=AP B^CP BUCP=DP AP<=DP) (member?/out X</-B) C 
+	(remove/ C<=A B^C BUC=D A<=D)
+    <- not-member-implies-unit-disjoint X</-B B^X
+    <- union-total* CP (set/1 X) C CPUX=C
+    <- union-right-preserves-disjoint* B^CP B^X CPUX=C B^C
+    <- add-implies-unit-union AP+X=A APUX=A
+    <- union-implies-leq APUX=A AP<=A X<=A
+    <- leq-transitive CP<=AP AP<=A CP<=A
+    <- union-is-lub CPUX=C CP<=A X<=A C<=A
+    <- union-total* DP (set/1 X) D DPUX=D
+    <- union-associative* BUCP=DP DPUX=D CPUX=C BUC=D
+    <- union-implies-leq DPUX=D DP<=D X<=D
+    <- leq-transitive AP<=DP DP<=D AP<=D
+    <- union-is-lub APUX=A AP<=D X<=D A<=D.
 
-- : remove-set/+-total (nat`compare/=) S1 S2 _ 
-                       (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/)
-    <- remove-total* S1 S2 _ S1-S2=S3 
-    <- shift-total S3<<N1=S1S3.
+%worlds () (remove-total/L2 _ _ _ _ _).
+%total { } (remove-total/L2 _ _ _ _ _).
 
-- : remove-set/+-total (nat`compare/< N2>N1) set/0 S2 _
-                       (remove/< remove/L N0+1+N1=N2)
-    <- gt-implies-plus N2>N1 _ N0+1+N1=N2.
+- : remove-total/L1 _ size/0 set/0 (remove/ leq/0 disjoint/R union/R leq/0).
 
-- : remove-set/+-total (nat`compare/< N2>N1) (set/+ N4 S4) S2 _
-                       (remove/< S44-S02=S3 N0+1+N1=N2)
-    <- gt-implies-plus N2>N1 _ N0+1+N1=N2
-    <- nat`compare-total CMP
-    <- remove-set/+-total CMP S4 S2 _ S44-S02=S3.
+- : remove-total/L1 _ SZ C A-B=C
+    <- can-remove* SZ AP X _ SZP AP+X=A _
+    <- remove-total/L1 _ SZP CP AP-B=CP
+    <- member?-total M?
+    <- remove-total/L2 AP+X=A AP-B=CP M? C A-B=C.
 
-- : remove-set/+-total (nat`compare/> N1>N2) S1 set/0 _
-                       (remove/> S3<<N2=S2S3 remove/R N3+1+N2=N1)
-    <- gt-implies-plus N1>N2 _ N3+1+N2=N1
-    <- shift-total S3<<N2=S2S3.
+%worlds () (remove-total/L1 _ _ _ _).
+%total (N) (remove-total/L1 N _ _ _).
 
-- : remove-set/+-total (nat`compare/> N1>N2) S1 (set/+ N4 S4) _
-                       (remove/> S3<<N2=S2S3 S31-S44=S3 N3+1+N2=N1)
-    <- gt-implies-plus N1>N2 _ N3+1+N2=N1
-    <- nat`compare-total CMP
-    <- remove-set/+-total CMP S1 S4 _ S31-S44=S3
-    <- shift-total S3<<N2=S2S3.
+- : remove-total R
+    <- size-total SZ
+    <- remove-total/L1 _ SZ _ R.
 
-%worlds () (remove-total* _ _ _ _) (remove-set/+-total _ _ _ _ _).
-%total {(S1 S1P) (S2 S2P)} (remove-total* S1 S2 _ _) 
-                           (remove-set/+-total _ S1P S2P _ _).
-
-
-%abbrev remove-total = remove-total* _ _ _.
+%worlds () (remove-total* _ _ _ _).
+%total { } (remove-total* _ _ _ _).
 
 
 %theorem remove-deterministic :
@@ -222,34 +126,48 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 
 %abbrev remove-unique = remove-deterministic.
 
-- : remove-deterministic remove/L remove/L eq/ eq/ eq/.
+%theorem remove-deterministic/L :
+	forall* {S1} {S2} {S3} {T3} {B}
+	forall	{RS:remove S1 S2 S3} {RT:remove S1 S2 T3}
+		{E: eq? S3 T3 B}
+	exists	{E3:eq S3 T3}
+	true.
 
-- : remove-deterministic remove/L remove/R eq/ eq/ eq/.
+- : remove-deterministic/L _ _ eq?/yes eq/.
 
-- : remove-deterministic remove/R remove/L eq/ eq/ eq/.
+- : remove-deterministic/L 
+	(remove/ C<=A B^C BUC=D A<=D)
+	(remove/ E<=F B^E BUE=F A<=F)
+	(ne/< X<-C X</-E) C=E
+    <- member-respects-leq X<-C C<=A X<-A
+    <- member-respects-leq X<-A A<=F X<-F
+    <- disjoint-symmetric B^C C^B
+    <- disjoint-member-implies-not-member X<-C C^B X</-B
+    <- not-member-union-left-preserves-member-converse X</-B X<-F BUE=F X<-E
+    <- member-not-member-contradiction X<-E X</-E FALSE
+    <- false-implies-eq FALSE C=E.
 
-- : remove-deterministic remove/R remove/R eq/ eq/ eq/.
+- : remove-deterministic/L 
+	(remove/ E<=F B^E BUE=F A<=F)
+	(remove/ C<=A B^C BUC=D A<=D)
+	(ne/> X</-E X<-C) E=C
+    <- member-respects-leq X<-C C<=A X<-A
+    <- member-respects-leq X<-A A<=F X<-F
+    <- disjoint-symmetric B^C C^B
+    <- disjoint-member-implies-not-member X<-C C^B X</-B
+    <- not-member-union-left-preserves-member-converse X</-B X<-F BUE=F X<-E
+    <- member-not-member-contradiction X<-E X</-E FALSE
+    <- false-implies-eq FALSE E=C.
 
-- : remove-deterministic (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/) R eq/ eq/ 
-                         S1S3=T
-    <- remove/=-inversion R nat`eq/ _ S1-S2=S3P S3P<<N1=T
-    <- remove-deterministic S1-S2=S3 S1-S2=S3P eq/ eq/ S3=S3P
-    <- shift-deterministic S3<<N1=S1S3 S3P<<N1=T nat`eq/ S3=S3P S1S3=T.
+%worlds () (remove-deterministic/L _ _ _ _).
+%total { } (remove-deterministic/L _ _ _ _).
 
-- : remove-deterministic (remove/< S1-S02=S3 N0+1+N1=N2) R eq/ eq/ S13=T
-    <- remove/<-inversion R N0+1+N1=N2 _ S1-S02=S3P S13P=T
-    <- remove-deterministic S1-S02=S3 S1-S02=S3P eq/ eq/ S3=S3P
-    <- set/+-preserves-eq nat`eq/ S3=S3P S13=S13P
-    <- eq-transitive S13=S13P S13P=T S13=T.
-
-- : remove-deterministic (remove/> S3<<N2=S2S3 S31-S2=S3 N3+1+N2=N1) R eq/ eq/
-                         S2S3=T
-    <- remove/>-inversion R N3+1+N2=N1 _ S31-S2=S3P S3P<<N2=T
-    <- remove-deterministic S31-S2=S3 S31-S2=S3P eq/ eq/ S3=S3P
-    <- shift-deterministic S3<<N2=S2S3 S3P<<N2=T nat`eq/ S3=S3P S2S3=T.
+- : remove-deterministic R1 R2 eq/ eq/ EQ
+    <- eq?-total EQ?
+    <- remove-deterministic/L R1 R2 EQ? EQ.
 
 %worlds () (remove-deterministic _ _ _ _ _).
-%total (R) (remove-deterministic R _ _ _ _).
+%total { } (remove-deterministic _ _ _ _ _).
 
 
 %theorem shift-preserves-remove :
@@ -262,41 +180,14 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 		{RP: remove AP BP CP}
 	true.
 
-- : shift-preserves-remove remove/L shift/0 _ _ shift/0 remove/L.
-
-- : shift-preserves-remove remove/R S shift/0 _ S remove/R.
-
-- : shift-preserves-remove (remove/= S3 R nat`eq/) (shift/+ P) (shift/+ PX) _ 
-	SC (remove/= S3P R X=XX)
-    <- shift-total SC
-    <- plus-swap-succ P PS
-    <- plus-commutative PS PSC
-    <- shifts-add S3 SC PSC S3P
-    <- plus-unique P PX nat`eq/ nat`eq/ X=XX.
-
 - : shift-preserves-remove 
-	(remove/< R X+1+NA=NB) 
-	(shift/+ N+1+NA=Y) 
-	(shift/+ N+1+NB=Z) _
-	(shift/+ N+1+NA=Y)
-	(remove/< R X+1+Y=Z)
-    <- plus-commutative X+1+NA=NB NA+X+1=NB    
-    <- plus-associative-converse* NA+X+1=NB N+1+NB=Z N+1+NA=Y Y+X+1=Z
-    <- plus-commutative Y+X+1=Z X+1+Y=Z.
- 
-- : shift-preserves-remove
-	(remove/> NB>>CP=C XA-B=CP X+1+NB=NA)
-	(shift/+ N+1+NA=Y)
-	(shift/+ N+1+NB=Z) _
-	N>>C=CPP
-	(remove/> Z>>CP=CPP XA-B=CP X+1+Z=Y)
-    <- plus-commutative X+1+NB=NA NB+X+1=NA
-    <- plus-associative-converse* NB+X+1=NA N+1+NA=Y N+1+NB=Z Z+X+1=Y
-    <- plus-commutative Z+X+1=Y X+1+Z=Y
-    <- shift-total N>>C=CPP
-    <- plus-swap-succ N+1+NB=Z N+NB+1=Z
-    <- plus-commutative N+NB+1=Z NB+1+N=Z
-    <- shifts-add NB>>CP=C N>>C=CPP NB+1+N=Z Z>>CP=CPP.
+	(remove/ C<=A B^C BUC=D A<=D) SA SB CP SC
+	(remove/ CP<=AP BP^CP BPUCP=DP AP<=DP)
+    <- shift-total* N C CP SC
+    <- shift-preserves-leq C<=A SC SA CP<=AP
+    <- shift-preserves-disjoint B^C SB SC BP^CP
+    <- shift-preserves-union BUC=D SB SC _ SD BPUCP=DP
+    <- shift-preserves-leq A<=D SA SD AP<=DP.
 
 %worlds () (shift-preserves-remove _ _ _ _ _ _).
 %total { } (shift-preserves-remove _ _ _ _ _ _).
@@ -308,27 +199,10 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 	exists {L:leq S3 S1}
 	true.
 
-- : remove-implies-leq remove/L leq/0.
-
-- : remove-implies-leq remove/R S<=S
-    <- leq-reflexive _ S<=S.
-
-- : remove-implies-leq (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/) S1S3<=S1
-    <- remove-implies-leq S1-S2=S3 S3<=S1
-    <- shift-left-preserves-leq* S3<=S1 S3<<N1=S1S3 S1S3<=S1.
-
-- : remove-implies-leq (remove/< S1-S02=S3 _) S13<=S11
-    <- remove-implies-leq S1-S02=S3 S3<=S1
-    <- set/+-preserves-leq nat`eq/ S3<=S1 S13<=S11.
-
-- : remove-implies-leq (remove/> S3<<N2=S2S3 S31-S2=S3 N3+1+N2=N1) S2S3<=S11
-    <- remove-implies-leq S31-S2=S3 S3<=S31
-    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
-    <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
-    <- shift-preserves-leq* S3<=S31 S3<<N2=S2S3 (shift/+ N2+1+N3=N1) S2S3<=S11.
+- : remove-implies-leq (remove/ L _ _ _) L.
 
 %worlds () (remove-implies-leq _ _).
-%total (R) (remove-implies-leq R _).
+%total { } (remove-implies-leq _ _).
 
 
 %theorem remove-implies-leq-union :
@@ -337,73 +211,12 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 	exists {L:leq S1 S4}
 	true.
 
-- : remove-implies-leq-union remove/L _ leq/0.
-
-- : remove-implies-leq-union remove/R union/L S<=S
-    <- leq-reflexive _ S<=S.
-
-- : remove-implies-leq-union remove/R union/R leq/0.
-
-- : remove-implies-leq-union (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/)
-                             S12+S1S3=S S11<=S
-    <- shift-right-preserves-union-converse S12+S1S3=S S3<<N1=S1S3 _
-                                            S2+S3=S4 S14=S
-    <- remove-implies-leq-union S1-S2=S3 S2+S3=S4 S1<=S4
-    <- set/+-preserves-leq nat`eq/ S1<=S4 S11<=S14
-    <- leq-respects-eq S11<=S14 eq/ S14=S S11<=S.
-
-- : remove-implies-leq-union (remove/< S1-S02=S3 N0+1+N1=N2) S22+S13=S S11<=S
-    <- union/>-inversion S22+S13=S N0+1+N1=N2 _ S02+S3=S4 S=S14
-    <- eq-symmetric S=S14 S14=S
-    <- remove-implies-leq-union S1-S02=S3 S02+S3=S4 S1<=S4
-    <- set/+-preserves-leq nat`eq/ S1<=S4 S11<=S14
-    <- leq-respects-eq S11<=S14 eq/ S14=S S11<=S.
-
-- : remove-implies-leq-union (remove/> S3<<S2=S2S3 S31-S2=S3 N3+1+N2=N1)
-			     S22+S2S3=S S11<=S
-    <- shift-right-preserves-union-converse S22+S2S3=S S3<<S2=S2S3 
-                                            S4 S2+S3=S4 S24=S
-    <- remove-implies-leq-union S31-S2=S3 S2+S3=S4 S31<=S4
-    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
-    <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
-    <- shift-left-preserves-leq* S31<=S4 (shift/+ N2+1+N3=N1) S11<=S24
-    <- leq-respects-eq S11<=S24 eq/ S24=S S11<=S.
+- : remove-implies-leq-union (remove/ C<=A B^C BUC=D A<=D) BUC=E A<=E
+    <- union-unique BUC=D BUC=E eq/ eq/ D=E
+    <- leq-respects-eq A<=D eq/ D=E A<=E.
 
 %worlds () (remove-implies-leq-union _ _ _).
-%total (R) (remove-implies-leq-union R _ _).
-
-
-%theorem remove-implies-empty-intersection :
-	forall* {S1} {S2} {S3}
-	forall {D:remove S1 S2 S3}
-	exists {I:intersection S2 S3 set/0}
-	true.
-
-- : remove-implies-empty-intersection remove/L intersection/R.
-
-- : remove-implies-empty-intersection remove/R intersection/L.
-
-- : remove-implies-empty-intersection (remove/= S3<<N1=S1S3 S1-S2=S3 nat`eq/)
-                                      S22*S1S3=0
-    <- remove-implies-empty-intersection S1-S2=S3 S2*S3=0
-    <- shift-right-preserves-intersection S2*S3=0 S3<<N1=S1S3 shift/0 S22*S1S3=0.
-
-- : remove-implies-empty-intersection (remove/< S1-S02=S3 N0+1+N1=N2) S22*S13=0
-    <- remove-implies-empty-intersection S1-S02=S3 S02*S3=0
-    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
-    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
-    <- shift-left-preserves-intersection S02*S3=0 (shift/+ N1+1+N0=N2) shift/0
-                                         S22*S13=0.
-
-- : remove-implies-empty-intersection (remove/> S3<<N2=S2S3 S31-S2=S3 N3+1+N2=N1)
-                                      S22*S2S3=0
-    <- remove-implies-empty-intersection S31-S2=S3 S2*S3=0
-    <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
-    <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
-    <- shift-right-preserves-intersection S2*S3=0 S3<<N2=S2S3 shift/0 S22*S2S3=0.
-
-%worlds () (remove-implies-empty-intersection _ _).
-%total (R) (remove-implies-empty-intersection R _).
+%total { } (remove-implies-leq-union _ _ _).
 
 
 %theorem remove-implies-disjoint :
@@ -412,12 +225,24 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 	exists {I:disjoint S2 S3}
 	true.
 
-- : remove-implies-disjoint A-B=C B^C
-    <- remove-implies-empty-intersection A-B=C B^C=0
-    <- intersection-empty-implies-disjoint B^C=0 B^C.
+- : remove-implies-disjoint (remove/ _ B^C _ _) B^C.
 
 %worlds () (remove-implies-disjoint _ _).
 %total { } (remove-implies-disjoint _ _).
+
+
+%theorem remove-implies-empty-intersection :
+	forall* {S1} {S2} {S3}
+	forall {D:remove S1 S2 S3}
+	exists {I:intersection S2 S3 set/0}
+	true.
+
+- : remove-implies-empty-intersection R I
+    <- remove-implies-disjoint R D
+    <- disjoint-intersection-empty D I.
+
+%worlds () (remove-implies-empty-intersection _ _).
+%total { } (remove-implies-empty-intersection _ _).
 
 
 %theorem leq-implies-remove-all :
@@ -426,18 +251,10 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 	exists	{R: remove A B set/0}
 	true.
 
-- : leq-implies-remove-all leq/0 remove/L.
-
-- : leq-implies-remove-all 
-	(leq/= L unit`eq/ nat`eq/) (remove/= shift/0 R nat`eq/)
-    <- leq-implies-remove-all L R.
-
-- : leq-implies-remove-all
-	(leq/> L P) (remove/> shift/0 R P)
-    <- leq-implies-remove-all L R.
+- : leq-implies-remove-all A<=B (remove/ leq/0 disjoint/R union/R A<=B).
 
 %worlds () (leq-implies-remove-all _ _).
-%total (L) (leq-implies-remove-all L _).
+%total { } (leq-implies-remove-all _ _).
 
 
 %theorem remove-characterization:
@@ -449,144 +266,7 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 	exists	{R: remove A B C}
 	true.
 
-- : remove-characterization leq/0 disjoint/R union/R leq/0 remove/L.
-
-- : remove-characterization C<=A disjoint/L union/L A<=C A-0=C
-    <- leq-anti-symmetric A<=C C<=A A=C
-    <- remove-respects-eq remove/R eq/ eq/ A=C A-0=C.
-
-%theorem remove-characterization/leq :
-	forall*	{A} {C} {N1} {N2}
-	forall  {L:leq (set/+ N1 A) (set/+ N2 C)}
-	exists	{NE: nat`ge N1 N2}
-	true.
-
-- : remove-characterization/leq (leq/= _ _ _) (nat`ge/= nat`eq/).
-
-- : remove-characterization/leq (leq/> L P) (nat`ge/> N1>N2)
-    <- plus-implies-gt P nat`eq/ N1>N2.
-
-%worlds () (remove-characterization/leq _ _).
-%total { } (remove-characterization/leq _ _).
-
-%theorem remove-characterization/disjoint :
-	forall*	{A} {C} {N1} {N2}
-	forall  {L:disjoint (set/+ N1 A) (set/+ N2 C)}
-	exists	{NE: nat`ne N1 N2}
-	true.
-
-- : remove-characterization/disjoint (disjoint/> D P) (nat`ne/> N1>N2)
-    <- plus-implies-gt P nat`eq/ N1>N2.
-
-- : remove-characterization/disjoint (disjoint/< D P) (nat`ne/< N2>N1)
-    <- plus-implies-gt P nat`eq/ N2>N1.
-
-%worlds () (remove-characterization/disjoint _ _).
-%total { } (remove-characterization/disjoint _ _).
-
-%theorem remove-characterization/union :
-	forall*	{B} {C} {D} {N1} {N2} {N3}
-	forall  {L:union (set/+ N1 B) (set/+ N2 C) (set/+ N3 D)}
-	exists	{NE: nat`min N1 N2 N3}
-	true.
-
-- : remove-characterization/union (union/= U nat`eq/) nat`min/=.
-
-- : remove-characterization/union (union/< U P) (nat`min/< G)
-    <- plus-implies-gt P nat`eq/ G.
-
-- : remove-characterization/union (union/> U P) (nat`min/> G)
-    <- plus-implies-gt P nat`eq/ G.
-
-%worlds () (remove-characterization/union _ _).
-%total { } (remove-characterization/union _ _).
-
-%theorem remove-characterization/L:
-	forall*	{A} {B} {C} {D} {E}
-	forall	{L: leq C A}
-		{I: disjoint B C}
-		{U: union B C D}
-		{G: leq A D}
-		{V: remove A B E}
-	exists	{E: eq E C}
-	true.
-
-- : remove-characterization/L _ _ _ _ remove/L eq/.
-
-- : remove-characterization/L C<=A _ _ A<=C remove/R A=C
-    <- leq-anti-symmetric A<=C C<=A A=C.
-
-- : remove-characterization/L _ _ _ A<=B A-B=E E=0
-    <- leq-implies-remove-all A<=B A-B=0
-    <- remove-unique A-B=E A-B=0 eq/ eq/ E=0.
-
-- : remove-characterization/L C<=A B^C BUC=D A<=D 
-	(remove/= S RP nat`eq/) EQ
-    <- remove-characterization/leq C<=A NC>=NA
-    <- remove-characterization/disjoint B^C NA<>NC
-    <- nat`ne-symmetric NA<>NC NC<>NA
-    <- nat`ge-ne-implies-gt NC>=NA NC<>NA NC>NA
-    <- gt-implies-plus NC>NA D D+1+NA=NC
-    <- leq/>-inversion C<=A D+1+NA=NC DC<=AP
-    <- disjoint/<-inversion B^C D+1+NA=NC BP^DC
-    <- union/<-inversion BUC=D D+1+NA=NC DP BPUDC=DP D=NDP
-    <- leq-respects-eq A<=D eq/ D=NDP A<=NDP
-    <- leq/=-inversion A<=NDP nat`eq/ _ AP<=DP
-    <- remove-characterization/L DC<=AP BP^DC BPUDC=DP AP<=DP RP EQP
-    <- plus-swap-succ D+1+NA=NC D+NA+1=NC
-    <- plus-commutative D+NA+1=NC NA+1+D=NC
-    <- shift-unique S (shift/+ NA+1+D=NC) nat`eq/ EQP EQ.
-
-- : remove-characterization/L C<=A B^C BUC=D A<=D
-	(remove/< RP D+1+NA=NB) EQ
-    <- plus-implies-gt D+1+NA=NB nat`eq/ NB>NA
-    <- remove-characterization/leq C<=A NC>=NA
-    <- remove-characterization/union BUC=D NBminNC=ND
-    <- remove-characterization/leq A<=D NA>=ND
-    <- nat`min-is-glb NBminNC=ND (nat`ge/> NB>NA) NC>=NA ND>=NA
-    <- nat`ge-anti-symmetric ND>=NA NA>=ND ND=NA
-    <- nat`min-respects-eq NBminNC=ND nat`eq/ nat`eq/ ND=NA NBminNC=NA
-    <- nat`min/>-inversion NBminNC=NA NB>NA NC=NA
-    <- leq/=-inversion C<=A NC=NA _ CP<=AP
-    <- nat`eq-symmetric NC=NA NA=NC
-    <- nat`plus-respects-eq D+1+NA=NB nat`eq/ NA=NC nat`eq/ D+1+NC=NB
-    <- disjoint/>-inversion B^C D+1+NC=NB DB^CP
-    <- union/>-inversion BUC=D D+1+NC=NB DP DBUCP=DP D=NDP
-    <- leq-respects-eq A<=D eq/ D=NDP A<=NDP
-    <- leq/=-inversion A<=NDP NA=NC _ AP<=DP    
-    <- remove-characterization/L CP<=AP DB^CP DBUCP=DP AP<=DP RP EQP
-    <- map/+-preserves-eq NA=NC unit`eq/ EQP EQ.
-
-- : remove-characterization/L C<=A B^C BUC=D A<=D
-	(remove/> X>>EP=E XAP-BP=EP X+1+NB=NA) E=C
-    <- plus-implies-gt X+1+NB=NA nat`eq/ NA>NB
-    <- remove-characterization/leq C<=A NC>=NA
-    <- remove-characterization/union BUC=D NBminNC=ND
-    <- nat`ge-transitive-gt NC>=NA NA>NB NC>NB
-    <- nat`min-unique NBminNC=ND (nat`min/< NC>NB) nat`eq/ nat`eq/ ND=NB
-    <- remove-characterization/leq A<=D NA>=ND
-    <- nat`gt-implies-plus NC>NB Y Y+1+NB=NC
-    <- disjoint/<-inversion B^C Y+1+NB=NC BP^YCP
-    <- union/<-inversion BUC=D Y+1+NB=NC DP BPUYCP=DP D=NBDP
-    <- leq-respects-eq A<=D eq/ D=NBDP A<=NBDP
-    <- leq/>-inversion A<=NBDP X+1+NB=NA XAP<=DP
-    <- nat`plus-swap-succ X+1+NB=NA X+NB+1=NA
-    <- nat`plus-commutative X+NB+1=NA NB+1+X=NA
-    <- nat`plus-swap-succ Y+1+NB=NC Y+NB+1=NC
-    <- nat`plus-commutative Y+NB+1=NC NB+1+Y=NC
-    <- shift-preserves-leq-converse 
-	C<=A (shift/+ NB+1+Y=NC) (shift/+ NB+1+X=NA) YCP<=XAP
-    <- remove-characterization/L 
-	YCP<=XAP BP^YCP BPUYCP=DP XAP<=DP XAP-BP=EP EP=YCP
-    <- shift-unique X>>EP=E (shift/+ NB+1+Y=NC) nat`eq/ EP=YCP E=C.
-
-%worlds () (remove-characterization/L _ _ _ _ _ _).
-%total (R) (remove-characterization/L _ _ _ _ R _).
-
-- : remove-characterization C<=A B^C BUC=D A<=D A-B=C
-    <- remove-total A-B=E
-    <- remove-characterization/L C<=A B^C BUC=D A<=D A-B=E E=C
-    <- remove-respects-eq A-B=E eq/ eq/ E=C A-B=C.
+- : remove-characterization D1 D2 D3 D4 (remove/ D1 D2 D3 D4).
 
 %worlds () (remove-characterization _ _ _ _ _).
 %total { } (remove-characterization _ _ _ _ _).
@@ -600,24 +280,18 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 	exists	{R3: remove A F E}
 	true.
 
-- : remove-associates-union* A-B=C C-D=E BUD=F A-F=E
-    <- remove-implies-leq A-B=C C<=A
-    <- remove-implies-leq C-D=E E<=C
+- : remove-associates-union* 
+	(remove/ C<=A B^C BUC=G A<=G)
+	(remove/ E<=C D^E DUE=H C<=H) BUD=F 
+	(remove/ E<=A F^E FUE=I A<=I)
     <- leq-transitive E<=C C<=A E<=A
-    <- remove-implies-disjoint C-D=E D^E
-    <- remove-implies-disjoint A-B=C B^C
-    <- union-total BUC=G
-    <- remove-implies-leq-union A-B=C BUC=G A<=G
-    <- union-total DUE=H
-    <- remove-implies-leq-union C-D=E DUE=H C<=H
     <- union-total BUH=I
     <- union-associative-converse* DUE=H BUH=I BUD=F FUE=I
     <- leq-reflexive B B<=B
     <- disjoint-respects-geq B^C B<=B E<=C B^E
     <- union-preserves-disjoint* B^E D^E BUD=F F^E
     <- union-left-preserves-leq* C<=H BUC=G BUH=I G<=I
-    <- leq-transitive A<=G G<=I A<=I
-    <- remove-characterization E<=A F^E FUE=I A<=I A-F=E.
+    <- leq-transitive A<=G G<=I A<=I.
 
 %worlds () (remove-associates-union* _ _ _ _).
 %total { } (remove-associates-union* _ _ _ _).
@@ -829,6 +503,106 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 %total { } (union-right-preserves-remove _ _ _ _).
 
 
+%theorem remove-right-distributes-over-union* :
+	forall*	{A} {B} {C} {D} {E} {F} {G}
+	forall	{U: union A B C}
+		{R: remove C D E}
+		{RA: remove A D F}
+		{RB: remove B D G}
+	exists	{U: union F G E}
+	true.
+
+%theorem remove-right-distributes-over-union/L :
+	forall*	{A} {B} {C} {D} {E} {F} {G} {B?} {EP}
+	forall	{U: union A B C}
+		{R: remove C D E}
+		{RA: remove A D F}
+		{RB: remove B D G}
+		{U: union F G EP}
+		{E?: eq? EP E B?}
+	exists	{E: eq EP E}
+	true.
+
+- : remove-right-distributes-over-union/L _ _ _ _ _ eq?/yes eq/.
+
+- : remove-right-distributes-over-union/L AUB=C
+	(remove/ E<=C D^E DUE=H C<=H)
+	(remove/ F<=A D^F DUF=I A<=I)
+	(remove/ G<=B D^G DUG=J B<=J) FUG=EP
+	(ne/> X</-EP X<-E) EQ
+    <- union-preserves-not-member-converse* X</-EP FUG=EP X</-F X</-G
+    <- member-respects-leq X<-E E<=C X<-C
+    <- disjoint-symmetric D^E E^D
+    <- disjoint-member-implies-not-member X<-E E^D X</-D
+    <- union-preserves-not-member* X</-D X</-F DUF=I X</-I
+    <- union-preserves-not-member* X</-D X</-G DUG=J X</-J
+    <- not-member-respects-geq X</-I A<=I X</-A
+    <- not-member-respects-geq X</-J B<=J X</-B
+    <- union-preserves-not-member* X</-A X</-B AUB=C X</-C
+    <- member-not-member-contradiction X<-C X</-C FALSE
+    <- false-implies-eq FALSE EQ.
+
+%theorem remove-right-distributes-over-union/L/< :
+	forall*	{A} {B} {C} {D} {E} {F} {G} {X} {FB} {EP}
+	forall	{U: union A B C}
+		{R: remove C D E}
+		{RA: remove A D F}
+		{RB: remove B D G}
+		{U: union F G EP}
+		{M: member EP X}
+		{FM?: member? F X FB}
+	exists	{EM: member E X}
+	true.
+
+- : remove-right-distributes-over-union/L/< AUB=C
+	(remove/ E<=C D^E DUE=H C<=H)
+	(remove/ F<=A D^F DUF=I A<=I)
+	(remove/ G<=B D^G DUG=J B<=J) FUG=EP X<-EP 
+	(member?/in X<-F) X<-E
+    <- member-respects-leq X<-F F<=A X<-A
+    <- union-right-preserves-member* X<-A AUB=C X<-C
+    <- member-respects-leq X<-C C<=H X<-H
+    <- disjoint-symmetric D^F F^D
+    <- disjoint-member-implies-not-member X<-F F^D X</-D
+    <- not-member-union-left-preserves-member-converse X</-D X<-H DUE=H X<-E.
+
+- : remove-right-distributes-over-union/L/< AUB=C
+	(remove/ E<=C D^E DUE=H C<=H)
+	(remove/ F<=A D^F DUF=I A<=I)
+	(remove/ G<=B D^G DUG=J B<=J) FUG=EP X<-EP 
+	(member?/out X</-F) X<-E
+    <- not-member-union-left-preserves-member-converse X</-F X<-EP FUG=EP X<-G
+    <- member-respects-leq X<-G G<=B X<-B
+    <- union-left-preserves-member* X<-B AUB=C X<-C
+    <- member-respects-leq X<-C C<=H X<-H
+    <- disjoint-symmetric D^G G^D
+    <- disjoint-member-implies-not-member X<-G G^D X</-D
+    <- not-member-union-left-preserves-member-converse X</-D X<-H DUE=H X<-E.
+
+%worlds () (remove-right-distributes-over-union/L/< _ _ _ _ _ _ _ _).
+%total { } (remove-right-distributes-over-union/L/< _ _ _ _ _ _ _ _).
+
+- : remove-right-distributes-over-union/L AUB=C C-D=E A-D=F B-D=G FUG=EP
+	(ne/< X<-EP X</-E) EQ
+    <- member?-total M?
+    <- remove-right-distributes-over-union/L/<
+	AUB=C C-D=E A-D=F B-D=G FUG=EP X<-EP M? X<-E
+    <- member-not-member-contradiction X<-E X</-E FALSE
+    <- false-implies-eq FALSE EQ.
+
+%worlds () (remove-right-distributes-over-union/L _ _ _ _ _ _ _).
+%total { } (remove-right-distributes-over-union/L _ _ _ _ _ _ _).
+
+- : remove-right-distributes-over-union* U1 R1 R2 R3 U2
+    <- union-total U2P
+    <- eq?-total EQ?
+    <- remove-right-distributes-over-union/L U1 R1 R2 R3 U2P EQ? EQ
+    <- union-respects-eq U2P eq/ eq/ EQ U2.
+
+%worlds () (remove-right-distributes-over-union* _ _ _ _ _).
+%total { } (remove-right-distributes-over-union* _ _ _ _ _).
+
+
 %theorem remove-right-distributes-over-union :
 	forall*	{A} {B} {C} {D} {E}
 	forall	{U: union A B C}
@@ -839,162 +613,13 @@ remove/> : remove (set/+ N1 S1) (set/+ N2 S2) S2S3
 		{U: union F G E}
 	true.
 
-- : remove-right-distributes-over-union
-	union/L B-D=E _ _ remove/L B-D=E union/L.
-
-- : remove-right-distributes-over-union
-	union/R A-D=E _ _ A-D=E remove/L union/R.
-
-- : remove-right-distributes-over-union
-	AUB=C remove/R _ _ remove/R remove/R AUB=C.
-
-- : {X+1+ND=NC: plus (s X) ND NC}
-    {Y+1+ND=NA: plus (s Y) ND NA}
-    {Z+1+ND=NB: plus (s Z) ND NB}
-    remove-right-distributes-over-union AUB=C
-	(remove/> ND>>EP=E XC-DP=EP X+1+ND=NC) _ _
-	(remove/> ND>>FP=F YA-DP=FP Y+1+ND=NA)
-	(remove/> ND>>GP=G ZB-DP=GP Z+1+ND=NB) FUG=E
-    <- plus-swap-succ X+1+ND=NC X+ND+1=NC
-    <- plus-commutative X+ND+1=NC ND+1+X=NC
-    <- remove-characterization/union AUB=C NAminNB=NC
-    <- nat`min-implies-ge NAminNB=NC NA>=NC NB>=NC
-    <- nat`ge-implies-plus NA>=NC AC AC+NC=NA
-    <- nat`ge-implies-plus NB>=NC BC BC+NC=NB
-    <- plus-commutative AC+NC=NA NC+AC=NA
-    <- plus-commutative BC+NC=NB NC+BC=NB
-    <- plus-associative ND+1+X=NC NC+AC=NA Y X+AC=Y ND+1+Y=NA
-    <- plus-associative ND+1+X=NC NC+BC=NB Z X+BC=Z ND+1+Z=NB
-    <- plus-swap-succ ND+1+Y=NA ND+Y+1=NA
-    <- plus-swap-succ ND+1+Z=NB ND+Z+1=NB
-    <- plus-commutative ND+Y+1=NA Y+1+ND=NA
-    <- plus-commutative ND+Z+1=NB Z+1+ND=NB
-    <- shift-preserves-union-converse** AUB=C 
-	(shift/+ ND+1+X=NC) 
-	(shift/+ ND+1+Y=NA)
-	(shift/+ ND+1+Z=NB) YAUZB=XC
-    <- remove-right-distributes-over-union 
-	YAUZB=XC XC-DP=EP FP GP YA-DP=FP ZB-DP=GP FPUGP=EP
-    <- shift-total* ND FP F ND>>FP=F 
-    <- shift-total* ND GP G ND>>GP=G
-    <- shift-preserves-union FPUGP=EP ND>>FP=F ND>>GP=G ND>>EP=E FUG=E. 
-
-- : remove-right-distributes-over-union
-	(union/= XAUXB=XC nat`eq/)
-	(remove/= ND>>EP=E XC-DP=EP nat`eq/) _ _
-	(remove/= ND>>FP=F XA-DP=FP nat`eq/) 
-	(remove/= ND>>GP=G XB-DP=GP nat`eq/) FUG=E
-    <- remove-right-distributes-over-union 
-	XAUXB=XC XC-DP=EP FP GP XA-DP=FP XB-DP=GP FPUGP=EP
-    <- shift-total* ND FP F ND>>FP=F 
-    <- shift-total* ND GP G ND>>GP=G
-    <- shift-preserves-union FPUGP=EP ND>>FP=F ND>>GP=G ND>>EP=E FUG=E.
-
-- : remove-right-distributes-over-union
-	(union/= APUBP=CP nat`eq/)
-	(remove/< CP-XD=EP X+1+NC=ND) _ _
-	(remove/< AP-XD=FP X+1+NC=ND)
-	(remove/< BP-XD=GP X+1+NC=ND) (union/= FPUGP=EP nat`eq/)
-    <- remove-right-distributes-over-union
-	APUBP=CP CP-XD=EP FP GP AP-XD=FP BP-XD=GP FPUGP=EP.
-
-- : remove-right-distributes-over-union 
-	(union/< APUWB=CP W+1+NA=NB)
-	(remove/= NA>>EP=E CP-DP=EP nat`eq/) _ _
-	(remove/= NA>>FP=F AP-DP=FP nat`eq/)
-	(remove/> NA>>GP=G WB-DP=GP W+1+NA=NB) FUG=E
-    <- remove-right-distributes-over-union
-	APUWB=CP CP-DP=EP FP GP AP-DP=FP WB-DP=GP FPUGP=EP
-    <- shift-total* NA FP F NA>>FP=F 
-    <- shift-total* NA GP G NA>>GP=G
-    <- shift-preserves-union FPUGP=EP NA>>FP=F NA>>GP=G NA>>EP=E FUG=E.
-
-- : remove-right-distributes-over-union 
-	(union/< APUWB=CP W+1+NA=NB)
-	(remove/< CP-XD=EP X+1+NA=ND) _ _
-	(remove/< AP-XD=FP X+1+NA=ND)
-	B-D=G FUG=E
-    <- remove-right-distributes-over-union
-	APUWB=CP CP-XD=EP FP GP AP-XD=FP WB-XD=GP FPUGP=EP
-    <- plus-swap-succ W+1+NA=NB W+NA+1=NB
-    <- plus-swap-succ X+1+NA=ND X+NA+1=ND
-    <- plus-commutative W+NA+1=NB NA+1+W=NB
-    <- plus-commutative X+NA+1=ND NA+1+X=ND
-    <- shift-preserves-remove WB-XD=GP (shift/+ NA+1+W=NB) (shift/+ NA+1+X=ND)
-	G NA>>GP=G B-D=G
-    <- shift-right-preserves-union FPUGP=EP NA>>GP=G FUG=E.
-
-- : remove-right-distributes-over-union 
-	(union/> WAUBP=CP W+1+NB=NA)
-	(remove/= NA>>EP=E CP-DP=EP nat`eq/) _ _
-	(remove/> NA>>FP=F WA-DP=FP W+1+NB=NA)
-	(remove/= NA>>GP=G BP-DP=GP nat`eq/) FUG=E
-    <- remove-right-distributes-over-union
-	WAUBP=CP CP-DP=EP FP GP WA-DP=FP BP-DP=GP FPUGP=EP
-    <- shift-total* NA FP F NA>>FP=F 
-    <- shift-total* NA GP G NA>>GP=G
-    <- shift-preserves-union FPUGP=EP NA>>FP=F NA>>GP=G NA>>EP=E FUG=E.
-
-- : remove-right-distributes-over-union 
-	(union/> WAUBP=CP W+1+NB=NA)
-	(remove/< CP-XD=EP X+1+NB=ND) _ _ A-D=F
-	(remove/< BP-XD=GP X+1+NB=ND)
-        FUG=E
-    <- remove-right-distributes-over-union
-	WAUBP=CP CP-XD=EP FP GP WA-XD=FP BP-XD=GP FPUGP=EP
-    <- plus-swap-succ W+1+NB=NA W+NB+1=NA
-    <- plus-swap-succ X+1+NB=ND X+NB+1=ND
-    <- plus-commutative W+NB+1=NA NB+1+W=NA
-    <- plus-commutative X+NB+1=ND NB+1+X=ND
-    <- shift-preserves-remove WA-XD=FP (shift/+ NB+1+W=NA) (shift/+ NB+1+X=ND)
-	F NB>>FP=F A-D=F
-    <- shift-left-preserves-union FPUGP=EP NB>>FP=F FUG=E.
+- : remove-right-distributes-over-union U R1 _ _ R2 R3 UP
+    <- remove-total R2
+    <- remove-total R3
+    <- remove-right-distributes-over-union* U R1 R2 R3 UP.
 
 %worlds () (remove-right-distributes-over-union _ _ _ _ _ _ _).
-%total (R) (remove-right-distributes-over-union _ R _ _ _ _ _).
-
-
-%{%
-Tried to do it without peeking inside of union, and failed
-
-%theorem remove-right-distributes-over-union* :
-	forall*	{A} {B} {C} {D} {E} {F} {G}
-	forall	{U: union A B C}
-		{R: remove C D E}
-		{RA: remove A D F}
-		{RB: remove B D G}
-	exists	{U: union F G E}
-	true.
-
-- : remove-right-distributes-over-union AUB=C C-D=E A-D=F B-D=G FUG=E
-    <- remove-implies-leq C-D=E E<=C
-    <- remove-implies-leq A-D=F F<=A
-    <- remove-implies-leq B-D=G G<=B
-    <- remove-implies-disjoint C-D=E D^E
-    <- remove-implies-disjoint A-D=F D^F
-    <- remove-implies-disjoint B-D=G D^G
-    <- union-implies-leq AUB=C A<=C B<=C
-    <- union-total* D E H DUE=H
-    <- union-total* D F I DUF=I
-    <- union-total* D G J DUG=J
-    <- union-implies-leq DUE=H D<=H E<=H
-    <- union-implies-leq DUF=I D<=I F<=I
-    <- union-implies-leq DUG=J D<=J G<=J
-    <- remove-implies-leq-union C-D=E DUE=H C<=H
-    <- remove-implies-leq-union A-D=F DUF=I A<=I
-    <- remove-implies-leq-union B-D=G DUG=J B<=J
-    <- leq-transitive F<=A A<=C F<=C
-    <- leq-transitive G<=B B<=C G<=C
-    <- leq-transitive F<=C C<=H F<=H
-    <- leq-transitive G<=C C<=H G<=H
-    <- union-is-lub DUF=I D<=H F<=H I<=H
-    <- union-is-lub DUG=J D<=H G<=H J<=H
-    <- disjoint-symmetric D^F F^D
-    <- disjoint-symmetric D^G G^D
-    <- leq-union-disjoint-implies-leq F<=H DUE=H F^D F<=E
-    <- leq-union-disjoint-implies-leq G<=H DUE=H G^D G<=E
-
-%}%
+%total { } (remove-right-distributes-over-union _ _ _ _ _ _ _).
 
 
 %theorem remove-right-preserves-leq :
