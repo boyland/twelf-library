@@ -513,36 +513,36 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
 %total { } (shift-right-preserves-meet-converse _ _ _ _ _).
 
 
-%theorem shift-preserves-meet :
+%theorem shift-preserves-meet* :
 	forall* {N} {M1} {M2} {M3} {SM1} {SM2} {SM3}
 	forall {A:meet M1 M2 M3} 
                {S1:shift N M1 SM1} {S2:shift N M2 SM2} {S3:shift N M3 SM3}
 	exists {SA:meet SM1 SM2 SM3}
 	true.
 
-- : shift-preserves-meet Z*M2=M3 shift/0 _ M3<<N=SM3 Z*SM2=SM3
+- : shift-preserves-meet* Z*M2=M3 shift/0 _ M3<<N=SM3 Z*SM2=SM3
     <- meet/L-inversion Z*M2=M3 eq/ Z=M3
     <- shift-deterministic shift/0 M3<<N=SM3 nat`eq/ Z=M3 Z=SM3
     <- meet-respects-eq meet/L eq/ eq/ Z=SM3 Z*SM2=SM3.
 
-- : shift-preserves-meet M1*0=M3 _ shift/0 M3<<N=SM3 SM1*0=SM3
+- : shift-preserves-meet* M1*0=M3 _ shift/0 M3<<N=SM3 SM1*0=SM3
     <- meet/R-inversion M1*0=M3 eq/ Z=M3
     <- shift-deterministic shift/0 M3<<N=SM3 nat`eq/ Z=M3 Z=SM3
     <- meet-respects-eq meet/R eq/ eq/ Z=SM3 SM1*0=SM3.
 
-- : shift-preserves-meet (meet/= M1*M2=M3 D1*D2=D3 nat`eq/) 
-                         (shift/+ N+1+N1=N4) (shift/+ N+1+N1=N5) 
-                         (shift/+ N+1+N1=N6)
-                         M411*M522=M633
+- : shift-preserves-meet* (meet/= M1*M2=M3 D1*D2=D3 nat`eq/) 
+                          (shift/+ N+1+N1=N4) (shift/+ N+1+N1=N5) 
+                          (shift/+ N+1+N1=N6)
+                          M411*M522=M633
     <- plus-deterministic N+1+N1=N4 N+1+N1=N5 nat`eq/ nat`eq/ N4=N5
     <- plus-deterministic N+1+N1=N4 N+1+N1=N6 nat`eq/ nat`eq/ N4=N6
     <- map/+-preserves-eq N4=N6 data`eq/ eq/ M433=M633
     <- meet-respects-eq (meet/= M1*M2=M3 D1*D2=D3 N4=N5) eq/ eq/ M433=M633
                         M411*M522=M633.
 
-- : shift-preserves-meet (meet/< M3<<N1=S1M3 M1*M022=M3 N0+1+N1=N2)
-                         (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) S1M3<<N=SS1M3
-                         (meet/< M3<<N4=SS1M3 M1*M022=M3 N0+1+N4=N5)
+- : shift-preserves-meet* (meet/< M3<<N1=S1M3 M1*M022=M3 N0+1+N1=N2)
+                          (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) S1M3<<N=SS1M3
+                          (meet/< M3<<N4=SS1M3 M1*M022=M3 N0+1+N4=N5)
     <- plus-swap-succ N+1+N1=N4 N+N1+1=N4
     <- plus-commutative N+N1+1=N4 N1+1+N=N4
     <- shifts-add M3<<N1=S1M3 S1M3<<N=SS1M3 N1+1+N=N4 M3<<N4=SS1M3
@@ -550,9 +550,9 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- plus-associative-converse* N1+N0+1=N2 N+1+N2=N5 N+1+N1=N4 N4+N0+1=N5
     <- plus-commutative N4+N0+1=N5 N0+1+N4=N5.
 
-- : shift-preserves-meet (meet/> M3<<N2=S2M3 M311*M2=M3 N3+1+N2=N1)
-                         (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) S2M3<<N=SS2M3
-                         (meet/> M3<<N5=SS2M3 M311*M2=M3 N3+1+N5=N4)
+- : shift-preserves-meet* (meet/> M3<<N2=S2M3 M311*M2=M3 N3+1+N2=N1)
+                          (shift/+ N+1+N1=N4) (shift/+ N+1+N2=N5) S2M3<<N=SS2M3
+                          (meet/> M3<<N5=SS2M3 M311*M2=M3 N3+1+N5=N4)
     <- plus-swap-succ N+1+N2=N5 N+N2+1=N5
     <- plus-commutative N+N2+1=N5 N2+1+N=N5
     <- shifts-add M3<<N2=S2M3 S2M3<<N=SS2M3 N2+1+N=N5 M3<<N5=SS2M3
@@ -560,8 +560,8 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- plus-associative-converse* N2+N3+1=N1 N+1+N1=N4 N+1+N2=N5 N5+N3+1=N4
     <- plus-commutative N5+N3+1=N4 N3+1+N5=N4.
 
-%worlds (WORLDS) (shift-preserves-meet _ _ _ _ _).
-%total { } (shift-preserves-meet _ _ _ _ _).
+%worlds (WORLDS) (shift-preserves-meet* _ _ _ _ _).
+%total { } (shift-preserves-meet* _ _ _ _ _).
 
 
 %theorem shift-preserves-meet-converse :
@@ -712,8 +712,8 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meet-associativeM _ (bound/+ N6+1+B1=B6 BD1)
                          (meet/= M1*M2=M3 D1*D2=D3 nat`eq/)
                          M633*M4=M7 M622*M4=M6 M611*M6=M7
-    <- shift-preserves-meet M611*M6=M7 
-                            (shift/+ N4+1+N6=N1) M6<<N4=M24 M7<<N4=M34 A16.
+    <- shift-preserves-meet* M611*M6=M7 
+                             (shift/+ N4+1+N6=N1) M6<<N4=M24 M7<<N4=M34 A16.
 
 - : meet-associativeM* B (bound/+ N1+1+B1=B BD1)
                        (nat`compare/< N2>N1) (nat`compare/=) _
@@ -782,8 +782,8 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meta-gt _ _ B>B3
     <- meet-associativeM _ (bound/+ N3+1+B1=B3 BD1)
                          M311*M2=M3 M3*M344=M7 M2*M344=M6 M311*M6=M7
-    <- shift-preserves-meet M311*M6=M7 (shift/+ N2+1+N3=N1) M6<<N2=M24 
-                            M7<<N2=M34 A16.
+    <- shift-preserves-meet* M311*M6=M7 (shift/+ N2+1+N3=N1) M6<<N2=M24 
+                             M7<<N2=M34 A16.
 
 - : meet-associativeM* B (bound/+ N1+1+B1=B BD1)
                        (nat`compare/< N2>N1) (nat`compare/< N4>N2) _
@@ -832,8 +832,8 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meta-gt _ _ B>B9
     <- meet-associativeM _ (bound/+ N9+1+B1=B9 BD1)
                          M911*M622=S6M3 S6M3*M4=M7 M622*M4=M6 M911*M6=M7
-    <- shift-preserves-meet M911*M6=M7 (shift/+ N4+1+N9=N1) 
-                            M6<<N4=M24 M7<<N4=M34 A16.
+    <- shift-preserves-meet* M911*M6=M7 (shift/+ N4+1+N9=N1) 
+                             M6<<N4=M24 M7<<N4=M34 A16.
 
 - : meet-associativeM* B (bound/+ N1+1+B1=B BD1)
                        _ (nat`compare/> N2>N4) (nat`compare/< N4>N1)
@@ -879,8 +879,8 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meta-gt _ _ B>B3
     <- meet-associativeM _ (bound/+ N3+1+B1=B3 BD1)
                          M311*M2=M3 M3*M644=M7 M2*M644=M6 M311*M6=M7
-    <- shift-preserves-meet M311*M6=M7 (shift/+ N2+1+N3=N1) M6<<N2=M24 
-                            M7<<N2=M34 A16.
+    <- shift-preserves-meet* M311*M6=M7 (shift/+ N2+1+N3=N1) M6<<N2=M24 
+                             M7<<N2=M34 A16.
 
 - : meet-associativeM* B (bound/+ N1+1+B1=B BD1)
                        (nat`compare/> N1>N2) _ (nat`compare/< N4>N1)
@@ -903,8 +903,8 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meta-gt _ _ B>B3
     <- meet-associativeM _ (bound/+ N3+1+B1=B3 BD1)
                          M311*M2=M3 M3*M644=M7 M2*M644=M6 M311*M6=M7
-    <- shift-preserves-meet M311*M6=M7 (shift/+ N2+1+N3=N1) M6<<N2=M24 
-                            M7<<N2=M34 A16.
+    <- shift-preserves-meet* M311*M6=M7 (shift/+ N2+1+N3=N1) M6<<N2=M24 
+                             M7<<N2=M34 A16.
 
 - : meet-associativeM* B (bound/+ N1+1+B1=B BD1)
                        (nat`compare/< N2>N1) _ (nat`compare/> N1>N4)
@@ -931,8 +931,8 @@ meet/> : meet (map/+ N1 D1 M1) (map/+ N2 D2 M2) S2M3
     <- meta-gt _ _ B>B5
     <- meet-associativeM _ (bound/+ N5+1+B1=B5 BD1)
                          M511*M622=S5M3 S5M3*M4=M7 M622*M4=M6 M511*M6=M7
-    <- shift-preserves-meet M511*M6=M7 (shift/+ N4+1+N5=N1) 
-                            M6<<N4=M24 M7<<N4=M34 A16.
+    <- shift-preserves-meet* M511*M6=M7 (shift/+ N4+1+N5=N1) 
+                             M6<<N4=M24 M7<<N4=M34 A16.
 
 %worlds (WORLDS) (meet-associativeM _ _ _ _ _ _) 
            (meet-associativeM* _ _ _ _ _ _ _ _ _).
@@ -1031,6 +1031,66 @@ END_ELF
 
 %worlds () (meet-meets-lookup _ _ _ _ _ _).
 %total (M) (meet-meets-lookup _ _ M _ _ _).
+
+
+%theorem meet-meets-lookup-converse :
+	forall*	{M1} {M2} {M3} {N} {D3}
+	forall	{MM: meet M1 M2 M3}
+		{L3: lookup M3 N D3}
+	exists	{D1} {D2}
+		{L1: lookup M1 N D1}
+		{L2: lookup M2 N D2}
+		{DM: data`meet D1 D2 D3}
+	true.
+
+- : meet-meets-lookup-converse (meet/= _ DM nat`eq/) (lookup/= nat`eq/) _ _
+	(lookup/= nat`eq/) (lookup/= nat`eq/) DM.
+
+- : meet-meets-lookup-converse (meet/= M _ nat`eq/) (lookup/> L3 P) _ _
+	(lookup/> L1 P) (lookup/> L2 P) DM
+    <- meet-meets-lookup-converse M L3 _ _ L1 L2 DM.
+
+- : meet-meets-lookup-converse (meet/< SH M P) L3P _ _ 
+	(lookup/> L1 PPsc) L2P DM
+    <- shift-preserves-lookup-converse L3P SH _ PP L3
+    <- meet-meets-lookup-converse M L3 _ _ L1 L2 DM
+    <- plus-swap-succ P Ps
+    <- plus-commutative Ps Psc
+    <- shift-preserves-lookup* L2 (shift/+ Psc) PP L2P
+    <- plus-swap-succ PP PPs
+    <- plus-commutative PPs PPsc.
+
+- : meet-meets-lookup-converse (meet/> SH M P) L3P _ _ 
+	L1P (lookup/> L2 PPsc) DM
+    <- shift-preserves-lookup-converse L3P SH _ PP L3
+    <- meet-meets-lookup-converse M L3 _ _ L1 L2 DM
+    <- plus-swap-succ P Ps
+    <- plus-commutative Ps Psc
+    <- shift-preserves-lookup* L1 (shift/+ Psc) PP L1P
+    <- plus-swap-succ PP PPs
+    <- plus-commutative PPs PPsc.
+
+%worlds (WORLDS) (meet-meets-lookup-converse _ _ _ _ _ _ _).
+%total (M) (meet-meets-lookup-converse M _ _ _ _ _ _).
+
+
+%theorem meet-meets-lookup-converse* :
+	forall*	{M1} {M2} {M3} {N} {D1} {D2} {D3}
+	forall	{MM: meet M1 M2 M3}
+		{L3: lookup M3 N D3}
+		{L1: lookup M1 N D1}
+		{L2: lookup M2 N D2}
+	exists	{DM: data`meet D1 D2 D3}
+	true.
+
+- : meet-meets-lookup-converse* MM L3 L1 L2 DM
+    <- meet-meets-lookup-converse MM L3 _ _ L1P L2P DMP
+    <- lookup-unique L1P L1 eq/ nat`eq/ D1P=D1
+    <- lookup-unique L2P L2 eq/ nat`eq/ D2P=D2
+    <- data`meet-respects-eq DMP D1P=D1 D2P=D2 data`eq/ DM.
+
+%worlds (WORLDS) (meet-meets-lookup-converse* _ _ _ _ _).
+%total { } (meet-meets-lookup-converse* _ _ _ _ _).
 
 
 %theorem meet-meets-lookup* :
@@ -1418,8 +1478,8 @@ END_ELF
                                         M1*M744=M5 M2*M744=M6 M5+M6=M7
     <- shift-total M5<<N1=S1M5
     <- shift-total M6<<N1=S1M6
-    <- shift-preserves-join M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7 
-                            S1M5+S1M6=S1M7.
+    <- shift-preserves-join* M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7 
+                             S1M5+S1M6=S1M7.
 
 - : meet-right-distributes-over-join (join/= M1+M2=M3 D1+D2=D3 nat`eq/)
                                      (meet/> M7<<N2=S2M7 M733*M4=M7 N7+1+N4=N1)
@@ -1431,8 +1491,8 @@ END_ELF
                                         M5+M6=M7
     <- shift-total M5<<N2=S2M5
     <- shift-total M6<<N2=S2M6
-    <- shift-preserves-join M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7 
-                            S2M5+S2M6=S2M7.
+    <- shift-preserves-join* M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7 
+                             S2M5+S2M6=S2M7.
 
 - : meet-right-distributes-over-join (join/< M1+M022=M3 N0+1+N1=N2)
                                      (meet/= M3*M4=M7 D1*D4=D7 nat`eq/)
@@ -1456,10 +1516,10 @@ END_ELF
     <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
     <- plus-swap-succ N5+1+N1=N4 N5+N1+1=N4
     <- plus-commutative N5+N1+1=N4 N1+1+N5=N4
-    <- shift-preserves-meet M022*M544=M6 (shift/+ N1+1+N0=N2) 
-                            (shift/+ N1+1+N5=N4) M6<<N1=S1M6 M222*M444=S1M6
-    <- shift-preserves-join M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7
-                            S1M5+S1M6=S1M7.
+    <- shift-preserves-meet* M022*M544=M6 (shift/+ N1+1+N0=N2) 
+                             (shift/+ N1+1+N5=N4) M6<<N1=S1M6 M222*M444=S1M6
+    <- shift-preserves-join* M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7
+                             S1M5+S1M6=S1M7.
 
 - : meet-right-distributes-over-join (join/< M1+M022=M3 N0+1+N1=N2)
                                      (meet/> M7<<N4=S4M7 M513*M4=M7 N5+1+N4=N1)
@@ -1476,8 +1536,8 @@ END_ELF
                                         M511*M4=M5 M622*M4=M6 M5+M6=M7
     <- shift-total M5<<N4=S4M5
     <- shift-total M6<<N4=S4M6
-    <- shift-preserves-join M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
-                            S4M5+S4M6=S4M7.
+    <- shift-preserves-join* M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
+                             S4M5+S4M6=S4M7.
 
 - : meet-right-distributes-over-join (join/> M311+M2=M3 N3+1+N2=N1)
                                      (meet/= M3*M4=M7 D2*D4=D7 nat`eq/)
@@ -1502,10 +1562,10 @@ END_ELF
     <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
     <- plus-swap-succ N6+1+N2=N4 N6+N2+1=N4
     <- plus-commutative N6+N2+1=N4 N2+1+N6=N4
-    <- shift-preserves-meet M311*M644=M5 (shift/+ N2+1+N3=N1) 
-                            (shift/+ N2+1+N6=N4) M5<<N2=S2M5 M111*M444=S2M5
-    <- shift-preserves-join M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7
-                            S2M5+S2M6=S2M7.
+    <- shift-preserves-meet* M311*M644=M5 (shift/+ N2+1+N3=N1) 
+                             (shift/+ N2+1+N6=N4) M5<<N2=S2M5 M111*M444=S2M5
+    <- shift-preserves-join* M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7
+                             S2M5+S2M6=S2M7.
 
 - : meet-right-distributes-over-join (join/> M311+M2=M3 N3+1+N2=N1)
                                      (meet/> M7<<N4=S4M7 M623*M4=M7 N6+1+N4=N2)
@@ -1522,8 +1582,8 @@ END_ELF
                                         M511*M4=M5 M622*M4=M6 M5+M6=M7
     <- shift-total M5<<N4=S4M5
     <- shift-total M6<<N4=S4M6
-    <- shift-preserves-join M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
-                            S4M5+S4M6=S4M7.
+    <- shift-preserves-join* M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
+                             S4M5+S4M6=S4M7.
 
 %worlds (WORLDS) (meet-right-distributes-over-join _ _ _ _ _ _ _).
 %total (A) (meet-right-distributes-over-join _ A _ _ _ _ _).
@@ -1604,8 +1664,8 @@ works for sets etc, but not in general.
                                         M1*M744=M5 M2*M744=M6 M5+M6=M7
     <- shift-total M5<<N1=S1M5
     <- shift-total M6<<N1=S1M6
-    <- shift-preserves-meet M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7 
-                            S1M5+S1M6=S1M7.
+    <- shift-preserves-meet* M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7 
+                             S1M5+S1M6=S1M7.
 
 - : join-right-distributes-over-meet (meet/= M1+M2=M3 D1+D2=D3 nat`eq/)
                                      (join/> M7<<N2=S2M7 M733*M4=M7 N7+1+N4=N1)
@@ -1617,8 +1677,8 @@ works for sets etc, but not in general.
                                         M5+M6=M7
     <- shift-total M5<<N2=S2M5
     <- shift-total M6<<N2=S2M6
-    <- shift-preserves-meet M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7 
-                            S2M5+S2M6=S2M7.
+    <- shift-preserves-meet* M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7 
+                             S2M5+S2M6=S2M7.
 
 - : join-right-distributes-over-meet (meet/< M1+M022=M3 N0+1+N1=N2)
                                      (join/= M3*M4=M7 D1*D4=D7 nat`eq/)
@@ -1642,10 +1702,10 @@ works for sets etc, but not in general.
     <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
     <- plus-swap-succ N5+1+N1=N4 N5+N1+1=N4
     <- plus-commutative N5+N1+1=N4 N1+1+N5=N4
-    <- shift-preserves-join M022*M544=M6 (shift/+ N1+1+N0=N2) 
-                            (shift/+ N1+1+N5=N4) M6<<N1=S1M6 M222*M444=S1M6
-    <- shift-preserves-meet M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7
-                            S1M5+S1M6=S1M7.
+    <- shift-preserves-join* M022*M544=M6 (shift/+ N1+1+N0=N2) 
+                             (shift/+ N1+1+N5=N4) M6<<N1=S1M6 M222*M444=S1M6
+    <- shift-preserves-meet* M5+M6=M7 M5<<N1=S1M5 M6<<N1=S1M6 M7<<N1=S1M7
+                             S1M5+S1M6=S1M7.
 
 - : join-right-distributes-over-meet (meet/< M1+M022=M3 N0+1+N1=N2)
                                      (join/> M7<<N4=S4M7 M513*M4=M7 N5+1+N4=N1)
@@ -1662,8 +1722,8 @@ works for sets etc, but not in general.
                                         M511*M4=M5 M622*M4=M6 M5+M6=M7
     <- shift-total M5<<N4=S4M5
     <- shift-total M6<<N4=S4M6
-    <- shift-preserves-meet M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
-                            S4M5+S4M6=S4M7.
+    <- shift-preserves-meet* M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
+                             S4M5+S4M6=S4M7.
 
 - : join-right-distributes-over-meet (meet/> M311+M2=M3 N3+1+N2=N1)
                                      (join/= M3*M4=M7 D2*D4=D7 nat`eq/)
@@ -1688,10 +1748,10 @@ works for sets etc, but not in general.
     <- plus-commutative N3+N2+1=N1 N2+1+N3=N1
     <- plus-swap-succ N6+1+N2=N4 N6+N2+1=N4
     <- plus-commutative N6+N2+1=N4 N2+1+N6=N4
-    <- shift-preserves-join M311*M644=M5 (shift/+ N2+1+N3=N1) 
-                            (shift/+ N2+1+N6=N4) M5<<N2=S2M5 M111*M444=S2M5
-    <- shift-preserves-meet M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7
-                            S2M5+S2M6=S2M7.
+    <- shift-preserves-join* M311*M644=M5 (shift/+ N2+1+N3=N1) 
+                             (shift/+ N2+1+N6=N4) M5<<N2=S2M5 M111*M444=S2M5
+    <- shift-preserves-meet* M5+M6=M7 M5<<N2=S2M5 M6<<N2=S2M6 M7<<N2=S2M7
+                             S2M5+S2M6=S2M7.
 
 - : join-right-distributes-over-meet (meet/> M311+M2=M3 N3+1+N2=N1)
                                      (join/> M7<<N4=S4M7 M623*M4=M7 N6+1+N4=N2)
@@ -1708,8 +1768,8 @@ works for sets etc, but not in general.
                                         M511*M4=M5 M622*M4=M6 M5+M6=M7
     <- shift-total M5<<N4=S4M5
     <- shift-total M6<<N4=S4M6
-    <- shift-preserves-meet M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
-                            S4M5+S4M6=S4M7.
+    <- shift-preserves-meet* M5+M6=M7 M5<<N4=S4M5 M6<<N4=S4M6 M7<<N4=S4M7
+                             S4M5+S4M6=S4M7.
 
 %worlds (WORLDS) (join-right-distributes-over-meet _ _ _ _ _ _ _).
 %total (A) (join-right-distributes-over-meet _ A _ _ _ _ _).
