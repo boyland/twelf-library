@@ -22,16 +22,6 @@
  unit`eq/ : unit`eq unit/ unit/.
 
 
- unit`ne : unit -> unit -> type. % uninhabited
-
-
- unit`eq? : unit -> unit -> bool -> type.
-
- unit`eq?/yes : unit`eq? U U true.
-
- unit`eq?/no : unit`ne U1 U2 -> unit`eq? U1 U2 false.
-
-
  %theorem unit`false-implies-eq :
 	forall* {U1} {U2}
 	forall {F:void}
@@ -77,104 +67,10 @@
  %total { } (unit`eq-transitive _ _ _).
 
 
- %theorem unit`false-implies-eq? :
-        forall* {X1} {X2} {B}
-        forall {F:void}
-        exists {G:unit`eq? X1 X2 B}
-        true.
-
- %worlds () (unit`false-implies-eq? _ _).
- %total { } (unit`false-implies-eq? _ _).
-
-
- %theorem unit`false-implies-ne :
-        forall* {X1} {X2}
-        forall {F:void}
-        exists {G:unit`ne X1 X2}
-        true.
-
- %worlds () (unit`false-implies-ne _ _).
- %total { } (unit`false-implies-ne _ _).
-
-
- %theorem unit`ne-respects-eq :
-        forall* {X1} {X2} {Y1} {Y2}
-        forall {D1:unit`ne X1 X2} {E1:unit`eq X1 Y1} {E2:unit`eq X2 Y2}
-        exists {D2:unit`ne Y1 Y2}
-        true.
-
- %worlds () (unit`ne-respects-eq _ _ _ _).
- %total { } (unit`ne-respects-eq _ _ _ _).
-
-
- %theorem unit`ne-anti-reflexive :
-        forall* {X}
-        forall {R:unit`ne X X}
-        exists {F:void}
-        true.
-
- %worlds () (unit`ne-anti-reflexive _ _).
- %total { } (unit`ne-anti-reflexive _ _).
-
-
- %theorem unit`ne-symmetric :
-        forall* {X} {Y}
-        forall {R1:unit`ne X Y}
-        exists {R2:unit`ne Y X}
-        true.
-
- %worlds () (unit`ne-symmetric _ _).
- %total { } (unit`ne-symmetric _ _).
-
-
- %theorem unit`eq-ne-implies-false :
-        forall* {X} {Y}
-        forall {D1:unit`eq X Y} {D2:unit`ne X Y}
-        exists {F:void}
-        true.
-
- %worlds () (unit`eq-ne-implies-false _ _ _).
- %total { } (unit`eq-ne-implies-false _ _ _).
-
-
- %theorem unit`eq?-total* :
-        forall {M} {N}
-        exists {B} {T:unit`eq? M N B}
-        true.
-
- %abbrev unit`eq?-total = unit`eq?-total* _ _ _.
-
- - : unit`eq?-total unit`eq?/yes.
-
- %worlds () (unit`eq?-total* _ _ _ _).
- %total { } (unit`eq?-total* _ _ _ _).
-
-
  %abbrev unit`leq = unit`eq.
- %abbrev unit`nle = unit`ne.
-
- unit`leq? : unit -> unit -> bool -> type.
- 
- unit`leq?/yes : unit`leq U1 U2 -> unit`leq? U1 U2 true.
-
- unit`leq?/no  : unit`nle U1 U2 -> unit`leq? U1 U2 false.
-
-
- %theorem unit`false-implies-leq? :
-	forall* {U1} {U2} {B}
-	forall	{F: void}
-	exists	{L: unit`leq? U1 U2 B}
-	true.
-
- %worlds () (unit`false-implies-leq? _ _).
- %total { } (unit`false-implies-leq? _ _).
-
-
  %abbrev unit`false-implies-leq = unit`false-implies-eq.
- %abbrev unit`false-implies-nle = unit`false-implies-ne.
  %abbrev unit`leq-reflexive = unit`eq-reflexive.
  %abbrev unit`leq-transitive = unit`eq-transitive.
- %abbrev unit`leq-nle-contradiction = unit`eq-ne-implies-false.
 
 
  %theorem unit`leq-respects-eq :
@@ -200,29 +96,6 @@
 
  %worlds () (unit`leq-anti-symmetric _ _ _).
  %total { } (unit`leq-anti-symmetric _ _ _).
-
- %theorem unit`nle-implies-ne :
-	forall*	{U1} {U2}
-	forall	{N: unit`nle U1 U2}
-	exists	{N: unit`ne U1 U2}
-	true.
-
- %worlds () (unit`nle-implies-ne _ _).
- %total { } (unit`nle-implies-ne _ _).
-
-
- %theorem unit`leq?-total* :
-	forall	{U1} {U2}
-	exists	{B}
-		{L: unit`leq? U1 U2 B}
-	true.
-
- %abbrev unit`leq?-total = unit`leq?-total* _ _ _.
-
- - : unit`leq?-total (unit`leq?/yes unit`eq/).
-
- %worlds () (unit`leq?-total* _ _ _ _).
- %total { } (unit`leq?-total* _ _ _ _).
 
 
  unit`join : unit -> unit -> unit -> type.
