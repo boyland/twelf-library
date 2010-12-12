@@ -7,6 +7,106 @@
 %%%% Theorems
 
 
+%theorem eq?-total* :
+        forall {M} {N}
+        exists {B} {T:eq? M N B}
+        true.
+
+%abbrev eq?-total = eq?-total* _ _ _.
+
+%theorem eq?-total/+ :
+	forall* {N1} {N2} {M2} {CMP} {EM}
+	forall {M1} 
+	       {CN: nat`compare N1 N2 CMP}
+	       {EM?:eq? M1 M2 EM}
+	exists {B}
+	       {E?:eq? (set/+ N1 M1) (set/+ N2 M2) B}
+	true.
+
+- : eq?-total eq?/yes.
+
+- : eq?-total (ne/< (lookup/= nat`eq/) not-member/0).
+
+- : eq?-total (ne/> not-member/0 (lookup/= nat`eq/)).
+
+- : eq?-total E?
+    <- nat`compare-total EC
+    <- eq?-total EM?
+    <- eq?-total/+ _ EC EM? _ E?.
+
+- : eq?-total/+ _ (nat`compare/=) EQ? _ EQP?
+    <- map/+-preserves-eq? nat`eq/ unit`eq/ EQ? EQP?.
+
+- : eq?-total/+ _ (nat`compare/< N2>N1) _ _
+	(ne/< (lookup/= nat`eq/) (not-member/< N2>N1)).
+
+- : eq?-total/+ _ (nat`compare/> N1>N2) _ _ 
+	(ne/> (not-member/< N1>N2) (lookup/= nat`eq/) ).
+
+%worlds ()   (eq?-total* _ _ _ _) (eq?-total/+ _ _ _ _ _).
+%total (M W) (eq?-total* M _ _ _) (eq?-total/+ W _ _ _ _).
+
+
+%theorem leq?-total* :
+	forall {M1} {M2}
+	exists {B} {L?:leq? M1 M2 B}
+	true.
+
+%abbrev leq?-total = leq?-total* _ _ _.
+
+%theorem leq?-total/+ :
+	forall* {N1} {N2} {M1} {CN}
+	forall	{M2}
+		{CMP:nat`compare N1 N2 CN}
+	exists	{B} 
+		{L:leq? (set/+ N1 M1) (set/+ N2 M2) B}
+	true.
+
+- : leq?-total (leq?/yes leq/0).
+
+- : leq?-total (leq?/no (nle/< (lookup/= nat`eq/) not-member/0)).
+
+- : leq?-total L?
+    <- nat`compare-total CMP
+    <- leq?-total/+ _ CMP _ L?.
+
+- : leq?-total/+ _ (nat`compare/=) _ LL?
+    <- leq?-total L?
+    <- map/+-preserves-leq? nat`eq/ unit`eq/ L? LL?.
+
+- : leq?-total/+ _ (nat`compare/< N1<N2) _
+		 (leq?/no (nle/< (lookup/= nat`eq/) (not-member/< N1<N2))).
+
+%theorem leq?-total/> :
+        forall* {N1} {N2} {N3} {D1} {D2} {M1} {M2} {B}
+        forall	{L?:leq? (map/+ N3 D1 M1) M2 B}
+               	{P:plus (s N3) N2 N1}
+        exists	{LL?:leq? (map/+ N1 D1 M1) (map/+ N2 D2 M2) B}
+        true.
+
+- : leq?-total/> (leq?/yes L) P (leq?/yes (leq/> L P)).
+
+- : leq?-total/> (leq?/no (nle/< L1 F2)) P
+		 (leq?/no (nle/< L1P (not-member/> F2 PP)))
+    <- plus-swap-succ P Ps
+    <- plus-commutative Ps Psc
+    <- plus-total PP
+    <- plus-swap-succ PP PPs
+    <- plus-commutative PPs PPsc
+    <- shift-preserves-lookup* L1 (shift/+ Psc) PPsc L1P.
+
+%worlds () (leq?-total/> _ _ _).
+%total { } (leq?-total/> _ _ _).
+
+- : leq?-total/+ _ (nat`compare/> N1>N2) _ LL?
+    <- gt-implies-plus N1>N2 _ N3+1+N2=N1
+    <- leq?-total L?
+    <- leq?-total/> L? N3+1+N2=N1 LL?.
+
+%worlds ()   (leq?-total* _ _ _ _) (leq?-total/+ _ _ _ _).
+%total (L M) (leq?-total* _ L _ _) (leq?-total/+ M _ _ _).
+
+
 %theorem member-not-member-contradiction :
 	forall* {S} {N}
 	forall	{M: lookup S N unit/}
@@ -143,181 +243,80 @@ END_ELF
 %total { } (leq-union-disjoint-implies-leq _ _ _ _).
 
 
-%theorem intersection-characterization:
-	forall* {A} {B} {C} {D} {E}
-	forall	{U1: union C D A}
-		{U2: union C E B}
-		{D: disjoint D E}
-	exists	{I: intersection A B C}
-	true.
-
-%theorem intersection-characterization/L:
-	forall* {A} {B} {C} {D} {E}
-	forall	{NA} {NB}
-		{SA: size A NA}
-		{SB: size B NB}
-		{U1: union C D A}
-		{U2: union C E B}
-		{D: disjoint D E}
-	exists	{I: intersection A B C}
-	true.
-
-- : intersection-characterization/L _ _ _ _ _ _ _ intersection/R.
-
-- : intersection-characterization/L _ _ _ _ _ _ _ intersection/L.
-
-- : intersection-characterization/L _ _ _ _ union/R AUE=B _ A^B=A
-    <- union-implies-leq AUE=B A<=B _
-    <- leq-implies-intersection A<=B A^B=A.
-
-- : intersection-characterization/L _ _ _ _ BUD=A union/R _ A^B=B
-    <- union-implies-leq BUD=A B<=A _
-    <- leq-implies-intersection B<=A B^A=B
-    <- intersection-commutative B^A=B A^B=B.
-
-- : intersection-characterization/L _ _ _ _ union/L union/L A^B A^B=0
-    <- disjoint-intersection-empty A^B A^B=0.
-
-- : intersection-characterization/L _ ZB (size/+ SA) SB
-	(union/< CPUYD=AP Y+1+NA=ND) CUE=B
-	(disjoint/< DP^XE X+1+ND=NE) A^B=C
-    <- plus-swap-succ Y+1+NA=ND Y+NA+1=ND
-    <- plus-associative-converse Y+NA+1=ND X+1+ND=NE Z X+1+Y=Z Z+NA+1=NE
-    <- plus-swap-succ-converse Z+NA+1=NE Z+1+NA=NE
-    <- union/<-inversion CUE=B Z+1+NA=NE BP CPUZE=BP B=ABP
-    <- size-respects-eq SB B=ABP nat`eq/ SABP
-    <- size-total SBP
-    <- size-unique (size/+ SBP) SABP eq/ SZBP=ZB
-    <- nat`meta-eq (s ZBP) ZB SZBP=ZB
-    <- intersection-characterization/L _ _ SA SBP
-	CPUYD=AP CPUZE=BP (disjoint/< DP^XE X+1+Y=Z) AP^BP=CP
-    <- eq-symmetric B=ABP ABP=B
-    <- intersection-respects-eq (intersection/= AP^BP=CP unit`union/ nat`eq/) eq/
-	ABP=B eq/ A^B=C.
-
-- : intersection-characterization/L _ ZB (size/+ SA) SB
-	(union/= CPUDP=AP _ nat`eq/) CUE=B
-	(disjoint/< DP^XE X+1+NA=NE) A^B=C
-    <- union/<-inversion CUE=B X+1+NA=NE BP CPUXE=BP B=ABP
-    <- size-respects-eq SB B=ABP nat`eq/ SABP
-    <- size-total SBP
-    <- size-unique (size/+ SBP) SABP eq/ SZBP=ZB
-    <- nat`meta-eq (s ZBP) ZB SZBP=ZB
-    <- intersection-characterization/L _ _ SA SBP
-	CPUDP=AP CPUXE=BP DP^XE AP^BP=CP
-    <- eq-symmetric B=ABP ABP=B
-    <- intersection-respects-eq (intersection/= AP^BP=CP unit`union/ nat`eq/) eq/
-	ABP=B eq/ A^B=C.
-
-- : intersection-characterization/L _ ZB (size/+ SA) SB
-	(union/= CPUDP=AP _ nat`eq/) CUE=B
-	(disjoint/> XD^EP X+1+NE=NA) A^B=C
-    <- union/>-inversion CUE=B X+1+NE=NA BP XCUEP=BP B=EBP
-    <- size-respects-eq SB B=EBP nat`eq/ SEBP
-    <- size-total SBP
-    <- size-unique (size/+ SBP) SEBP eq/ SZBP=ZB
-    <- nat`meta-eq (s ZBP) ZB SZBP=ZB
-    <- intersection-characterization/L _ _ (size/+ SA) SBP
-	(union/= CPUDP=AP unit`union/ nat`eq/) XCUEP=BP XD^EP XA^BP=XC
-    <- eq-symmetric B=EBP EBP=B
-    <- plus-swap-succ X+1+NE=NA X+NE+1=NA
-    <- plus-commutative X+NE+1=NA NE+1+X=NA
-    <- intersection-respects-eq 
-	(intersection/> (shift/+ NE+1+X=NA) XA^BP=XC X+1+NE=NA)
-	eq/ EBP=B eq/ A^B=C.
-
-- : intersection-characterization/L _ _ (size/+ SA) (size/+ SB)
-	(union/> YCUDP=AP Y+1+NA=NC) (union/= CPUEP=BP _ nat`eq/)
-	D^E (intersection/< (shift/+ NA+1+Y=NC) AP^YB=YC Y+1+NA=NC)
-    <- disjoint/<-inversion D^E Y+1+NA=NC DP^YE
-    <- intersection-characterization/L _ _ SA (size/+ SB)
-	YCUDP=AP (union/= CPUEP=BP unit`union/ nat`eq/) DP^YE AP^YB=YC
-    <- plus-swap-succ Y+1+NA=NC Y+NA+1=NC
-    <- plus-commutative Y+NA+1=NC NA+1+Y=NC.
-
-- : intersection-characterization/L _ _ (size/+ SA) (size/+ SB)
-	(union/> YCUDP=AP Y+1+ND=NC) (union/< CPUZE=BP Z+1+NC=NE)
-	D^E (intersection/< (shift/+ ND+1+Y=NC) AP^YB=YC Y+1+ND=NC)
-    <- plus-swap-succ Y+1+ND=NC Y+ND+1=NC
-    <- plus-associative-converse Y+ND+1=NC Z+1+NC=NE X Z+1+Y=X X+ND+1=NE
-    <- plus-swap-succ-converse X+ND+1=NE X+1+ND=NE
-    <- disjoint/<-inversion D^E X+1+ND=NE DP^XE
-    <- intersection-characterization/L _ _ SA (size/+ SB)
-	YCUDP=AP (union/< CPUZE=BP Z+1+Y=X) DP^XE AP^YB=YC
-    <- plus-commutative Y+ND+1=NC ND+1+Y=NC.
-
-- : intersection-characterization/L _ _ (size/+ SA) (size/+ SB)
-	(union/> YCUDP=AP Y+1+ND=NC) (union/> ZCUEP=BP Z+1+NE=NC)
-	(disjoint/< DP^XE X+1+ND=NE)
-        (intersection/< (shift/+ ND+1+Y=NC) AP^XB=YC X+1+ND=NE)
-    <- plus-swap-succ X+1+ND=NE X+ND+1=NE
-    <- plus-associative-converse X+ND+1=NE Z+1+NE=NC YY Z+1+X=YY YY+ND+1=NC
-    <- plus-swap-succ Y+1+ND=NC Y+ND+1=NC
-    <- plus-right-cancels YY+ND+1=NC Y+ND+1=NC nat`eq/ nat`eq/ YY=Y
-    <- plus-respects-eq Z+1+X=YY nat`eq/ nat`eq/ YY=Y Z+1+X=Y
-    <- intersection-characterization/L _ _ SA (size/+ SB)
-	YCUDP=AP (union/> ZCUEP=BP Z+1+X=Y) DP^XE AP^XB=YC
-    <- plus-commutative Y+ND+1=NC ND+1+Y=NC.
-
-- : intersection-characterization/L _ _ (size/+ SA) (size/+ SB)
-	(union/> YCUDP=AP Y+1+ND=NC) (union/> ZCUEP=BP Z+1+NE=NC)
-	(disjoint/> XD^EP X+1+NE=ND)
-	(intersection/> (shift/+ NE+1+Z=NC) XA^BP=ZC X+1+NE=ND)
-    <- plus-swap-succ X+1+NE=ND X+NE+1=ND
-    <- plus-associative-converse X+NE+1=ND Y+1+ND=NC ZZ Y+1+X=ZZ ZZ+NE+1=NC
-    <- plus-swap-succ Z+1+NE=NC Z+NE+1=NC
-    <- plus-right-cancels ZZ+NE+1=NC Z+NE+1=NC nat`eq/ nat`eq/ ZZ=Z
-    <- plus-respects-eq Y+1+X=ZZ nat`eq/ nat`eq/ ZZ=Z Y+1+X=Z
-    <- intersection-characterization/L _ _ (size/+ SA) SB
-	(union/> YCUDP=AP Y+1+X=Z) ZCUEP=BP XD^EP XA^BP=ZC
-    <- plus-commutative Z+NE+1=NC NE+1+Z=NC.
-
-- : intersection-characterization/L _ _ (size/+ SA) (size/+ SB)
-	(union/< CPUYD=AP Y+1+NC=ND)
-	(union/> ZCUEP=BP Z+1+NE=NC) D^E
-	(intersection/> (shift/+ NE+1+Z=NC) ZA^BP=ZC Z+1+NE=NC)
-    <- plus-swap-succ Z+1+NE=NC Z+NE+1=NC
-    <- plus-associative-converse Z+NE+1=NC Y+1+NC=ND X Y+1+Z=X X+NE+1=ND
-    <- plus-swap-succ-converse X+NE+1=ND X+1+NE=ND
-    <- disjoint/>-inversion D^E X+1+NE=ND XD^EP
-    <- intersection-characterization/L _ _ (size/+ SA) SB
-	(union/< CPUYD=AP Y+1+Z=X) ZCUEP=BP XD^EP ZA^BP=ZC
-    <- plus-commutative Z+NE+1=NC NE+1+Z=NC.
-
-- : intersection-characterization/L _ _ (size/+ SA) (size/+ SB)
-	(union/< CPUYD=AP Y+1+NC=ND)
-	(union/= CPUEP=BP _ nat`eq/) D^E
-	(intersection/= AP^BP=CP unit`union/ nat`eq/)
-    <- disjoint/>-inversion D^E Y+1+NC=ND YD^EP
-    <- intersection-characterization/L _ _ SA SB
-	CPUYD=AP CPUEP=BP YD^EP AP^BP=CP.
-
-- : intersection-characterization/L _ _ (size/+ SA) (size/+ SB)
-	(union/< CPUYD=AP Y+1+NC=ND)
-	(union/< CPUZE=BP Z+1+NC=NE) (disjoint/> XD^EP X+1+NE=ND)
-	(intersection/= AP^BP=CP unit`union/ nat`eq/)
-    <- plus-swap-succ Z+1+NC=NE Z+NC+1=NE
-    <- plus-associative-converse Z+NC+1=NE X+1+NE=ND YY X+1+Z=YY YY+NC+1=ND
-    <- plus-swap-succ Y+1+NC=ND Y+NC+1=ND
-    <- plus-right-cancels YY+NC+1=ND Y+NC+1=ND nat`eq/ nat`eq/ YY=Y
-    <- plus-respects-eq X+1+Z=YY nat`eq/ nat`eq/ YY=Y X+1+Z=Y
-    <- intersection-characterization/L _ _ SA SB
-	CPUYD=AP CPUZE=BP (disjoint/> XD^EP X+1+Z=Y) AP^BP=CP.
-
-%worlds ()   (intersection-characterization/L _ _ _ _  _ _ _ _).
-%total [A B] (intersection-characterization/L A B _ _  _ _ _ _).
-
-- : intersection-characterization CUD=A CUE=B D^E AUB=C
-    <- size-total SA
-    <- size-total SB
-    <- intersection-characterization/L _ _ SA SB CUD=A CUE=B D^E AUB=C.
-
-%worlds () (intersection-characterization _ _ _ _).
-%total { } (intersection-characterization _ _ _ _).
-
-
 
 %%% set membership w.r.t. union:
+
+
+%theorem add-implies-unit-union :
+	forall*	{S1} {X} {S2}
+	forall	{A: add S1 X S2}
+	exists	{U: union S1 (set/1 X) S2}
+	true.
+
+%theorem add-implies-unit-union/L :
+	forall*	{S1} {X} {S2} {B}
+	forall	{A: add S1 X S2}
+		{M?: member? S1 X B}
+	exists	{U: union S1 (set/1 X) S2}
+	true.
+
+- : add-implies-unit-union/L A (member?/in S1->X) S1UX=S2
+    <- member-implies-unit-leq S1->X X<=S1
+    <- add-member-has-no-effect S1->X A S1=S2
+    <- leq-implies-union X<=S1 XUS1=S1
+    <- union-commutative XUS1=S1 S1UX=S1
+    <- union-respects-eq S1UX=S1 eq/ eq/ S1=S2 S1UX=S2.
+
+- : add-implies-unit-union/L A (member?/out S1-/>X) S1UX=S2
+    <- not-member-update-implies-unit-union S1-/>X A S1UX=S2.
+
+%worlds () (add-implies-unit-union/L _ _ _).
+%total { } (add-implies-unit-union/L _ _ _).
+
+- : add-implies-unit-union A U
+    <- member?-total M?
+    <- add-implies-unit-union/L A M? U.
+
+%worlds () (add-implies-unit-union _ _).
+%total { } (add-implies-unit-union _ _).
+
+
+%theorem unit-union-implies-add :
+	forall*	{S1} {X} {S2}
+	forall	{U: union S1 (set/1 X) S2}
+	exists	{A: add S1 X S2}
+	true.
+
+%theorem unit-union-implies-add/L :
+	forall*	{S1} {X} {S2} {B}
+	forall	{U: union S1 (set/1 X) S2}
+		{M?: member? S1 X B}
+	exists	{A: add S1 X S2}
+	true.
+
+- : unit-union-implies-add/L S1UX=S2 (member?/in S1->X) S1+X=S2
+    <- member-implies-unit-leq S1->X X<=S1
+    <- leq-implies-union X<=S1 XUS1=S1
+    <- union-commutative XUS1=S1 S1UX=S1
+    <- union-unique S1UX=S1 S1UX=S2 eq/ eq/ S1=S2
+    <- member-implies-add S1->X S1+X=S1
+    <- add-respects-eq S1+X=S1 eq/ nat`eq/ S1=S2 S1+X=S2.
+
+- : unit-union-implies-add/L S1UX=S2 (member?/out S1-/>X) S1+X=S2
+    <- add-total S1+X=S3
+    <- add-implies-unit-union S1+X=S3 S1UX=S3
+    <- union-unique S1UX=S3 S1UX=S2 eq/ eq/ S3=S2
+    <- add-respects-eq S1+X=S3 eq/ nat`eq/ S3=S2 S1+X=S2.
+
+%worlds () (unit-union-implies-add/L _ _ _).
+%total { } (unit-union-implies-add/L _ _ _).
+
+- : unit-union-implies-add U A
+    <- member?-total M?
+    <- unit-union-implies-add/L U M? A.
+
+%worlds () (unit-union-implies-add _ _).
+%total { } (unit-union-implies-add _ _).
 
 
 %theorem union-left-preserves-member* :
@@ -437,10 +436,10 @@ END_ELF
     <- plus-respects-eq N1+0=N N1=N3 nat`eq/ nat`eq/ N3+0=N.
 
 - : union-intersection-size
-	(union/= U12 unit`union/ nat`eq/) I
+	(union/= U12 nat`eq/) I
         (size/+ SZ1) (size/+ SZ2) (size/+ SZ3) (SZ444: size S444 N444)
         (plus/s N1+SN2=N) SN3+N444=SN
-    <- intersection/=-inversion I nat`eq/ _ _ unit`union/ I12 E
+    <- intersection/=-inversion I nat`eq/ _ _ _ I12 E
     <- plus-total N1+N2=N-1
     <- size-total SZ4
     <- union-intersection-size U12 I12 SZ1 SZ2 SZ3 SZ4 N1+N2=N-1 N3+N4=N-1
@@ -473,5 +472,54 @@ END_ELF
 %worlds () (union-intersection-size _ _ _ _ _ _ _ _).
 %total (U) (union-intersection-size U _ _ _ _ _ _ _).
 
+
+
+%theorem intersection-characterization:
+	forall* {A} {B} {C} {D} {E}
+	forall	{U1: union C D A}
+		{U2: union C E B}
+		{D: disjoint D E}
+	exists	{I: intersection A B C}
+	true.
+
+%theorem intersection-characterization/L:
+	forall* {A} {B} {C} {D} {E} {CP} {B?}
+	forall	{U1: union C D A}
+		{U2: union C E B}
+		{D: disjoint D E}
+		{I: intersection A B CP}
+		{E?: eq? CP C B?}
+	exists	{E: eq CP C}
+	true.
+
+- : intersection-characterization/L _ _ _ _ eq?/yes eq/.
+
+- : intersection-characterization/L CUD=A CUE=B D^E A^B=CP 
+	(ne/< CP->X C-/>X) EQ
+    <- intersection-preserves-member-converse CP->X A^B=CP A->X B->X
+    <- not-member-union-left-preserves-member-converse C-/>X A->X CUD=A D->X
+    <- not-member-union-left-preserves-member-converse C-/>X B->X CUE=B E->X
+    <- disjoint-member-contradiction D^E D->X E->X FALSE
+    <- false-implies-eq FALSE EQ.
+
+- : intersection-characterization/L CUD=A CUE=B D^E A^B=CP 
+	(ne/> CP-/>X C->X) EQ
+    <- union-right-preserves-member* C->X CUD=A A->X
+    <- union-right-preserves-member* C->X CUE=B B->X
+    <- intersection-preserves-member A->X B->X A^B=CP CP->X
+    <- member-not-member-contradiction CP->X CP-/>X FALSE
+    <- false-implies-eq FALSE EQ.
+
+%worlds () (intersection-characterization/L _ _ _ _ _ _).
+%total { } (intersection-characterization/L _ _ _ _ _ _).
+
+- : intersection-characterization CUD=A CUE=B D^E A^B=C
+    <- intersection-total A^B=CP
+    <- eq?-total EQ?
+    <- intersection-characterization/L CUD=A CUE=B D^E A^B=CP EQ? EQ
+    <- intersection-respects-eq A^B=CP eq/ eq/ EQ A^B=C.
+
+%worlds () (intersection-characterization _ _ _ _).
+%total { } (intersection-characterization _ _ _ _).
 
 
