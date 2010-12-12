@@ -15,10 +15,81 @@
 
 
  %abbrev nat`leq = nat`le.
+ %abbrev nat`nle = nat`gt.
  %abbrev nat`false-implies-leq = nat`false-implies-le.
+ %abbrev nat`leq-respects-eq = nat`le-respects-eq.
+ %abbrev nat`false-implies-nle = nat`false-implies-gt.
+ %abbrev nat`nle-anti-reflexive = nat`gt-anti-reflexive.
+ %abbrev nat`nle-anti-symmetric = nat`gt-anti-symmetric.
  %abbrev nat`leq-reflexive = nat`le-reflexive.
  %abbrev nat`leq-transitive = nat`le-transitive.
  %abbrev nat`leq-anti-symmetric = nat`le-anti-symmetric.
+
+ %theorem nat`nle-implies-ne :
+	forall* {N1} {N2}
+	forall	{NL: nat`nle N1 N2}
+	exists	{NE: nat`ne N1 N2}
+	true.
+
+ - : nat`nle-implies-ne G (nat`ne/> G).
+
+ %worlds () (nat`nle-implies-ne _ _).
+ %total { } (nat`nle-implies-ne _ _).
+
+ %theorem nat`leq-nle-contradiction :
+	forall*	{N1} {N2}
+	forall	{LE: nat`leq N1 N2}
+		{GT: nat`nle N1 N2}
+	exists	{F:void}
+	true.
+
+ - : nat`leq-nle-contradiction N2>=N1 N1>N2 F
+     <- nat`gt-transitive-ge N1>N2 N2>=N1 N1>N1
+     <- nat`gt-anti-reflexive N1>N1 F.
+
+ %worlds () (nat`leq-nle-contradiction _ _ _).
+ %total { } (nat`leq-nle-contradiction _ _ _).
+
+
+ nat`leq? : nat -> nat -> bool -> type.
+
+ nat`leq?/yes : nat`leq N1 N2 -> nat`leq? N1 N2 true.
+
+ nat`leq?/no : nat`nle N1 N2 -> nat`leq? N1 N2 false.
+
+
+ %theorem nat`leq?-total* :
+	forall	{N1} {N2}
+	exists	{B}
+		{L: nat`leq? N1 N2 B}
+	true.
+
+ %abbrev nat`leq?-total = nat`leq?-total* _ _ _.
+
+ %theorem nat`leq?-total/L :
+	forall*	{N1} {N2} {CMP}
+	forall	{C:compare N1 N2 CMP}
+	exists	{B}
+		{L: nat`leq? N1 N2 B}
+	true.
+
+ - : nat`leq?-total/L (nat`compare/< N2>N1) _ (nat`leq?/yes (nat`ge/> N2>N1)).
+
+ - : nat`leq?-total/L (nat`compare/=) _ (nat`leq?/yes (nat`ge/= nat`eq/)).
+
+ - : nat`leq?-total/L (nat`compare/> N1>N2) _ (nat`leq?/no N1>N2).
+
+ %worlds () (nat`leq?-total/L _ _ _).
+ %total { } (nat`leq?-total/L _ _ _).
+
+ - : nat`leq?-total L?
+     <- nat`compare-total C
+     <- nat`leq?-total/L C _ L?.
+
+ %worlds () (nat`leq?-total* _ _ _ _).
+ %total { } (nat`leq?-total* _ _ _ _).
+
+
  %abbrev nat`join = nat`max.
  %abbrev nat`false-implies-join = nat`false-implies-max.
  %abbrev nat`join-deterministic = nat`max-deterministic.
@@ -34,6 +105,7 @@
 
  %abbrev nat`meet = nat`min.
  %abbrev nat`false-implies-meet = nat`false-implies-min.
+ %abbrev nat`meet-respects-eq = nat`min-respects-eq.
  %abbrev nat`meet-deterministic = nat`min-deterministic.
  %abbrev nat`meet-total* = nat`min-total*.
  %abbrev nat`meet-commutative = nat`min-commutative.
