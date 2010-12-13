@@ -19,7 +19,7 @@
 %%% Definition of leq
 
 %{%
-We always define leq? and nle even if we don't have these things in data.
+We always define leq? and nle even if we do not have these things in data.
 This is simply for uniformity.  The relations are crippled if
 data does not have the required relation.
 %}%
