@@ -281,6 +281,20 @@ END_ELF
 %total { } (add-implies-unit-union _ _).
 
 
+%theorem add-implies-leq :
+	forall*	{S1} {X} {S2}
+	forall	{A: add S1 X S2}
+	exists	{L: leq S1 S2}
+	true.
+
+- : add-implies-leq A L
+    <- add-implies-unit-union A U
+    <- union-implies-leq U L _.
+
+%worlds () (add-implies-leq _ _).
+%total { } (add-implies-leq _ _).
+
+
 %theorem unit-union-implies-add :
 	forall*	{S1} {X} {S2}
 	forall	{U: union S1 (set/1 X) S2}
