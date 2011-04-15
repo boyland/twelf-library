@@ -452,7 +452,7 @@ domain/+ : domain M S ->
     <- domain-deterministic D1 D2 eq/ S1=S2
     <- set`map/+-preserves-eq nat`eq/ unit`eq/ S1=S2 SE
     <- set`add-respects-eq 
-	(set`update/= nat`eq/) set`eq/ nat`eq/ unit`eq/ SE SU.
+	(set`update/= nat`eq/) set`eq/ nat`eq/ SE SU.
 
 % depends on %unique for coverage.
 - : update-commute-domain (update/< P) (domain/+ _) (domain/+ (domain/+ _))
