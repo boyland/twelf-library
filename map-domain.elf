@@ -28,7 +28,7 @@ domain/0 : domain map/0 set`map/0.
 domain/+ : domain M S ->
 	domain (map/+ N _ M) (set`map/+ N unit/ S).
 
-%worlds () (domain _ _).
+%worlds (WORLDS) (domain _ _).
 %unique domain +M -1S.
 
 
@@ -42,7 +42,7 @@ domain/+ : domain M S ->
 	exists {D:domain M S}
 	true.
 
-%worlds () (false-implies-domain _ _).
+%worlds (WORLDS) (false-implies-domain _ _).
 %total {} (false-implies-domain _ _).
 
 
@@ -54,7 +54,7 @@ domain/+ : domain M S ->
 
 - : domain-respects-eq A eq/ set`eq/ A.
 
-%worlds () (domain-respects-eq _ _ _ _).
+%worlds (WORLDS) (domain-respects-eq _ _ _ _).
 %total {} (domain-respects-eq _ _ _ _).
 %reduces A = AP (domain-respects-eq A _ _ AP).
 
@@ -75,7 +75,7 @@ domain/+ : domain M S ->
     <- domain-deterministic D1 D2 eq/ SE
     <- set`map/+-preserves-eq nat`eq/ unit`eq/ SE SEP.
 
-%worlds () (domain-deterministic _ _ _ _).
+%worlds (WORLDS) (domain-deterministic _ _ _ _).
 %total (A) (domain-deterministic A _ _ _).
 
 
@@ -91,7 +91,7 @@ domain/+ : domain M S ->
 - : domain-total* _ (set/+ _ _) (domain/+ D)
     <- domain-total D.
 
-%worlds () (domain-total* _ _ _).
+%worlds (WORLDS) (domain-total* _ _ _).
 
 %total (M) (domain-total* M _ _).
 
@@ -104,7 +104,7 @@ domain/+ : domain M S ->
 
 - : domain-empty-implies-empty domain/0 eq/.
 
-%worlds () (domain-empty-implies-empty _ _).
+%worlds (WORLDS) (domain-empty-implies-empty _ _).
 %total { } (domain-empty-implies-empty _ _).
 
 
@@ -124,7 +124,7 @@ domain/+ : domain M S ->
 	(set`lookup/> MS P)
     <- domain-preserves-lookup ML D MS.
 
-%worlds () (domain-preserves-lookup _ _ _).
+%worlds (WORLDS) (domain-preserves-lookup _ _ _).
 %total (L) (domain-preserves-lookup L _ _).
 
 
@@ -145,7 +145,7 @@ domain/+ : domain M S ->
 	(lookup/> ML P)
     <- domain-preserves-lookup-converse SL D _ ML.
 
-%worlds () (domain-preserves-lookup-converse _ _ _ _).
+%worlds (WORLDS) (domain-preserves-lookup-converse _ _ _ _).
 %total (L) (domain-preserves-lookup-converse L _ _ _).
 
 
@@ -170,7 +170,7 @@ domain/+ : domain M S ->
 	(set`not-member/> MS P)
     <- domain-preserves-fresh ML D MS.
 
-%worlds () (domain-preserves-fresh _ _ _).
+%worlds (WORLDS) (domain-preserves-fresh _ _ _).
 %total (L) (domain-preserves-fresh L _ _).
 
 
@@ -195,7 +195,7 @@ domain/+ : domain M S ->
 	(fresh/> ML P)
     <- domain-preserves-fresh-converse SL D ML.
 
-%worlds () (domain-preserves-fresh-converse _ _ _).
+%worlds (WORLDS) (domain-preserves-fresh-converse _ _ _).
 %total (L) (domain-preserves-fresh-converse L _ _).
 
 
@@ -212,7 +212,7 @@ domain/+ : domain M S ->
 - : domain-preserves-domain? (domain?/out MF) D (set`member?/out SF)
     <- domain-preserves-fresh MF D SF.
 
-%worlds () (domain-preserves-domain? _ _ _).
+%worlds (WORLDS) (domain-preserves-domain? _ _ _).
 %total { } (domain-preserves-domain? _ _ _).
 
 
@@ -229,7 +229,7 @@ domain/+ : domain M S ->
 - : domain-preserves-domain?-converse (set`member?/out SF) D (domain?/out MF)
     <- domain-preserves-fresh-converse SF D MF.
 
-%worlds () (domain-preserves-domain?-converse _ _ _).
+%worlds (WORLDS) (domain-preserves-domain?-converse _ _ _).
 %total { } (domain-preserves-domain?-converse _ _ _).
 					     
 
@@ -245,7 +245,7 @@ domain/+ : domain M S ->
 - : domain-preserves-size (size/+ MS) (domain/+ D) (set`size/+ SS)
     <- domain-preserves-size MS D SS.
 
-%worlds () (domain-preserves-size _ _ _).
+%worlds (WORLDS) (domain-preserves-size _ _ _).
 %total (D) (domain-preserves-size _ D _).
 
 
@@ -261,7 +261,7 @@ domain/+ : domain M S ->
 - : domain-preserves-size-converse (set`size/+ SS) (domain/+ D) (size/+ MS)
     <- domain-preserves-size-converse SS D MS.
 
-%worlds () (domain-preserves-size-converse _ _ _).
+%worlds (WORLDS) (domain-preserves-size-converse _ _ _).
 %total (D) (domain-preserves-size-converse _ D _).
 
 
@@ -287,7 +287,7 @@ domain/+ : domain M S ->
 	(set`disjoint/> DP P)
     <- domain-preserves-disjoint D (domain/+ D1) D2 DP.
 
-%worlds () (domain-preserves-disjoint _ _ _ _).
+%worlds (WORLDS) (domain-preserves-disjoint _ _ _ _).
 %total (D) (domain-preserves-disjoint D _ _ _).
 
 
@@ -313,7 +313,7 @@ domain/+ : domain M S ->
 	(disjoint/> DP P)
     <- domain-preserves-disjoint-converse D (domain/+ D1) D2 DP.
 
-%worlds () (domain-preserves-disjoint-converse _ _ _ _).
+%worlds (WORLDS) (domain-preserves-disjoint-converse _ _ _ _).
 %total (D) (domain-preserves-disjoint-converse D _ _ _).
 
 
@@ -329,7 +329,7 @@ domain/+ : domain M S ->
 - : domain-preserves-bound (bound/+ P MS) (domain/+ D) (set`bound/+ P SS)
     <- domain-preserves-bound MS D SS.
 
-%worlds () (domain-preserves-bound _ _ _).
+%worlds (WORLDS) (domain-preserves-bound _ _ _).
 %total (D) (domain-preserves-bound _ D _).
 
 
@@ -346,7 +346,7 @@ domain/+ : domain M S ->
 	(set`bound/+ P SS) (domain/+ D) (bound/+ P MS)
     <- domain-preserves-bound-converse SS D MS.
 
-%worlds () (domain-preserves-bound-converse _ _ _).
+%worlds (WORLDS) (domain-preserves-bound-converse _ _ _).
 %total (D) (domain-preserves-bound-converse _ D _).
 
 
@@ -366,7 +366,7 @@ domain/+ : domain M S ->
     <- set`map/+-preserves-eq N1=N2 unit`eq/ set`eq/ S1=S2
     <- domain-respects-eq (domain/+ D1) eq/ S1=S2 D2.
 
-%worlds () (shift-preserves-domain* _ _ _ _).
+%worlds (WORLDS) (shift-preserves-domain* _ _ _ _).
 %total { } (shift-preserves-domain* _ _ _ _).
 
 
@@ -383,7 +383,7 @@ domain/+ : domain M S ->
     <- set`shift-total SS
     <- shift-preserves-domain* D1 S SS D2.
 
-%worlds () (shift-preserves-domain _ _ _ _ _).
+%worlds (WORLDS) (shift-preserves-domain _ _ _ _ _).
 %total { } (shift-preserves-domain _ _ _ _ _).
 
 
@@ -401,7 +401,7 @@ domain/+ : domain M S ->
 - : shift-preserves-domain-converse
 	(domain/+ D) (shift/+ P) _ (set`shift/+ P) (domain/+ D).
 
-%worlds () (shift-preserves-domain-converse _ _ _ _ _).
+%worlds (WORLDS) (shift-preserves-domain-converse _ _ _ _ _).
 %total { } (shift-preserves-domain-converse _ _ _ _ _).
 
 
@@ -421,7 +421,7 @@ domain/+ : domain M S ->
     <- set`map/+-preserves-eq N1=N2 unit`eq/ set`eq/ S1=S2
     <- domain-respects-eq (domain/+ D1) eq/ S1=S2 D2.
 
-%worlds () (shift-preserves-domain-converse* _ _ _ _).
+%worlds (WORLDS) (shift-preserves-domain-converse* _ _ _ _).
 %total { } (shift-preserves-domain-converse* _ _ _ _).
 
 
@@ -439,7 +439,7 @@ domain/+ : domain M S ->
 
 - : shift-commute-domain (shift/+ P) (domain/+ D1) (domain/+ D2) (set`shift/+ P).
 
-%worlds () (shift-commute-domain _ _ _ _).
+%worlds (WORLDS) (shift-commute-domain _ _ _ _).
 %total { } (shift-commute-domain _ _ _ _).
 
 
@@ -469,7 +469,7 @@ domain/+ : domain M S ->
 	(set`update/> U2 P)
     <- update-commute-domain U1 D1 D2 U2.
 
-%worlds () (update-commute-domain _ _ _ _).
+%worlds (WORLDS) (update-commute-domain _ _ _ _).
 %total (U) (update-commute-domain U _ _ _).
 
 
@@ -496,7 +496,7 @@ domain/+ : domain M S ->
     <- domain-commute-update D U SA D2
     <- domain-respects-eq (domain/+ D2) ME set`eq/ D2P.
 
-%worlds () (domain-commute-update _ _ _ _).
+%worlds (WORLDS) (domain-commute-update _ _ _ _).
 %total (U) (domain-commute-update U _ _ _).
 
 %{%
@@ -521,7 +521,7 @@ domain/+ : domain M S ->
 	(set`leq/> L2 P)
     <- domain-preserves-leq* L1 (domain/+ D1) D2 L2.
 
-%worlds () (domain-preserves-leq* _ _ _ _).
+%worlds (WORLDS) (domain-preserves-leq* _ _ _ _).
 %total (L) (domain-preserves-leq* L _ _ _).
 
 
@@ -538,7 +538,7 @@ domain/+ : domain M S ->
     <- domain-total D2
     <- domain-preserves-leq* L1 D1 D2 L2.
 
-%worlds () (domain-preserves-leq _ _ _ _ _).
+%worlds (WORLDS) (domain-preserves-leq _ _ _ _ _).
 %total { } (domain-preserves-leq _ _ _ _ _).
 
 %{%
@@ -581,7 +581,7 @@ domain/+ : domain M S ->
 	(set`union/> U P)
     <- join-commute-domain J (domain/+ D1) D2 D3 U.
 
-%worlds () (join-commute-domain _ _ _ _ _).
+%worlds (WORLDS) (join-commute-domain _ _ _ _ _).
 %total (J) (join-commute-domain J _ _ _ _).
 
 %{%
@@ -624,7 +624,7 @@ domain/+ : domain M S ->
     <- meet-commute-domain J (domain/+ D1) D2 D3 U
     <- shift-commute-domain MS D3 SD3 SS.
 
-%worlds () (meet-commute-domain _ _ _ _ _).
+%worlds (WORLDS) (meet-commute-domain _ _ _ _ _).
 %total (J) (meet-commute-domain J _ _ _ _).
 
 %{%
@@ -644,7 +644,7 @@ domain/+ : domain M S ->
 - : scale-preserves-domain (domain/+ D1) (scale/+ S) (domain/+ D2)
     <- scale-preserves-domain D1 S D2.
 
-%worlds () (scale-preserves-domain _ _ _).
+%worlds (WORLDS) (scale-preserves-domain _ _ _).
 %total (D) (scale-preserves-domain D _ _).
 
 
@@ -660,7 +660,7 @@ domain/+ : domain M S ->
 - : scale-preserves-domain-converse (domain/+ D1) (scale/+ S) (domain/+ D2)
     <- scale-preserves-domain-converse D1 S D2.
 
-%worlds () (scale-preserves-domain-converse _ _ _).
+%worlds (WORLDS) (scale-preserves-domain-converse _ _ _).
 %total (D) (scale-preserves-domain-converse D _ _).
 
 %{%
