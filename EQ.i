@@ -1,10 +1,17 @@
+%{%
+#ifdef WORLDS
+#else
+#define WORLDS %{nothing}%
+#endif
+%}%
+
 %theorem false-implies-EQ :
 	forall* {X1} {X2}
 	forall {F:void}
 	exists {E:EQ X1 X2}
 	true.
 
-%worlds () (false-implies-EQ _ _).
+%worlds (WORLDS) (false-implies-EQ _ _).
 %total { } (false-implies-EQ _ _).
 
 
@@ -14,7 +21,7 @@
 
 - : meta-EQ _ _ EQ/.
 
-%worlds () (meta-EQ _ _ _).
+%worlds (WORLDS) (meta-EQ _ _ _).
 %total { } (meta-EQ _ _ _).
 %reduces X = Y (meta-EQ X Y _).
 
@@ -26,7 +33,7 @@
 
 - : EQ-reflexive _ EQ/.
 
-%worlds () (EQ-reflexive _ _).
+%worlds (WORLDS) (EQ-reflexive _ _).
 %total { } (EQ-reflexive _ _).
 
 
@@ -38,7 +45,7 @@
 
 - : EQ-symmetric (EQ/) (EQ/).
 
-%worlds () (EQ-symmetric _ _).
+%worlds (WORLDS) (EQ-symmetric _ _).
 %total { } (EQ-symmetric _ _).
 
 
@@ -50,6 +57,6 @@
 
 - : EQ-transitive (EQ/) (EQ/) (EQ/).
 
-%worlds () (EQ-transitive _ _ _).
+%worlds (WORLDS) (EQ-transitive _ _ _).
 %total { } (EQ-transitive _ _ _).
 
