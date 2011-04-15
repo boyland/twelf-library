@@ -1,3 +1,10 @@
+%{%
+#ifdef WORLDS
+#else
+#define WORLDS %{nothing}%
+#endif
+%}%
+
 %%%% Map domain
 
 %{%
