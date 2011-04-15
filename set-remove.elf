@@ -747,3 +747,37 @@ remove/ : leq C A -> disjoint B C -> union B C D -> leq A D -> remove A B C.
 %worlds () (remove-right-distributes-over-intersection _ _ _ _ _ _ _).
 %total { } (remove-right-distributes-over-intersection _ _ _ _ _ _ _).
 
+
+%theorem not-member-add-implies-remove :
+	forall*	{A} {N} {B}
+	forall	{NM: not-member A N}
+		{AD: add A N B}
+	exists	{R: remove B (set/1 N) A}
+	true.
+
+- : not-member-add-implies-remove NM A+N=B SR
+    <- not-member-update-implies-unit-union NM A+N=B AUN=B
+    <- union-commutative AUN=B NUA=B
+    <- union-implies-leq NUA=B _ A<=B
+    <- not-member-implies-unit-disjoint NM A^N
+    <- disjoint-symmetric A^N N^A
+    <- leq-reflexive B B<=B
+    <- remove-characterization A<=B N^A NUA=B B<=B SR.
+
+%worlds () (not-member-add-implies-remove _ _ _).
+%total { } (not-member-add-implies-remove _ _ _).
+
+
+%theorem remove-idempotent :
+	forall*	{A} {B} {C}
+	forall	{R:remove A B C}
+	exists	{R:remove C B C}
+	true.
+
+- : remove-idempotent A-B=C C-B=C
+    <- remove-implies-disjoint A-B=C B^C
+    <- disjoint-symmetric B^C C^B
+    <- disjoint-implies-remove-nothing C^B C-B=C.
+
+%worlds () (remove-idempotent _ _).
+%total { } (remove-idempotent _ _).
