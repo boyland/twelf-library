@@ -877,6 +877,39 @@ END_ELF
 %worlds () (plus-gt-contradiction M+N=O M>O %{=>}% _).
 %total {} (plus-gt-contradiction _ _ _).
 
+
+%theorem plus-left-reverses-gt : 
+        forall* {X1:nat} {X2:nat} {Y:nat} {Z:nat} {S1:nat} {S2:nat}
+        forall {P1:plus X1 Y S1} {P2:plus X2 Z S2} 
+               {G1:gt X1 X2} {ES:eq S1 S2}
+	exists {G2:gt Z Y}
+        true.
+
+- : plus-left-reverses-gt X1+Y=S X2+Z=S X1>X2 eq/ Z>Y
+    <- plus-total X1+Z=SP
+    <- plus-right-preserves-gt* X1>X2 X1+Z=SP X2+Z=S SP>S
+    <- plus-left-cancels-gt X1+Z=SP X1+Y=S eq/ SP>S Z>Y.
+
+%worlds () (plus-left-reverses-gt _ _ _ _ _).
+%total { } (plus-left-reverses-gt _ _ _ _ _).
+
+
+%theorem plus-right-reverses-gt :
+        forall* {X1:nat} {X2:nat} {Y:nat} {Z:nat} {S1:nat} {S2:nat}
+        forall {P1:plus Y X1 S1} {P2:plus Z X2 S2} 
+               {G1:gt X1 X2} {ES:eq S1 S2}
+	exists {G2:gt Z Y}
+        true.
+
+- : plus-right-reverses-gt Y+X1=S Z+X2=S X1>X2 eq/ Z>Y
+    <- plus-total Z+X1=SP
+    <- plus-left-preserves-gt* X1>X2 Z+X1=SP Z+X2=S SP>S
+    <- plus-right-cancels-gt Z+X1=SP Y+X1=S eq/ SP>S Z>Y.
+
+%worlds () (plus-right-reverses-gt _ _ _ _ _).
+%total { } (plus-right-reverses-gt _ _ _ _ _).
+
+
 %{%
 #undef OP
 #undef OPN
