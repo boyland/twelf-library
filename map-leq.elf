@@ -151,23 +151,33 @@ nle/= : lookup M1 N D1 -> lookup M2 N D2 -> data`nle D1 D2 -> nle M1 M2.
 
 
 %theorem leq-contradiction :
+	forall*	{N} {D} {M}
+	forall	{L: leq (map/+ N D M) map/0}
+	exists	{F: void}
+	true.
+
+%worlds (WORLDS) (leq-contradiction _ _).
+%total { } (leq-contradiction _ _).
+
+
+%theorem leq/<-contradiction :
 	forall* {N1} {D1} {M1} {N2} {D2} {M2} {N0}
 	forall {L:leq (map/+ N1 D1 M1) (map/+ N2 D2 M2)} 
                {P:plus (s N0) N1 N2}
 	exists {F:void}
 	true.
 
-- : leq-contradiction (leq/= _ _ nat`eq/) N0+1+N=N F
+- : leq/<-contradiction (leq/= _ _ nat`eq/) N0+1+N=N F
     <- plus-implies-gt N0+1+N=N nat`eq/ N>N
     <- gt-anti-reflexive N>N F.
 
-- : leq-contradiction (leq/> _ N3+1+N2=N1) N0+1+N1=N2 F
+- : leq/<-contradiction (leq/> _ N3+1+N2=N1) N0+1+N1=N2 F
     <- nat`plus-implies-gt N3+1+N2=N1 nat`eq/ N1>N2
     <- nat`plus-implies-gt N0+1+N1=N2 nat`eq/ N2>N1
     <- nat`gt-anti-symmetric N1>N2 N2>N1 F.
 
-%worlds (WORLDS) (leq-contradiction _ _ _).
-%total { } (leq-contradiction _ _ _).
+%worlds (WORLDS) (leq/<-contradiction _ _ _).
+%total { } (leq/<-contradiction _ _ _).
 
 
 %theorem leq-reflexive :
@@ -726,6 +736,155 @@ nle/= : lookup M1 N D1 -> lookup M2 N D2 -> data`nle D1 D2 -> nle M1 M2.
 %worlds (WORLDS) (update-preserves-leq* _ _ _ _ _).
 %total { } (update-preserves-leq* _ _ _ _ _).
 
+
+%theorem fresh-update-preserves-leq-converse :
+	forall* {M1} {M2} {N} {D1} {D2} {M1P} {M2P}
+	forall	{LP:leq M1P M2P}
+		{F1:fresh M1 N}
+        	{U1:update M1 N D1 M1P}
+		{F2:fresh M2 N}
+		{U2:update M2 N D2 M2P}
+	exists	{L:leq M1 M2} 
+		{L:data`leq D1 D2} 
+	true.
+
+- : fresh-update-preserves-leq-converse
+	_ _ _ FR (update/= nat`eq/) L DL
+    <- fresh-contradiction FR F
+    <- false-implies-leq F L
+    <- data`false-implies-leq F DL.
+
+- : fresh-update-preserves-leq-converse 
+	M1P<=M2P fresh/0 update/0 _ U2 leq/0 D1<=D2
+    <- update-implies-lookup U2 L2
+    <- lookup-respects-leq* (lookup/= nat`eq/) M1P<=M2P L2 D1<=D2.
+
+- : fresh-update-preserves-leq-converse
+	M1P<=M2P (fresh/< GT1) U1 (fresh/< GT2) U2 M1<=M2 D1<=D2
+    <- gt-implies-plus GT1 _ P1
+    <- gt-implies-plus GT2 _ P2
+    <- update/<-inversion U1 P1 EQ1
+    <- update/<-inversion U2 P2 EQ2
+    <- eq-symmetric EQ1 EQ1s
+    <- eq-symmetric EQ2 EQ2s
+    <- leq-respects-eq M1P<=M2P EQ1s EQ2s M1P<=M2Px
+    <- leq/=-inversion M1P<=M2Px nat`eq/ D1<=D2 M1s<=M2s
+    <- plus-swap-succ P1 P1s
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P1s P1sc
+    <- plus-commutative P2s P2sc
+    <- shift-preserves-leq* M1s<=M2s (shift/+ P1sc) (shift/+ P2sc) M1<=M2.
+
+- : fresh-update-preserves-leq-converse
+	M1P<=M2P (fresh/< GT1) U1 fresh/0 update/0 M1<=M2 D1<=D2
+    <- gt-implies-plus GT1 _ P1
+    <- update/<-inversion U1 P1 EQ1
+    <- eq-symmetric EQ1 EQ1s
+    <- leq-respects-eq M1P<=M2P EQ1s eq/ M1Px<=M2P
+    <- leq/=-inversion M1Px<=M2P nat`eq/ D1<=D2 M1s<=M2s
+    <- leq-contradiction M1s<=M2s F
+    <- false-implies-leq F M1<=M2.
+
+- : fresh-update-preserves-leq-converse
+	M1P<=M2P (fresh/< GT1) U1 (fresh/> F2R P2) U2 M1<=M2 D1<=D2
+    <- gt-implies-plus GT1 _ P1
+    <- update/<-inversion U1 P1 EQ1
+    <- update/>-inversion U2 P2 _ U2R EQ2
+    <- eq-symmetric EQ1 EQ1s
+    <- eq-symmetric EQ2 EQ2s
+    <- leq-respects-eq M1P<=M2P EQ1s EQ2s M1P<=M2Px
+    <- leq/>-inversion M1P<=M2Px P2 M1PR<=M2PR
+    <- plus-swap-succ P2 P2s
+    <- plus-associative-converse P2s P1 _ P1R P2Rc
+    <- plus-commutative P2Rc P2R
+    <- plus-implies-gt P1R nat`eq/ GT1R
+    <- fresh-update-preserves-leq-converse
+	M1PR<=M2PR (fresh/< GT1R) (update/< P1R) F2R U2R M1R<=M2R D1<=D2
+    <- shift-left-preserves-leq* M1R<=M2R (shift/+ P2R) M1<=M2.
+
+%theorem fresh-update-preserves-leq-converse/> :
+	forall*	{N1} {X1} {M1} {C1} {R1} {D1} {N}
+		{N2} {X2} {M2} {C2} {R2} {D2} {CC}
+	forall	{LP: leq (map/+ N1 X1 M1) (map/+ N2 X2 M2)}
+		{P1: plus (s C1) N1 N}
+		{F1: fresh R1 C1}
+		{U1: update R1 C1 D1 M1}
+		{P2: plus (s C2) N2 N}
+		{F2: fresh R2 C2}
+		{U2: update R2 C2 D2 M2}
+		{C12: nat`compare C1 C2 CC}
+	exists	{L: leq (map/+ N1 X1 R1) (map/+ N2 X2 R2)}
+		{DL: data`leq D1 D2}
+	true.
+
+- : fresh-update-preserves-leq-converse/> 
+	LP P1 F1 U1 P2 F2 U2 nat`compare/= 
+	(leq/= LR XL N1=N2) DL
+    <- plus-left-cancels P1 P2 nat`eq/ nat`eq/ N1=N2
+    <- leq/=-inversion LP N1=N2 XL LRP
+    <- fresh-update-preserves-leq-converse LRP F1 U1 F2 U2 LR DL.
+
+- : fresh-update-preserves-leq-converse/>
+	LP C1+1+N1=N F1 U1 C2+1+N2=N F2 U2 (nat`compare/< C2>C1)
+	(leq/> LR D+1+N2=N1) DL
+    <- gt-implies-plus C2>C1 D D+1+C1=C2
+    <- plus-swap-succ C2+1+N2=N C2+N2+1=N
+    <- plus-swap-succ D+1+C1=C2 D+C1+1=C2
+    <- plus-commutative D+C1+1=C2 C1+1+D=C2
+    <- plus-associative C1+1+D=C2 C2+N2+1=N X D+N2+1=X C1+1+X=N
+    <- plus-left-cancels C1+1+X=N C1+1+N1=N nat`eq/ nat`eq/ X=N1
+    <- plus-swap-succ-converse D+N2+1=X D+1+N2=X
+    <- plus-respects-eq D+1+N2=X nat`eq/ nat`eq/ X=N1 D+1+N2=N1
+    <- leq/>-inversion LP D+1+N2=N1 LRP
+    <- fresh-update-preserves-leq-converse 
+	LRP (fresh/> F1 C1+1+D=C2) (update/> U1 C1+1+D=C2) F2 U2 LR DL.
+
+- : fresh-update-preserves-leq-converse/>
+	LP P1 F1 U1 P2 F2 U2 (nat`compare/> C1>C2) L DL
+    <- succ-preserves-gt C1>C2 SC1>SC2
+    <- plus-left-reverses-gt P1 P2 SC1>SC2 nat`eq/ N2>N1
+    <- gt-implies-plus N2>N1 _ P
+    <- leq/<-contradiction LP P F
+    <- false-implies-leq F L
+    <- data`false-implies-leq F DL.
+
+- : {U1R: update R1 C1 D1 M1} fresh-update-preserves-leq-converse
+	M1P<=M2P (fresh/> F1R P1) U1 (fresh/> F2R P2) U2 M1<=M2 D1<=D2
+    <- update/>-inversion U1 P1 _ U1R EQ1
+    <- update/>-inversion U2 P2 _ U2R EQ2
+    <- eq-symmetric EQ1 EQ1s
+    <- eq-symmetric EQ2 EQ2s
+    <- leq-respects-eq M1P<=M2P EQ1s EQ2s M1PR<=M2PR
+    <- nat`compare-total C
+    <- fresh-update-preserves-leq-converse/>
+	M1PR<=M2PR P1 F1R U1R P2 F2R U2R C M1<=M2 D1<=D2.
+
+- : fresh-update-preserves-leq-converse
+	M1P<=M2P (fresh/> F1R P1) U1 fresh/0 update/0 L DL
+    <- update/>-inversion U1 P1 _ U1R EQ1
+    <- eq-symmetric EQ1 EQ1s
+    <- leq-respects-eq M1P<=M2P EQ1s eq/ M1Px<=M2P
+    <- leq/<-contradiction M1Px<=M2P P1 F
+    <- false-implies-leq F L
+    <- data`false-implies-leq F DL.
+
+- : fresh-update-preserves-leq-converse
+	M1P<=M2P (fresh/> F1R P1) U1 (fresh/< GT2) U2 L DL
+    <- update/>-inversion U1 P1 _ U1R EQ1
+    <- gt-implies-plus GT2 _ P2
+    <- update/<-inversion U2 P2 EQ2
+    <- eq-symmetric EQ1 EQ1s
+    <- eq-symmetric EQ2 EQ2s
+    <- leq-respects-eq M1P<=M2P EQ1s EQ2s M1PR<=M2PR
+    <- leq/<-contradiction M1PR<=M2PR P1 F
+    <- false-implies-leq F L
+    <- data`false-implies-leq F DL.
+
+%worlds (WORLDS) (fresh-update-preserves-leq-converse _ _ _ _ _ _ _)
+                 (fresh-update-preserves-leq-converse/> _ _ _ _ _ _ _ _ _ _).
+%total (F2a F2b)
+ 	(fresh-update-preserves-leq-converse _ F1a _ F2a _ _ _)
+        (fresh-update-preserves-leq-converse/> _ _ F1b _ _ F2b _ _ _ _).
 
 %theorem fresh-update-implies-leq :
 	forall* {M1} {N} {D} {M2}
