@@ -1198,7 +1198,7 @@ END_ELF
 
 - : meet-is-glb (meet/< M3<<N1=S1M3 M1*M022=M3 N0+1+N1=N2)
                 (leq/= M0<=M1 D0<=D1 nat`eq/) L2 L3
-    <- leq-contradiction L2 N0+1+N1=N2 F
+    <- leq/<-contradiction L2 N0+1+N1=N2 F
     <- false-implies-leq F L3.
 
 - : meet-is-glb (meet/< M3<<N1=S1M3 M1*M322=M3 N3+1+N1=N2)
