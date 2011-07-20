@@ -1938,6 +1938,35 @@ END_ELF
 %worlds (WORLDS) (fresh-update-implies-unit-join _ _ _).
 %total (F) (fresh-update-implies-unit-join F _ _).
 
+
+%theorem fresh-unit-join-implies-update:
+	forall*	{M} {N} {D} {MP}
+	forall	{F: fresh M N}
+		{J: join M (map/+ N D map/0) MP}
+	exists	{U: update M N D MP}
+	true.
+
+- : fresh-unit-join-implies-update _ join/L update/0.
+
+- : fresh-unit-join-implies-update
+	FR (join/= _ _ nat`eq/) U
+    <- fresh-contradiction FR F
+    <- false-implies-update F U.
+
+- : fresh-unit-join-implies-update
+	F (join/< J1 P) (update/> U1 P)
+    <- fresh/>-inversion F P F1
+    <- fresh-unit-join-implies-update F1 J1 U1.
+
+- : fresh-unit-join-implies-update
+	F (join/> J1 P) U
+    <- join-deterministic join/R J1 eq/ eq/ ME
+    <- map/+-preserves-eq nat`eq/ data`eq/ ME ME2
+    <- update-respects-eq (update/< P) eq/ nat`eq/ data`eq/ ME2 U.
+
+%worlds () (fresh-unit-join-implies-update _ _ _).
+%total (J) (fresh-unit-join-implies-update _ J _).
+
 %{%
 #ifdef MAP_LEQ
 #ifdef DATA_JOIN_IMPLIES_LEQ
