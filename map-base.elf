@@ -66,7 +66,7 @@ ne/< : lookup M1 N D -> fresh M2 N -> ne M1 M2.
 
 ne/> : fresh M1 N -> lookup M2 N D -> ne M1 M2.
 
-%{
+%{%
 #ifdef DATA_NE
 %}%
 ne/= : lookup M1 N D1 -> lookup M2 N D2 -> data`ne D1 D2 -> ne M1 M2.
@@ -474,6 +474,27 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds (WORLDS) (fresh-respects-eq _ _ _ _).
 %total {} (fresh-respects-eq _ _ _ _).
+
+
+%theorem fresh/>-inversion :
+	forall*	{M} {N} {D} {N1} {N2}
+	forall	{F: fresh (map/+ N D M) N1}
+		{P: plus (s N2) N N1}
+	exists	{F1: fresh M N2}
+	true.
+
+- : fresh/>-inversion (fresh/< G1) P FR
+    <- plus-implies-gt P nat`eq/ G
+    <- gt-anti-symmetric G1 G F
+    <- false-implies-fresh F FR.
+
+- : fresh/>-inversion (fresh/> F1 P1) P F
+    <- plus-right-cancels P1 P nat`eq/ nat`eq/ SEQ
+    <- succ-cancels SEQ EQ
+    <- fresh-respects-eq F1 eq/ EQ F.
+
+%worlds () (fresh/>-inversion _ _ _).
+%total { } (fresh/>-inversion _ _ _).
 
 
 %% fresh is NOT deterministic
@@ -1849,6 +1870,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %%% Theorems about update
 
+
 %theorem false-implies-update :
 	forall* {M} {N} {D} {MP} 
 	forall {F:void} 
@@ -1856,6 +1878,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 	true.
 %worlds (WORLDS) (false-implies-update _ %{=>}% M^N=D->MP).
 %total {} (false-implies-update _ _).
+
 
 %theorem update-respects-eq :
 	forall* {M1} {N} {D} {M2} {M1P} {NP} {DP} {M2P}
@@ -1968,6 +1991,16 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (update/>-inversion _ _ _ _ _).
 %total { } (update/>-inversion _ _ _ _ _).
 %reduces UP < U (update/>-inversion U _ _ UP _).
+
+
+%theorem update-contradiction :
+	forall* {M} {N} {D}
+	forall	{U: update M N D map/0}
+	exists	{F: void}
+	true.
+
+%worlds () (update-contradiction _ _).
+%total { } (update-contradiction _ _).
 
 
 %theorem update-deterministic :
@@ -2544,6 +2577,25 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total (F) (fresh-update-increases-size F _ _ _).
 
 				       
+%theorem fresh-update-increases-size-converse :
+	forall* {M1} {S} {N} {D} {M2}
+	forall	{S2: size M2 (s S)}
+		{F: fresh M1 N}
+		{U: update M1 N D M2}
+	exists	{S1: size M1 S}
+	true.
+
+- : fresh-update-increases-size-converse S2 F U S1
+    <- size-total S1P
+    <- fresh-update-increases-size S1P F U S2P
+    <- size-deterministic S2P S2 eq/ SNP=SN
+    <- succ-cancels SNP=SN NP=N 
+    <- size-respects-eq S1P eq/ NP=N S1.
+
+%worlds () (fresh-update-increases-size-converse _ _ _ _).
+%total { } (fresh-update-increases-size-converse _ _ _ _).
+
+
 %theorem fresh-update-preserves-disjoint :
 	forall* {M1} {M2} {N} {D} {M2P}
 	forall	{I: disjoint M1 M2}
@@ -2802,6 +2854,92 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (update-commutes* M^N1=D1->M1 M1^D2=N2->M12 N1<>N2 M^N2=D2->M2
                       %{=>}% M2^N1=D1->M12).
 %total {} (update-commutes* _ _ _ _ _). 
+
+
+%theorem fresh-update-cancels :
+	forall* {M1} {N1} {D1} {M1P}
+		{M2} {N2} {D2} {M2P}
+	forall	{F1: fresh M1 N1}
+		{U1: update M1 N1 D1 M1P}
+		{F2: fresh M2 N2}
+		{U2: update M2 N2 D2 M2P}
+		{NE: nat`eq N1 N2}
+		{DE: data`eq D1 D2}
+		{EQP: eq M1P M2P}
+	exists	{EQ: eq M1 M2}
+	true.
+
+% can never be update/=
+- : fresh-update-cancels _ _ FR (update/= nat`eq/) _ data`eq/ eq/ E
+    <- fresh-contradiction FR F
+    <- false-implies-eq F E.
+
+- : fresh-update-cancels FR (update/= nat`eq/) _ _ _ data`eq/ eq/ E
+    <- fresh-contradiction FR F
+    <- false-implies-eq F E.
+
+- : fresh-update-cancels fresh/0 update/0 _ _ nat`eq/ data`eq/ eq/ eq/.
+
+- : fresh-update-cancels fresh/0 update/0 
+	FR (update/> _ P) nat`eq/ data`eq/ eq/ E
+    <- plus-implies-gt P nat`eq/ GT
+    <- gt-anti-reflexive GT F
+    <- false-implies-eq F E.
+
+- : fresh-update-cancels 
+     (fresh/< GT1) U1 (fresh/< GT2) U2 nat`eq/ data`eq/ eq/ E
+    <- gt-implies-plus GT1 _ P1
+    <- update/<-inversion U1 P1 EQ1
+    <- gt-implies-plus GT2 _ P2
+    <- update/<-inversion U2 P2 EQ2
+    <- eq-symmetric EQ2 EQ2s
+    <- eq-transitive EQ1 EQ2s EQ12
+    <- map/+-preserves-eq-converse EQ12 _ _ EQ12R
+    <- map/+-preserves-eq-converse EQ12R NP1=NP2 DE RE
+    <- succ-deterministic NP1=NP2 SNP1=SNP2
+    <- plus-deterministic P1 P2 SNP1=SNP2 nat`eq/ N1=N2
+    <- map/+-preserves-eq N1=N2 DE RE E.
+    
+- : fresh-update-cancels 
+     (fresh/< GT1) U1 (fresh/> _ P2) U2 nat`eq/ data`eq/ eq/ E
+    <- gt-implies-plus GT1 _ P1
+    <- update/<-inversion U1 P1 EQ1
+    <- update/>-inversion U2 P2 _ _ EQ2
+    <- eq-symmetric EQ2 EQ2s
+    <- eq-transitive EQ1 EQ2s EQ12
+    <- map/+-preserves-eq-converse EQ12 NP1=NP2 _ _
+    <- plus-implies-gt P2 nat`eq/ NP1>NP2
+    <- gt-respects-eq NP1>NP2 NP1=NP2 nat`eq/ NP2>NP2
+    <- gt-anti-reflexive NP2>NP2 F
+    <- false-implies-eq F E.
+
+- : fresh-update-cancels 
+	(fresh/> F1 P1) UP1 (fresh/> F2 P2) UP2 nat`eq/ data`eq/ eq/ E
+    <- update/>-inversion UP1 P1 _ U1 EQ1
+    <- update/>-inversion UP2 P2 _ U2 EQ2
+    <- eq-symmetric EQ2 EQ2s
+    <- eq-transitive EQ1 EQ2s EQ12
+    <- map/+-preserves-eq-converse EQ12 NP1=NP2 D1=D2 MP1=MP2
+    <- plus-right-cancels P1 P2 NP1=NP2 nat`eq/ SN1=SN2
+    <- succ-cancels SN1=SN2 N1=N2
+    <- fresh-update-cancels F1 U1 F2 U2 N1=N2 data`eq/ MP1=MP2 M1=M2
+    <- map/+-preserves-eq NP1=NP2 D1=D2 M1=M2 E.
+
+- :  fresh-update-cancels 
+	(fresh/> F1 P1) UP1 (fresh/< GT2) UP2 nat`eq/ data`eq/ eq/ E
+    <- update/>-inversion UP1 P1 _ _ EQ1
+    <- gt-implies-plus GT2 _ P2
+    <- update/<-inversion UP2 P2 EQ2
+    <- eq-symmetric EQ2 EQ2s
+    <- eq-transitive EQ1 EQ2s EQ12
+    <- map/+-preserves-eq-converse EQ12 NP1=NP2 _ _
+    <- plus-implies-gt P1 nat`eq/ NP2>NP1
+    <- gt-respects-eq NP2>NP1 nat`eq/ NP1=NP2 NP2>NP2
+    <- gt-anti-reflexive NP2>NP2 F
+    <- false-implies-eq F E.
+
+%worlds (WORLDS) (fresh-update-cancels _ _ _ _ _ _ _ _).
+%total (F) (fresh-update-cancels F _ _ _ _ _ _ _).
 
 
 %% The following theorem is needed if you want to iteratively
