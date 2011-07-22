@@ -87,7 +87,11 @@
 	: add S1 X1 T1 -> eq S1 S2 -> nat`eq X1 X2 -> eq T1 T2 -> 
           add S2 X2 T2 -> type
 	= [A] [ES] [EX] [ET] [AP] update-respects-eq A ES EX unit`eq/ ET AP.
-%abbrev add-deterministic = update-deterministic.
+%abbrev add-deterministic 
+	: add S1 X1 T1 -> add S2 X2 T2 -> eq S1 S2 -> nat`eq X1 X2 ->
+	  eq T1 T2 -> type
+        = [A1] [A2] [ES] [EX] [ET] update-deterministic A1 A2 ES EX unit`eq/ ET.
+%abbrev add-unique = add-deterministic.
 %abbrev add-total* = update-total*.
 %abbrev add-total = update-total.
 %abbrev member-implies-add = lookup-implies-update.
