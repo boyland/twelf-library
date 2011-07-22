@@ -1,0 +1,190 @@
+%{%
+/*
+ * Using this functor:
+ * You should define the types from map-base.elf
+ * and also:
+ *   relation
+ *   allrelation
+ *   arg
+ *   leq (optional, used as arg`leq)
+ * We need the following theorems:
+ *   false-implies-relation
+ *   relation-respects-eq
+ *   relation-respects-leq (optional)
+ *
+ * If you are using "leq", you must define MAP_ALL_LEQ
+ */
+%}%
+
+
+%%%% Definitions
+
+
+
+allrelation : map -> arg -> type.
+
+allrelation/0 : allrelation map/0 S.
+
+allrelation/U :
+	allrelation SM1 S ->
+	relation N S1 S ->
+	update SM1 N S1 SM2 ->
+    allrelation SM2 S.
+
+
+
+
+%%%% Theorems
+
+
+
+%%% Theorems about allrelation
+
+
+%theorem false-implies-allrelation :
+	forall*	{M} {X}
+	forall	{F: void}
+	exists	{A: allrelation M X}
+	true.
+
+%worlds () (false-implies-allrelation _ _).
+%total { } (false-implies-allrelation _ _).
+
+
+%theorem allrelation-respects-eq :
+	forall*	{M1} {X1} {M2} {X2}
+	forall	{A1: allrelation M1 X1}
+		{ME: eq M1 M2}
+		{XE: arg`eq X1 X2}
+	exists	{A2: allrelation M2 X2}
+	true.
+
+- : allrelation-respects-eq A _ _ A.
+
+%worlds () (allrelation-respects-eq _ _ _ _).
+%total { } (allrelation-respects-eq _ _ _ _).
+
+%{%
+#ifdef UNDEF
+% not ready yet -- will take time.  Finish if needed.
+%theorem allrelation/U-inversion :
+	forall*	{M1} {M2} {X} {N} {D}
+	forall	{A2: allrelation M2 X}
+		{F: fresh M1 N}
+		{U: update M1 N D M2} 
+	exists	{A1: allrelation M1 X}
+		{R: relation N D X}
+	true.
+
+%theorem allrelation/U-inversion/L :
+	forall*	{N0} {D0} {M0} {X} {N} {D} {B0} {B} {M1} {M2}
+	forall	{A0: allrelation M0 X}
+		{R1: relation N0 D0 X}
+		{D0?: domain? M0 N0 B0}
+		{U0: update M0 N0 D0 M2}
+		{F1: fresh M1 N}
+		{U1: update M1 N D M2}
+		{EQ?: nat`eq? N N0 B}
+	exists	{A1: allrelation M1 X}
+		{R: relation N D X}		
+	true.
+
+- : allrelation/U-inversion/L A0 R1 U0 F1 U1 L nat`eq?/yes R
+    <- update-implies-lookup U1 L1
+    <- lookup-deterministic L1 L eq/ nat`eq/ D1=D
+    <- relation-respects-eq R1 nat`eq/ D1=D arg`eq/ R.
+
+- : allrelation-lookup-implies-relation/L 
+	A1 _ U L (nat`eq?/no N<>N1) R
+    <- update-preserves-lookup-converse L U N<>N1 L1
+    <- allrelation-lookup-implies-relation A1 L1 R.
+
+- : allrelation-lookup-implies-relation (allrelation/U A1 R1 U1) L R
+    <- nat`eq?-total EQ?
+    <- allrelation-lookup-implies-relation/L A1 R1 U1 L EQ? R.
+
+%worlds () (allrelation-lookup-implies-relation _ _ _)
+           (allrelation-lookup-implies-relation/L _ _ _ _ _ _).
+%total (A B) 
+	   (allrelation-lookup-implies-relation A _ _)
+           (allrelation-lookup-implies-relation/L B _ _ _ _ _).
+
+#endif
+%}%
+
+%theorem allrelation-lookup-implies-relation :
+	forall*	{M} {X} {N} {D}
+	forall	{A: allrelation M X}
+		{L: lookup M N D}
+	exists	{R: relation N D X}
+	true.
+
+%theorem allrelation-lookup-implies-relation/L :
+	forall*	{N1} {D1} {M1} {X} {N} {D} {B} {M2}
+	forall	{A: allrelation M1 X}
+		{R1: relation N1 D1 X}
+		{U: update M1 N1 D1 M2}
+		{L: lookup M2 N D}
+		{EQ?: nat`eq? N N1 B}
+	exists	{R: relation N D X}
+	true.
+
+- : allrelation-lookup-implies-relation/L _ R1 U1 L nat`eq?/yes R
+    <- update-implies-lookup U1 L1
+    <- lookup-deterministic L1 L eq/ nat`eq/ D1=D
+    <- relation-respects-eq R1 nat`eq/ D1=D arg`eq/ R.
+
+- : allrelation-lookup-implies-relation/L 
+	A1 _ U L (nat`eq?/no N<>N1) R
+    <- update-preserves-lookup-converse L U N<>N1 L1
+    <- allrelation-lookup-implies-relation A1 L1 R.
+
+- : allrelation-lookup-implies-relation (allrelation/U A1 R1 U1) L R
+    <- nat`eq?-total EQ?
+    <- allrelation-lookup-implies-relation/L A1 R1 U1 L EQ? R.
+
+%worlds () (allrelation-lookup-implies-relation _ _ _)
+           (allrelation-lookup-implies-relation/L _ _ _ _ _ _).
+%total (A B) 
+	   (allrelation-lookup-implies-relation A _ _)
+           (allrelation-lookup-implies-relation/L B _ _ _ _ _).
+
+
+%theorem relation-update-preserves-allrelation :
+	forall*	{M1} {X} {N} {D} {M2}
+	forall	{A1: allrelation M1 X}
+		{R: relation N D X}
+		{U: update M1 N D M2}
+	exists	{A2: allrelation M2 X}
+	true.
+
+- : relation-update-preserves-allrelation A R U (allrelation/U A R U).
+
+%worlds () (relation-update-preserves-allrelation _ _ _ _).
+%total { } (relation-update-preserves-allrelation _ _ _ _).
+
+%{%
+#ifdef MAP_ALL_LEQ
+%}%
+
+%theorem allrelation-respects-leq :
+	forall*	{M} {X1} {X2}
+	forall	{A1: allrelation M X1}
+		{L: arg`leq X1 X2}
+	exists	{A2: allrelation M X2}
+	true.
+
+- : allrelation-respects-leq allrelation/0 _ allrelation/0.
+
+- : allrelation-respects-leq
+	(allrelation/U A1 R1 U) XL
+	(allrelation/U A2 R2 U)
+    <- allrelation-respects-leq A1 XL A2
+    <- relation-respects-leq R1 XL R2.
+
+%worlds () (allrelation-respects-leq _ _ _).
+%total (A) (allrelation-respects-leq A _ _).
+
+%{%
+#endif
+%}%
