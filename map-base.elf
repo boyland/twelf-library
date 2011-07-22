@@ -2553,6 +2553,58 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (shift-preserves-update-converse _ _ _ _ _ _).
 
 
+%theorem shift-preserves-update-converse* :
+	forall* {M1} {N1} {D} {N0} {M2} {N2} {M2P} {M1P}
+        forall {U2:update M2 N2 D M2P}
+               {S:shift N0 M1 M2}
+               {P:plus (s N0) N1 N2}
+               {SS:shift N0 M1P M2P}
+	exists {U1:update M1 N1 D M1P}
+	true.
+
+- : shift-preserves-update-converse* U2 S P SS U1
+    <- shift-preserves-update-converse U2 S P _ SSP U1P
+    <- shift-cancels SSP SS nat`eq/ eq/ E
+    <- update-respects-eq U1P eq/ nat`eq/ data`eq/ E U1.
+
+%worlds (WORLDS) (shift-preserves-update-converse* _ _ _ _ _).
+%total { } (shift-preserves-update-converse* _ _ _ _ _).
+
+%theorem update-commutes-shift-converse :
+	forall* {M2} {N2} {D} {M2P} {N0} {M1P}
+        forall {U2:update M2 N2 D M2P}
+               {SS:shift N0 M1P M2P}
+        exists {N1} {M1}
+               {P:plus (s N0) N1 N2}
+               {S:shift N0 M1 M2}
+	       {U1:update M1 N1 D M1P}
+	true.
+
+- : update-commutes-shift-converse
+	update/0 (shift/+ P) _ _ P shift/0 update/0.
+
+- : update-commutes-shift-converse
+	(update/= nat`eq/) (shift/+ P) _ _ P (shift/+ P)
+	(update/= nat`eq/).
+
+- : update-commutes-shift-converse
+	(update/< D1+1+N=N1) (shift/+ D2+1+N2=N) _ _ D2+1+N2=N 
+	(shift/+ D2+1+N0=N1) (update/< D1+1+N2=N0)
+    <- plus-commutative D2+1+N2=N N2+D2+1=N
+    <- plus-associative-converse N2+D2+1=N D1+1+N=N1 N0 D1+1+N2=N0 N0+D2+1=N1
+    <- plus-commutative N0+D2+1=N1 D2+1+N0=N1.
+
+- : update-commutes-shift-converse
+	(update/> U D1+1+N=N1) (shift/+ D2+1+N2=N) _ _ D2+1+N0=N1
+	(shift/+ D2+1+N2=N) (update/> U D1+1+N2=N0)
+    <- plus-commutative D2+1+N2=N N2+D2+1=N
+    <- plus-associative-converse N2+D2+1=N D1+1+N=N1 N0 D1+1+N2=N0 N0+D2+1=N1
+    <- plus-commutative N0+D2+1=N1 D2+1+N0=N1.
+
+%worlds (WORLDS) (update-commutes-shift-converse _ _ _ _ _ _ _).
+%total { } (update-commutes-shift-converse _ _ _ _ _ _ _).
+
+
 %theorem fresh-update-increases-size :
 	forall* {M1} {S} {N} {D} {M2}
 	forall	{S1: size M1 S}
