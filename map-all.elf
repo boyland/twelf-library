@@ -64,9 +64,7 @@ allrelation/U :
 %worlds () (allrelation-respects-eq _ _ _ _).
 %total { } (allrelation-respects-eq _ _ _ _).
 
-%{%
-#ifdef UNDEF
-% not ready yet -- will take time.  Finish if needed.
+
 %theorem allrelation/U-inversion :
 	forall*	{M1} {M2} {X} {N} {D}
 	forall	{A2: allrelation M2 X}
@@ -89,28 +87,53 @@ allrelation/U :
 		{R: relation N D X}		
 	true.
 
-- : allrelation/U-inversion/L A0 R1 U0 F1 U1 L nat`eq?/yes R
-    <- update-implies-lookup U1 L1
-    <- lookup-deterministic L1 L eq/ nat`eq/ D1=D
-    <- relation-respects-eq R1 nat`eq/ D1=D arg`eq/ R.
+- : allrelation/U-inversion/L A0 R0 (domain?/out F0) U0 F1 U1 nat`eq?/yes A1 R1
+    <- fresh-update-cancels F0 U0 F1 U1 nat`eq/ eq/ D0=D1 M0=M1
+    <- allrelation-respects-eq A0 M0=M1 arg`eq/ A1
+    <- relation-respects-eq R0 nat`eq/ D0=D1 arg`eq/ R1.
 
-- : allrelation-lookup-implies-relation/L 
-	A1 _ U L (nat`eq?/no N<>N1) R
-    <- update-preserves-lookup-converse L U N<>N1 L1
-    <- allrelation-lookup-implies-relation A1 L1 R.
+- : allrelation/U-inversion/L A0 R0 (domain?/in L0) U0 F1 U1 nat`eq?/yes A1 R1
+    <- lookup-implies-update L0 UX
+    <- update-overwrites-converse UX U0 U0r
+    <- update-overwrites U1 U0r nat`eq/ U2
+    <- allrelation/U-inversion A0 F1 U2 A1 _
+    <- update-implies-lookup U0 L2P
+    <- update-implies-lookup U1 L2
+    <- lookup-deterministic L2P L2 eq/ nat`eq/ DE
+    <- relation-respects-eq R0 nat`eq/ DE arg`eq/ R1.
 
-- : allrelation-lookup-implies-relation (allrelation/U A1 R1 U1) L R
+- : allrelation/U-inversion/L 
+	A0 R0 _ U0 F1 U1 (nat`eq?/no N<>N1) (allrelation/U A2 R0 U3) R1
+    <- update-commutes-converse U1 U0 N<>N1 _ U3 U2
+    <- update-preserves-fresh-converse F1 U3 F2
+    <- allrelation/U-inversion A0 F2 U2 A2 R1.
+
+- : allrelation/U-inversion (allrelation/U A0 R0 U0) F U A1 R
+    <- domain?-total D?
     <- nat`eq?-total EQ?
-    <- allrelation-lookup-implies-relation/L A1 R1 U1 L EQ? R.
+    <- allrelation/U-inversion/L A0 R0 D? U0 F U EQ? A1 R.
 
-%worlds () (allrelation-lookup-implies-relation _ _ _)
-           (allrelation-lookup-implies-relation/L _ _ _ _ _ _).
+%worlds () (allrelation/U-inversion _ _ _ _ _)
+           (allrelation/U-inversion/L _ _ _ _ _ _ _ _ _).
 %total (A B) 
-	   (allrelation-lookup-implies-relation A _ _)
-           (allrelation-lookup-implies-relation/L B _ _ _ _ _).
+	   (allrelation/U-inversion A _ _ _ _)
+           (allrelation/U-inversion/L B _ _ _ _ _ _ _ _).
 
-#endif
-%}%
+
+%theorem fresh-update-preserves-allrelation-converse :
+	forall*	{M1} {M2} {X} {N} {D}
+	forall	{A2: allrelation M2 X}
+		{F: fresh M1 N}
+		{U: update M1 N D M2} 
+	exists	{A1: allrelation M1 X}
+	true.
+
+- : fresh-update-preserves-allrelation-converse A2 F U A1
+    <- allrelation/U-inversion A2 F U A1 _.
+
+%worlds () (fresh-update-preserves-allrelation-converse _ _ _ _).
+%total { } (fresh-update-preserves-allrelation-converse _ _ _ _).
+
 
 %theorem allrelation-lookup-implies-relation :
 	forall*	{M} {X} {N} {D}
@@ -118,6 +141,8 @@ allrelation/U :
 		{L: lookup M N D}
 	exists	{R: relation N D X}
 	true.
+
+% could rewrite using lookup-implies-fresh-update and allrelation/U-inversion
 
 %theorem allrelation-lookup-implies-relation/L :
 	forall*	{N1} {D1} {M1} {X} {N} {D} {B} {M2}
