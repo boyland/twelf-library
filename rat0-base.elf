@@ -513,6 +513,26 @@ END_ELF
 %total { } (add-right-cancels _ _ _ _ _).
 
 
+%theorem leq-implies-add :
+	forall*	{R1} {R2}
+	forall	{L: leq R1 R2}
+	exists	{R0}
+		{A: add R0 R1 R2}
+	true.
+
+- : leq-implies-add leq/Z _ add/R.
+
+- : leq-implies-add leq/ZQ _ add/R.
+
+- : leq-implies-add (leq/Q (rat`gre/= rat`eq/)) _ add/L.
+
+- : leq-implies-add (leq/Q (rat`gre/> GT)) _ (add/Q A)
+    <- rat`grt-implies-add GT _ A.
+
+%worlds () (leq-implies-add _ _ _).
+%total { } (leq-implies-add _ _ _).
+
+
 
 %%% Theorems about mul
 
