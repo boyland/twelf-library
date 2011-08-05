@@ -1099,6 +1099,23 @@ END_ELF
 %worlds (WORLDS) (join-left-cancels _ _ _ _ _).
 %total [J JP] (join-left-cancels J JP _ _ _).
 
+
+%theorem join-associative-cancel :
+	forall*	{M1} {M2} {M3} {M4} {M6} {M7}
+	forall	{J12: join M1 M2 M3}
+		{J34: join M3 M4 M7}
+		{J16: join M1 M6 M7}
+	exists	{J24: join M2 M4 M6}
+	true.
+
+- : join-associative-cancel J12 J34 J16 J24
+    <- join-associative J12 J34 M6P J24P J16P
+    <- join-left-cancels J16P J16 eq/ eq/ EQ6
+    <- join-respects-eq J24P eq/ eq/ EQ6 J24.
+
+%worlds () (join-associative-cancel _ _ _ _).
+%total { } (join-associative-cancel _ _ _ _).
+
 %{%
 /* Additionally if join is commutative, we define join-right-cancels */
 #ifdef DATA_JOIN_COMMUTATIVE
@@ -1118,6 +1135,23 @@ END_ELF
 
 %worlds (WORLDS) (join-right-cancels _ _ _ _ _).
 %total { } (join-right-cancels _ _ _ _ _).
+
+
+%theorem join-associative-converse-cancel :
+	forall*	{M1} {M2} {M3} {M4} {M6} {M7}
+	forall	{J24: join M2 M4 M6}
+		{J16: join M1 M6 M7}
+		{J34: join M3 M4 M7}
+	exists	{J12: join M1 M2 M3}
+	true.
+
+- : join-associative-converse-cancel J24 J16 J34 J12
+    <- join-associative-converse J24 J16 M3P J12P J34P
+    <- join-right-cancels J34P J34 eq/ eq/ EQ3
+    <- join-respects-eq J12P eq/ eq/ EQ3 J12.
+
+%worlds () (join-associative-converse-cancel _ _ _ _).
+%total { } (join-associative-converse-cancel _ _ _ _).
 
 %{%
 #endif
