@@ -374,6 +374,33 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 %total (D) (disjoint-join-total D _ _).
 
 
+%theorem disjoint-join-commutative :
+        forall* {M1} {M2} {M3}
+        forall  {D: disjoint M1 M2}
+                {J: join M1 M2 M3}
+        exists  {J: join M2 M1 M3}
+        true.
+
+- : disjoint-join-commutative _ join/L join/R.
+
+- : disjoint-join-commutative _ join/R join/L.
+
+- : disjoint-join-commutative D (join/= _ _ nat`eq/) J
+    <- disjoint/=-contradiction D nat`eq/ F
+    <- false-implies-join F J.
+
+- : disjoint-join-commutative D (join/< J1 P) (join/> J1P P)
+    <- disjoint/<-inversion D P D1
+    <- disjoint-join-commutative D1 J1 J1P.
+
+- : disjoint-join-commutative D (join/> J1 P) (join/< J1P P)
+    <- disjoint/>-inversion D P D1
+    <- disjoint-join-commutative D1 J1 J1P.
+
+%worlds () (disjoint-join-commutative _ _ _).
+%total (J) (disjoint-join-commutative _ J _).
+
+
 %theorem join-empty-implies-empty :
 	forall* {M1} {M2}
 	forall {A:join M1 M2 map/0}
@@ -529,8 +556,6 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 %worlds (WORLDS) (join-right-preserves-disjoint* _ _ _ _).
 %total { } (join-right-preserves-disjoint* _ _ _ _).
 
-%{%
-Too much work: we need to add a size to prove termination.
 
 %theorem join-preserves-disjoint-converse:
 	forall* {M1} {M2} {M3} {M4}
@@ -543,8 +568,7 @@ Too much work: we need to add a size to prove termination.
 	D join/L disjoint/L D.
 
 - : join-preserves-disjoint-converse
-	_ join/R
-	disjoint/L disjoint/L.
+	D join/R D disjoint/L.
 
 - : join-preserves-disjoint-converse
 	disjoint/R _
@@ -556,7 +580,190 @@ Too much work: we need to add a size to prove termination.
 	(disjoint/< D1 P) (disjoint/< D2 P)
     <- join-preserves-disjoint-converse D J D1 D2.
 
-%}%
+- : join-preserves-disjoint-converse
+        (disjoint/< D P1)
+        (join/< J P2)
+	(disjoint/< D1 P1) D2S
+    <- join-preserves-disjoint-converse D J D1 D2
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- shift-preserves-disjoint D2 (shift/+ P2sc) (shift/+ P1sc) D2S.
+
+- : join-preserves-disjoint-converse
+        (disjoint/< D P1)
+        (join/> J P2)
+	D1S (disjoint/< D2 P1)
+    <- join-preserves-disjoint-converse D J D1 D2
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- shift-preserves-disjoint D1 (shift/+ P2sc) (shift/+ P1sc) D1S.
+
+- : join-preserves-disjoint-converse
+	(disjoint/> D P1)
+	(join/= J DE nat`eq/)
+	D1S D2S
+    <- join-preserves-disjoint-converse D (join/= J DE nat`eq/) D1 D2
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- shift-left-preserves-disjoint D1 (shift/+ P1sc) D1S
+    <- shift-left-preserves-disjoint D2 (shift/+ P1sc) D2S.
+
+- : join-preserves-disjoint-converse
+	(disjoint/> D P1)
+	(join/< J P2)
+        D1S D2S
+    <- plus-swap-succ P1 P1s
+    <- plus-associative-converse P1s P2 _ P3 P4s
+    <- join-preserves-disjoint-converse D (join/< J P3) D1 D2
+    <- plus-commutative P1s P1sc
+    <- plus-commutative P4s P4sc
+    <- shift-left-preserves-disjoint D1 (shift/+ P1sc) D1S
+    <- shift-left-preserves-disjoint D2 (shift/+ P4sc) D2S.
+
+- : join-preserves-disjoint-converse
+	(disjoint/> D P1)
+	(join/> J P2)
+	D1S D2S
+    <- plus-swap-succ P1 P1s
+    <- plus-associative-converse P1s P2 _ P3 P4s
+    <- join-preserves-disjoint-converse D (join/> J P3) D1 D2
+    <- plus-commutative P1s P1sc
+    <- plus-commutative P4s P4sc
+    <- shift-left-preserves-disjoint D1 (shift/+ P4sc) D1S
+    <- shift-left-preserves-disjoint D2 (shift/+ P1sc) D2S.
+
+%worlds (WORLDS) (join-preserves-disjoint-converse _ _ _ _).
+%total (D) (join-preserves-disjoint-converse D _ _ _).
+
+
+%theorem disjoint-join-right-cancels :
+        forall* {A1} {B1} {C1} {A2} {B2} {C2}
+        forall  {D1: disjoint A1 B1}
+                {J1: join A1 B1 C1}
+                {D2: disjoint A2 B2}
+                {J2: join A2 B2 C2}
+                {EB: eq B1 B2}
+                {EC: eq C1 C2}
+        exists  {EA: eq A1 A2}
+        true.
+
+%theorem disjoint-join-right-cancels/L :
+	forall*	{A} {B} {C}
+	forall	{D: disjoint A B}
+		{J: join A B C}
+		{E: eq B C}
+	exists	{E: eq map/0 A}
+	true.
+
+- : disjoint-join-right-cancels/L A^B A+B=B eq/ Z=A
+    <- disjoint-symmetric A^B B^A
+    <- join-preserves-disjoint-converse B^A A+B=B A^A _
+    <- disjoint-anti-reflexive A^A Z=A.
+
+%worlds (WORLDS) (disjoint-join-right-cancels/L _ _ _ _).
+%total { } (disjoint-join-right-cancels/L _ _ _ _).
+
+- : disjoint-join-right-cancels
+        disjoint/L J1 A2^B J2 eq/ eq/ Z=A2
+    <- join-deterministic J1 join/L eq/ eq/ C=B
+    <- disjoint-join-right-cancels/L A2^B J2 C=B Z=A2.
+
+- : disjoint-join-right-cancels
+        A1^B J1 disjoint/L J2 eq/ eq/ A1=Z
+    <- join-deterministic J2 join/L eq/ eq/ C=B
+    <- disjoint-join-right-cancels/L A1^B J1 C=B Z=A1
+    <- eq-symmetric Z=A1 A1=Z.
+
+- : disjoint-join-right-cancels
+        disjoint/R J1 _ J2 eq/ eq/ A1=A2
+    <- join-deterministic J1 join/R eq/ eq/ A1=C
+    <- join-deterministic join/R J2 eq/ eq/ C=A2
+    <- eq-transitive A1=C C=A2 A1=A2.
+
+- : disjoint-join-right-cancels
+        (disjoint/< D1P P1) J1 (disjoint/< D2P P2) J2 
+        eq/ eq/ A111=A222
+    <- join/<-inversion J1 P1 _ J1P EQ1
+    <- join/<-inversion J2 P2 _ J2P EQ2
+    <- eq-symmetric EQ1 EQ1s
+    <- eq-transitive EQ1s EQ2 C114=C225
+    <- map/+-preserves-eq-converse C114=C225 N1=N2 D1=D2 C4=C5
+    <- plus-right-cancels P1 P2 N1=N2 nat`eq/ SN4=SN5
+    <- succ-cancels SN4=SN5 N4=N5
+    <- map/+-preserves-eq N4=N5 data`eq/ eq/ B4=B5
+    <- disjoint-join-right-cancels D1P J1P D2P J2P B4=B5 C4=C5 A1=A2
+    <- map/+-preserves-eq N1=N2 D1=D2 A1=A2 A111=A222.
+
+- : disjoint-join-right-cancels
+        (disjoint/< D1P P1) J1 (disjoint/> D2P P2) J2 
+        eq/ eq/ EQ
+    <- join/<-inversion J1 P1 _ J1P EQ1
+    <- join/>-inversion J2 P2 _ J2P EQ2
+    <- eq-symmetric EQ1 EQ1s
+    <- eq-transitive EQ1s EQ2 C114=C225
+    <- map/+-preserves-eq-converse C114=C225 N1=N2 _ _
+    <- plus-implies-gt P1 nat`eq/ N2>N1
+    <- gt-respects-eq N2>N1 nat`eq/ N1=N2 N2>N2
+    <- gt-anti-reflexive N2>N2 F
+    <- false-implies-eq F EQ.
+
+- : disjoint-join-right-cancels
+        (disjoint/> D1P P1) J1 (disjoint/< D2P P2) J2 
+        eq/ eq/ EQ
+    <- join/>-inversion J1 P1 _ J1P EQ1
+    <- join/<-inversion J2 P2 _ J2P EQ2
+    <- eq-symmetric EQ1 EQ1s
+    <- eq-transitive EQ1s EQ2 C114=C225
+    <- map/+-preserves-eq-converse C114=C225 N1=N2 _ _
+    <- plus-implies-gt P2 nat`eq/ N1>N2
+    <- gt-respects-eq N1>N2 N1=N2 nat`eq/ N2>N2
+    <- gt-anti-reflexive N2>N2 F
+    <- false-implies-eq F EQ.
+
+- : disjoint-join-right-cancels
+        (disjoint/> D1P P1) J1 (disjoint/> D2P P2) J2 
+        eq/ eq/ A111=A222
+    <- join/>-inversion J1 P1 _ J1P EQ1
+    <- join/>-inversion J2 P2 _ J2P EQ2
+    <- eq-symmetric EQ1 EQ1s
+    <- eq-transitive EQ1s EQ2 C114=C115
+    <- map/+-preserves-eq-converse C114=C115 _ _ C4=C5
+    <- disjoint-join-right-cancels D1P J1P D2P J2P eq/ C4=C5 A411=A511
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- shift-deterministic 
+        (shift/+ P1sc) (shift/+ P2sc) nat`eq/ A411=A511 A111=A222.
+
+%worlds () (disjoint-join-right-cancels _ _ _ _ _ _ _).
+%total (D) (disjoint-join-right-cancels D _ _ _ _ _ _).
+
+
+%theorem disjoint-join-left-cancels :
+        forall* {A1} {B1} {C1} {A2} {B2} {C2}
+        forall  {D1: disjoint A1 B1}
+                {J1: join A1 B1 C1}
+                {D2: disjoint A2 B2}
+                {J2: join A2 B2 C2}
+                {EB: eq A1 A2}
+                {EC: eq C1 C2}
+        exists  {EA: eq B1 B2}
+        true.
+
+- : disjoint-join-left-cancels D1 J1 D2 J2 EB EC EA
+    <- disjoint-join-commutative D1 J1 J1c
+    <- disjoint-join-commutative D2 J2 J2c
+    <- disjoint-symmetric D1 D1s
+    <- disjoint-symmetric D2 D2s
+    <- disjoint-join-right-cancels D1s J1c D2s J2c EB EC EA.
+
+%worlds () (disjoint-join-left-cancels _ _ _ _ _ _ _).
+%total { } (disjoint-join-left-cancels _ _ _ _ _ _ _).
 
 
 %theorem shift-left-preserves-join :
