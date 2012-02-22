@@ -580,6 +580,23 @@ nle/= : lookup M1 N D1 -> lookup M2 N D2 -> data`nle D1 D2 -> nle M1 M2.
 %total { } (disjoint-respects-geq _ _ _ _).
 
 
+%theorem disjoint-leq-implies-empty :
+        forall* {M1} {M2}
+        forall  {D: disjoint M1 M2}
+                {L: leq M1 M2}
+        exists  {E: eq map/0 M1}
+        true.
+
+
+- : disjoint-leq-implies-empty D L E
+    <- leq-reflexive _ M<=M
+    <- disjoint-respects-geq D M<=M L DD
+    <- disjoint-anti-reflexive DD E.
+
+%worlds () (disjoint-leq-implies-empty _ _ _).
+%total { } (disjoint-leq-implies-empty _ _ _).
+
+
 %theorem update-left-preserves-leq*:
 	forall* {M1} {M2} {N} {D} {M1P} {M2P}
 	forall {L:leq M1 M2} 
