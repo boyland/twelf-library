@@ -431,6 +431,21 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (lookup-one-choice _ _ _).
 %total { } (lookup-one-choice _ _ _).
 
+
+%theorem lookup-implies-ge :
+        forall* {N1} {D1} {M1} {N} {D}
+        forall  {L: lookup (map/+ N1 D1 M1) N D}
+        exists  {G: nat`ge N N1}
+        true.
+
+- : lookup-implies-ge (lookup/= nat`eq/) (nat`ge/= nat`eq/).
+
+- : lookup-implies-ge (lookup/> _ P) (nat`ge/> GT)
+    <- plus-implies-gt P nat`eq/ GT.
+    
+%worlds () (lookup-implies-ge _ _).
+%total { } (lookup-implies-ge _ _).
+
 %{%
 #ifdef DATA_NE
 %}%
@@ -1411,6 +1426,28 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 
 %abbrev bound-total = bound-total* _ _.
+
+
+%theorem bound-lookup-implies-gt :
+        forall* {M} {N} {D} {X}
+        forall  {B: bound M X}
+                {L: lookup M N D}
+        exists  {G: gt X N}
+        true.
+
+- : bound-lookup-implies-gt (bound/+ P _) (lookup/= nat`eq/) G
+    <- plus-swap-succ P Ps
+    <- plus-commutative Ps Psc
+    <- plus-implies-gt Psc (nat`eq/) G.
+
+- : bound-lookup-implies-gt (bound/+ P1 B) (lookup/> L P2) G
+    <- bound-lookup-implies-gt B L G1
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- plus-left-preserves-gt* G1 P1 P2sc G.
+
+%worlds () (bound-lookup-implies-gt _ _ _).
+%total (B) (bound-lookup-implies-gt B _ _).
 
 
 %theorem ge-bound-implies-fresh :
