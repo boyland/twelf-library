@@ -272,6 +272,24 @@ remove/ : leq C A -> disjoint B C -> union B C D -> leq A D -> remove A B C.
 %total { } (remove-characterization _ _ _ _ _).
 
 
+%theorem remove-preserves-member :
+        forall* {A} {B} {C} {X}
+        forall  {M: member A X}
+                {R: remove A B C}
+                {N: not-member B X}
+        exists  {M: member C X}
+        true.
+
+- : remove-preserves-member M1 R NM2 M3
+    <- union-total BUC=D
+    <- remove-implies-leq-union R BUC=D A<=D 
+    <- member-respects-leq M1 A<=D M4
+    <- not-member-union-left-preserves-member-converse NM2 M4 BUC=D M3.
+
+%worlds () (remove-preserves-member _ _ _ _).
+%total { } (remove-preserves-member _ _ _ _).
+
+
 %theorem remove-associates-union* :
 	forall*	{A} {B} {C} {D} {E} {F}
 	forall	{R1: remove A B C}
@@ -642,6 +660,47 @@ remove/ : leq C A -> disjoint B C -> union B C D -> leq A D -> remove A B C.
 
 %worlds () (remove-right-preserves-leq _ _ _ _).
 %total { } (remove-right-preserves-leq _ _ _ _).
+
+
+%theorem remove-left-inverts-leq :
+        forall* {A} {B} {C} {D} {E}
+        forall  {L: leq B D}
+                {R1: remove A B C}
+                {R2: remove A D E}
+        exists  {LP: leq E C}
+        true.
+
+%theorem remove-left-inverts-leq/L :
+        forall* {A} {B} {C} {D} {E} {X}
+        forall  {L: leq B D}
+                {R1: remove A B C}
+                {R2: remove A D E}
+                {L?: leq? E C X}
+        exists  {LP: leq E C}
+        true.
+
+- : remove-left-inverts-leq/L _ _ _ L L.
+
+- : remove-left-inverts-leq/L B<=D A-B=C A-D=E (nle/< X<-E X/<-C) L
+    <- remove-implies-leq A-D=E E<=A
+    <- member-respects-leq X<-E E<=A X<-A
+    <- remove-implies-disjoint A-D=E D^E
+    <- disjoint-symmetric D^E E^D
+    <- disjoint-member-implies-not-member X<-E E^D X/<-D
+    <- not-member-respects-geq X/<-D B<=D X/<-B
+    <- remove-preserves-member X<-A A-B=C X/<-B X<-C
+    <- member-not-member-contradiction X<-C X/<-C F
+    <- false-implies-leq F L.
+
+%worlds () (remove-left-inverts-leq/L _ _ _ _ _).
+%total { } (remove-left-inverts-leq/L _ _ _ _ _).
+
+- : remove-left-inverts-leq B<=D A-B=C A-D=E E<=C
+    <- leq?-total E<=C?
+    <- remove-left-inverts-leq/L B<=D A-B=C A-D=E E<=C? E<=C.
+
+%worlds () (remove-left-inverts-leq _ _ _ _).
+%total { } (remove-left-inverts-leq _ _ _ _).
 
 
 %theorem remove-right-preserves-disjoint :
