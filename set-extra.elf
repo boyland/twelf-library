@@ -243,6 +243,54 @@ END_ELF
 %total { } (leq-union-disjoint-implies-leq _ _ _ _).
 
 
+% not true for general maps.
+%theorem leq-size-eq-implies-eq :
+        forall* {S1} {S2} {Z1} {Z2}
+        forall  {L: leq S1 S2}
+                {SZ1: size S1 Z1}
+                {SZ2: size S2 Z2}
+                {EQZ: nat`eq Z1 Z2}
+        exists  {EQS: eq S1 S2}
+        true.
+
+%theorem leq-size-eq-implies-eq/L :
+        forall* {S1} {S2} {Z} {B}
+        forall  {L: leq S1 S2}
+                {SZ1: size S1 Z}
+                {SZ2: size S2 Z}
+                {LE?: leq? S2 S1 B}
+        exists  {EQS: eq S1 S2}
+        true.
+
+- : leq-size-eq-implies-eq/L S1<=S2 _ _ S2<=S1 S1=S2
+    <- leq-anti-symmetric S1<=S2 S2<=S1 S1=S2.
+
+- : leq-size-eq-implies-eq/L S1<=S2 SS1 SS2 (nle/< M2 NM1) EQ
+    <- member-implies-not-member-add M2 S3 NM3 S3+X=S2
+    <- size-total SS3
+    <- not-member-add-increases-size SS3 NM3 S3+X=S2 SS2P
+    <- size-unique SS2 SS2P eq/ Z=Z3+1
+    <- not-member-update-implies-unit-union NM3 S3+X=S2 S3UX=S2
+    <- union-commutative S3UX=S2 XUS3=S2
+    <- not-member-implies-unit-disjoint NM1 S1^X
+    <- leq-union-disjoint-implies-leq S1<=S2 XUS3=S2 S1^X S1<=S3
+    <- leq-implies-size-le S1<=S3 SS1 SS3 Z3>=Z
+    <- nat`ge-respects-eq Z3>=Z nat`eq/ Z=Z3+1 Z3>=Z3+1
+    <- ge-succ-implies-gt Z3>=Z3+1 Z3>Z3
+    <- gt-anti-reflexive Z3>Z3 F
+    <- false-implies-eq F EQ.
+
+%worlds () (leq-size-eq-implies-eq/L _ _ _ _ _).
+%total { } (leq-size-eq-implies-eq/L _ _ _ _ _).
+
+- : leq-size-eq-implies-eq L SZ1 SZ2 nat`eq/ EQ
+    <- leq?-total LEQ?
+    <- leq-size-eq-implies-eq/L L SZ1 SZ2 LEQ? EQ.
+
+%worlds () (leq-size-eq-implies-eq _ _ _ _ _).
+%total { } (leq-size-eq-implies-eq _ _ _ _ _).
+
+
 
 %%% set membership w.r.t. union:
 
@@ -293,6 +341,22 @@ END_ELF
 
 %worlds () (add-implies-leq _ _).
 %total { } (add-implies-leq _ _).
+
+
+%theorem add-member-preserves-leq :
+        forall* {S1} {S2} {S} {N}
+        forall  {L1: leq S1 S}
+                {A: add S1 N S2}
+                {M: lookup S N unit/}
+        exists  {L2: leq S2 S}
+        true.
+
+- : add-member-preserves-leq L1 A M L2
+    <- lookup-implies-update M AP
+    <- update-left-preserves-leq* L1 A AP L2.
+
+%worlds () (add-member-preserves-leq _ _ _ _).
+%total { } (add-member-preserves-leq _ _ _ _).
 
 
 %theorem unit-union-implies-add :
@@ -359,6 +423,25 @@ END_ELF
 
 %worlds () (union-right-preserves-member* _ _ _).
 %total { } (union-right-preserves-member* _ _ _).
+
+
+% not sure if this is the right way to express this lemma.
+%theorem add-member-right-preserves-union :
+        forall* {S1} {S2} {S3} {N} {S2P}
+        forall  {U1: union S1 S2 S3}
+                {A: add S2 N S2P}
+                {M: member S3 N}
+        exists  {U2: union S1 S2P S3}
+        true.
+
+- : add-member-right-preserves-union U1 A M U2
+    <- add-implies-unit-union A UU2
+    <- member-implies-add M A3
+    <- add-implies-unit-union A3 UU3
+    <- union-associative* U1 UU3 UU2 U2.
+
+%worlds () (add-member-right-preserves-union _ _ _ _).
+%total { } (add-member-right-preserves-union _ _ _ _).
 
 
 %theorem union-preserves-disjoint-converse:
