@@ -102,6 +102,14 @@ get/+ : get V N X ->
     get (vector/+ _ V) (s N) X.
 
 
+rget : vector N -> nat -> data -> type.
+
+rget/N : rget (vector/+ X (V:vector N)) N X.
+
+rget/+ : rget V N X ->
+    rget (vector/+ _ V) N X.
+
+
 
 %%% update
 
@@ -113,6 +121,14 @@ set/0 : set (vector/+ X1 V) nat`z X2 (vector/+ X2 V).
 
 set/+ : set V1 N X2 V2 ->
     set (vector/+ X1 V1) (s N) X2 (vector/+ X1 V2).
+
+
+rset : vector N -> nat -> data -> vector N -> type.
+
+rset/N : rset (vector/+ X1 (V:vector N)) N X2 (vector/+ X2 V).
+
+rset/+ : rset V1 N X2 V2 ->
+    rset (vector/+ X1 V1) N X2 (vector/+ X1 V2).
 
 
 %{%
@@ -591,6 +607,128 @@ dot/+ :
 %total (Z) (get-preserves-zero Z _ _).
 
 
+%%% Theorems about rget
+
+
+%theorem false-implies-rget:
+	forall*	{N} {V: vector N} {I} {X}
+	forall	{F: void}
+	exists	{G: rget V I X}
+	true.
+
+%worlds () (false-implies-rget _ _).
+%total { } (false-implies-rget _ _).
+
+
+%theorem rget-respects-eq:
+	forall* {N} {V1: vector N} {I1} {X1}
+		{V2: vector N} {I2} {X2}
+	forall	{G1: rget V1 I1 X1}
+		{EV: eq V1 V2}
+		{EN: nat`eq I1 I2}
+		{ED: data`eq X1 X2}
+	exists	{G2: rget V2 I2 X2}
+	true.
+
+- : rget-respects-eq G eq/ nat`eq/ data`eq/ G.
+
+%worlds () (rget-respects-eq _ _ _ _ _).
+%total { } (rget-respects-eq _ _ _ _ _).
+
+
+%theorem rget-implies-gt:
+	forall* {N} {V:vector N} {I} {X}
+	forall	{G: rget V I X}
+	exists	{GT: nat`gt N I}
+	true.
+
+- : rget-implies-gt rget/N nat`gt/1.
+
+- : rget-implies-gt (rget/+ G) (nat`gt/> GT)
+    <- rget-implies-gt G GT.
+
+%worlds () (rget-implies-gt _ _).
+%total (G) (rget-implies-gt G _).
+
+
+%theorem gt-implies-rget*:
+	forall* {N} {I} {V:vector N}
+	forall	{GT: nat`gt N I}
+	exists	{X} {G: rget V I X}
+	true.
+
+%abbrev gt-implies-rget : (nat`gt N I) -> (rget V I X) -> type
+	= [GT] [G] gt-implies-rget* GT _ G.
+
+- : gt-implies-rget* gt/1 _ rget/N.
+
+- : gt-implies-rget* (gt/> G) _ (rget/+ R)
+    <- gt-implies-rget* G _ R.
+
+%worlds () (gt-implies-rget* _ _ _).
+%total (G) (gt-implies-rget* G _ _).
+
+
+%theorem rget-deterministic:
+	forall* {N} {V1: vector N} {I1} {X1}
+		{V2: vector N} {I2} {X2}
+	forall	{G1: rget V1 I1 X1}
+		{G2: rget V2 I2 X2}
+		{EV: eq V1 V2}
+		{EN: nat`eq I1 I2}
+	exists	{ED: data`eq X1 X2}
+	true.
+
+%abbrev rget-unique = rget-deterministic.
+
+- : rget-deterministic rget/N rget/N _ _ data`eq/.
+
+- : rget-deterministic rget/N (rget/+ R) eq/ nat`eq/ EQ
+    <- rget-implies-gt R GT
+    <- nat`gt-anti-reflexive GT F
+    <- data`false-implies-eq F EQ.
+
+- : rget-deterministic (rget/+ R) rget/N eq/ nat`eq/ EQ
+    <- rget-implies-gt R GT
+    <- nat`gt-anti-reflexive GT F
+    <- data`false-implies-eq F EQ.
+
+- : rget-deterministic (rget/+ G1) (rget/+ G2) eq/ nat`eq/ DE
+    <- rget-deterministic G1 G2 eq/ nat`eq/ DE.
+
+%worlds () (rget-deterministic _ _ _ _ _).
+%total (G) (rget-deterministic G _ _ _ _).
+
+
+%theorem rget-preserves-zero:
+	forall* {N} {V:vector N} {I} {X}
+	forall	{Z:zero? V true}
+		{G: rget V I X}
+	exists	{E: data`eq X data`zero}
+	true.
+
+- : rget-preserves-zero (zero?/+ _) (rget/N) data`eq/.
+
+- : rget-preserves-zero (zero?/+ Z) (rget/+ G) E
+    <- rget-preserves-zero Z G E.
+
+%worlds () (rget-preserves-zero _ _ _).
+%total (Z) (rget-preserves-zero Z _ _).
+
+
+% The following theorem is NOT true for regular get:
+%theorem vector/+-preserves-rget :
+	forall*	{N} {V:vector N} {I} {X} {XP}
+	forall	{R: rget V I X}
+	exists	{RP: rget (vector/+ XP V) I X}
+	true.
+
+- : vector/+-preserves-rget R (rget/+ R).
+
+%worlds () (vector/+-preserves-rget _ _).
+%total { } (vector/+-preserves-rget _ _).
+
+
 
 %%% Theorems about set
 
@@ -774,6 +912,215 @@ dot/+ :
 %worlds () (set-preserves-get-converse _ _ _ _).
 %total (G) (set-preserves-get-converse G _ _ _).
 
+
+
+%%% Theorems about rset
+
+
+%theorem false-implies-rset:
+	forall*	{N} {V: vector N} {I} {X} {VP}
+	forall	{F: void}
+	exists	{G: rset V I X VP}
+	true.
+
+%worlds () (false-implies-rset _ _).
+%total { } (false-implies-rset _ _).
+
+
+%theorem rset-respects-eq:
+	forall* {N} {V1: vector N} {I1} {X1} {V3}
+		{V2: vector N} {I2} {X2} {V4}
+	forall	{G1: rset V1 I1 X1 V3}
+		{EV: eq V1 V2}
+		{EN: nat`eq I1 I2}
+		{ED: data`eq X1 X2}
+		{ER: eq V3 V4}
+	exists	{G2: rset V2 I2 X2 V4}
+	true.
+
+- : rset-respects-eq G eq/ nat`eq/ data`eq/ eq/ G.
+
+%worlds () (rset-respects-eq _ _ _ _ _ _).
+%total { } (rset-respects-eq _ _ _ _ _ _).
+
+
+%theorem rset-implies-rget:
+	forall* {N} {V: vector N} {I} {X} {VP}
+	forall	{S: rset V I X VP}
+	exists	{G: rget VP I X}
+	true.
+
+- : rset-implies-rget rset/N rget/N.
+
+- : rset-implies-rget (rset/+ S) (rget/+ G)
+    <- rset-implies-rget S G.
+
+%worlds () (rset-implies-rget _ _).
+%total (S) (rset-implies-rget S _).
+
+
+%theorem rset-implies-gt:
+	forall* {N} {V:vector N} {I} {X} {VP}
+	forall	{G: rset V I X VP}
+	exists	{GT: nat`gt N I}
+	true.
+
+- : rset-implies-gt RS GT
+    <- rset-implies-rget RS RG
+    <- rget-implies-gt RG GT.
+
+%worlds () (rset-implies-gt _ _).
+%total (G) (rset-implies-gt G _).
+
+
+%theorem gt-implies-rset*:
+	forall* {N} {V:vector N} {I} {X}
+	forall	{GT: nat`gt N I}
+	exists	{VP} {G: rset V I X VP}
+	true.
+
+%abbrev gt-implies-rset : (nat`gt N I) -> (rset V I X VP) -> type
+	= [GT] [S] gt-implies-rset* GT _ S.
+
+- : gt-implies-rset* gt/1 _ rset/N.
+
+- : gt-implies-rset* (gt/> GT) _ (rset/+ S)
+    <- gt-implies-rset* GT _ S.
+
+%worlds () (gt-implies-rset* _ _ _).
+%total (G) (gt-implies-rset* G _ _).
+
+
+%theorem rset-deterministic:
+	forall* {N} {V1: vector N} {I1} {X1} {V3}
+		{V2: vector N} {I2} {X2} {V4}
+	forall	{G1: rset V1 I1 X1 V3}
+		{G2: rset V2 I2 X2 V4}
+		{EV: eq V1 V2}
+		{EN: nat`eq I1 I2}
+		{ED: data`eq X1 X2}
+	exists	{ER: eq V3 V4}
+	true.
+
+%abbrev rset-unique = rset-deterministic.
+
+- : rset-deterministic rset/N rset/N _ _ data`eq/ eq/.
+
+- : rset-deterministic rset/N (rset/+ RS) eq/ nat`eq/ data`eq/ EQ
+    <- rset-implies-gt RS GT
+    <- gt-anti-reflexive GT F
+    <- false-implies-eq F EQ.
+
+- : rset-deterministic (rset/+ RS) rset/N eq/ nat`eq/ data`eq/ EQ
+    <- rset-implies-gt RS GT
+    <- gt-anti-reflexive GT F
+    <- false-implies-eq F EQ.
+
+- : rset-deterministic (rset/+ G1) (rset/+ G2) eq/ nat`eq/ data`eq/ EQ
+    <- rset-deterministic G1 G2 eq/ nat`eq/ data`eq/ EQP
+    <- vector/+-preserves-eq data`eq/ EQP EQ.
+
+%worlds () (rset-deterministic _ _ _ _ _ _).
+%total (G) (rset-deterministic G _ _ _ _ _).
+
+
+%theorem rset-idempotent:
+	forall* {N} {V: vector N} {I} {X} {VP}
+	forall	{S: rset V I X VP}
+	exists	{S: rset VP I X VP}
+	true.
+
+- : rset-idempotent rset/N rset/N.
+
+- : rset-idempotent (rset/+ S) (rset/+ SP)
+    <- rset-idempotent S SP.
+
+%worlds () (rset-idempotent _ _).
+%total (S) (rset-idempotent S _).
+
+	
+%theorem rset-overwrites:
+	forall* {N} {V: vector N} {I} {X1} {V1} {X2} {V2}
+	forall	{S1: rset V I X1 V1}
+		{S2: rset V1 I X2 V2}
+	exists	{S12: rset V I X2 V2}
+	true.
+
+- : rset-overwrites rset/N rset/N rset/N.
+
+- : rset-overwrites rset/N (rset/+ RS) RSP
+    <- rset-implies-gt RS GT
+    <- gt-anti-reflexive GT F
+    <- false-implies-rset F RSP.
+
+- : rset-overwrites (rset/+ RS) rset/N RSP
+    <- rset-implies-gt RS GT
+    <- gt-anti-reflexive GT F
+    <- false-implies-rset F RSP.
+
+- : rset-overwrites (rset/+ S1) (rset/+ S2) (rset/+ S12)
+    <- rset-overwrites S1 S2 S12.
+
+%worlds () (rset-overwrites _ _ _).
+%total (S) (rset-overwrites S _ _).
+
+
+%theorem rset-preserves-rget:
+	forall*	{N} {V1:vector N} {I1} {X1} {I2} {X2} {V2}
+	forall	{G: rget V1 I1 X1}
+		{S: rset V1 I2 X2 V2}
+		{N: nat`ne I1 I2}
+	exists	{G: rget V2 I1 X1}
+	true.
+
+- : rset-preserves-rget rget/N rset/N N<>N G
+    <- nat`eq-ne-implies-false nat`eq/ N<>N F
+    <- false-implies-rget F G.
+
+- : rset-preserves-rget rget/N (rset/+ S) _ rget/N.
+
+- : rset-preserves-rget (rget/+ G) rset/N _ (rget/+ G).
+
+- : rset-preserves-rget (rget/+ G) (rset/+ S) I1<>I2 (rget/+ GP)
+    <- rset-preserves-rget G S I1<>I2 GP.
+
+%worlds () (rset-preserves-rget _ _ _ _).
+%total (G) (rset-preserves-rget G _ _ _).
+
+
+%theorem rset-preserves-rget-converse:
+	forall*	{N} {V1:vector N} {I1} {X1} {I2} {X2} {V2}
+	forall	{G: rget V2 I1 X1}
+		{S: rset V1 I2 X2 V2}
+		{N: nat`ne I1 I2}
+	exists	{G: rget V1 I1 X1}
+	true.
+
+- : rset-preserves-rget-converse rget/N rset/N N<>N G
+    <- nat`eq-ne-implies-false nat`eq/ N<>N F
+    <- false-implies-rget F G.
+
+- : rset-preserves-rget-converse rget/N (rset/+ S) _ rget/N.
+
+- : rset-preserves-rget-converse (rget/+ G) rset/N _ (rget/+ G).
+
+- : rset-preserves-rget-converse (rget/+ G) (rset/+ S) I1<>I2 (rget/+ GP)
+    <- rset-preserves-rget-converse G S I1<>I2 GP.
+
+%worlds () (rset-preserves-rget-converse _ _ _ _).
+%total (G) (rset-preserves-rget-converse G _ _ _).
+
+
+%theorem vector/+-preserves-rset :
+	forall*	{N} {V:vector N} {I} {X} {VP} {XP}
+	forall	{RS: rset V I X VP}
+	exists	{RSP: rset (vector/+ XP V) I X (vector/+ XP VP)}
+	true.
+
+- : vector/+-preserves-rset RS (rset/+ RS).
+
+%worlds () (vector/+-preserves-rset _ _).
+%total { } (vector/+-preserves-rset _ _).
 
 
 %{%
