@@ -590,6 +590,9 @@ dot/+ :
 %worlds () (gt-implies-get* _ _ _ _).
 %total (I) (gt-implies-get* I _ _ _).
 
+%{%
+#ifdef DATA_ZERO
+%}%
 
 %theorem get-preserves-zero:
 	forall* {N} {V:vector N} {I} {X}
@@ -605,6 +608,10 @@ dot/+ :
 
 %worlds () (get-preserves-zero _ _ _).
 %total (Z) (get-preserves-zero Z _ _).
+
+%{%
+#endif
+%}%
 
 
 %%% Theorems about rget
@@ -699,6 +706,9 @@ dot/+ :
 %worlds () (rget-deterministic _ _ _ _ _).
 %total (G) (rget-deterministic G _ _ _ _).
 
+%{%
+#ifdef DATA_ZERO
+%}%
 
 %theorem rget-preserves-zero:
 	forall* {N} {V:vector N} {I} {X}
@@ -715,6 +725,9 @@ dot/+ :
 %worlds () (rget-preserves-zero _ _ _).
 %total (Z) (rget-preserves-zero Z _ _).
 
+%{%
+#endif
+%}%
 
 % The following theorem is NOT true for regular get:
 %theorem vector/+-preserves-rget :
