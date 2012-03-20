@@ -620,3 +620,24 @@ END_ELF
 %total { } (intersection-characterization _ _ _ _).
 
 
+
+%%% Theorems with min/max
+
+
+%theorem can-remove-min:
+	forall*	{S} {N1} {N2}
+	forall	{SZ: size S (s N1)}
+		{MN: min S N2}
+	exists	{SP}
+		{SZP: size SP N1}
+		{A: add SP N2 S}
+		{F: not-member SP N2}
+	true.
+
+- : can-remove-min SZ MN _ SZ1 A F
+    <- can-remove SZ (lookup/= nat`eq/) _ _ SZ1P EQs A F
+    <- succ-cancels EQs EQ
+    <- size-respects-eq SZ1P eq/ EQ SZ1.
+
+%worlds () (can-remove-min _ _ _ _ _ _).
+%total { } (can-remove-min _ _ _ _ _ _).
