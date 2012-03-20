@@ -2208,6 +2208,60 @@ END_ELF
 %worlds () (fresh-unit-join-implies-update _ _ _).
 %total (J) (fresh-unit-join-implies-update _ J _).
 
+
+%theorem bound-commute-join* :
+	forall* {M1} {M2} {M3} {N1} {N2} {N3}
+	forall	{B1: bound M1 N1}
+		{B2: bound M2 N2}
+		{B3: bound M3 N3}
+		{J: join M1 M2 M3}
+	exists	{MX: nat`max N1 N2 N3}
+	true.
+
+- : bound-commute-join* (bound/0) B2 B3 join/L M
+    <- bound-unique B2 B3 eq/ N2=N3
+    <- ge-zero-always _ N2>=0
+    <- nat`le-implies-max N2>=0 MP
+    <- nat`max-respects-eq MP nat`eq/ nat`eq/ N2=N3 M.
+
+- : bound-commute-join* B1 (bound/0) B3 join/R M
+    <- bound-unique B1 B3 eq/ N1=N3
+    <- ge-zero-always _ N1>=0
+    <- nat`ge-implies-max N1>=0 MP
+    <- nat`max-respects-eq MP nat`eq/ nat`eq/ N1=N3 M.
+
+- : bound-commute-join* 
+	(bound/+ P1 B1) (bound/+ P2 B2) (bound/+ P3 B3)
+	(join/= J _ nat`eq/) MP
+    <- bound-commute-join* B1 B2 B3 J M
+    <- plus-left-preserves-max M P1 P2 P3 MP.
+
+- : bound-commute-join*
+	(bound/+ P1 B1) (bound/+ P2 B2) (bound/+ P3 B3)
+	(join/< J P) MP
+    <- plus-swap-succ P Ps
+    <- plus-commutative Ps Psc
+    <- plus-swap-succ P2 P2s
+    <- plus-associative Psc P2s _ P2Ps PP2
+    <- plus-swap-succ-converse P2Ps P2P
+    <- bound-commute-join* B1 (bound/+ P2P B2) B3 J M
+    <- plus-left-preserves-max M P1 PP2 P3 MP.
+
+- : bound-commute-join*
+	(bound/+ P1 B1) (bound/+ P2 B2) (bound/+ P3 B3)
+	(join/> J P) MP
+    <- plus-swap-succ P Ps
+    <- plus-commutative Ps Psc
+    <- plus-swap-succ P1 P1s
+    <- plus-associative Psc P1s _ P1Ps PP1
+    <- plus-swap-succ-converse P1Ps P1P
+    <- bound-commute-join* (bound/+ P1P B1) B2 B3 J M
+    <- plus-left-preserves-max M PP1 P2 P3 MP.
+
+%worlds (WORLDS) (bound-commute-join* _ _ _ _ _).
+%total (J) (bound-commute-join* _ _ _ J _).
+
+
 %{%
 #ifdef MAP_LEQ
 #ifdef DATA_JOIN_IMPLIES_LEQ
