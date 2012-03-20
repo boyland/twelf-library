@@ -28,7 +28,7 @@ OPSRC = EQ.i GE.i LE.i LT.i NE.i RCMP.i RELN.i \
 	minmax.elf
 
 MAP = map-head.elf map-base.elf
-MAP_MORE = map-leq.elf map-join.elf map-meet.elf map-scale.elf map-domain.elf map-all.elf
+MAP_MORE = map-leq.elf map-join.elf map-meet.elf map-scale.elf map-domain.elf map-all.elf map-minmax.elf
 MAPSRC = ${MAP} ${MAP_MORE}
 
 SETSRC = set.cpp set-head.elf set-base.elf set-help.elf set-remove.elf \
@@ -85,7 +85,7 @@ map-export.elf : ${MAP}
 map-leq-export.elf : map-leq.elf
 	${GN} MAP map-leq.elf > map-leq-export.elf
 
-set.elf : ${SETSRC} ${MAPSRC}
+set.elf : ${SETSRC} ${MAPSRC} ${MAPMORE}
 
 multiset.elf : ${MSETSRC} ${MAPSRC}
 
