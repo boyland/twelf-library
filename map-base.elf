@@ -137,6 +137,10 @@ bound/+ : bound (map/+ N1 D M) N3
     <- plus (s N1) N2 N3.
 
 
+%worlds (WORLDS) (bound _ _).
+%unique bound +B -1N.
+
+
 
 shift : nat -> map -> map -> type.
 
@@ -145,6 +149,10 @@ shift/0 : shift _ map/0 map/0.
 
 shift/+ : shift N1 (map/+ N2 D M) (map/+ N3 D M)
     <- plus (s N1) N2 N3.
+
+
+%worlds (WORLDS) (shift _ _ _).
+%unique shift +N +M -1M3.
 
 
 
@@ -1408,6 +1416,40 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds (WORLDS) (false-implies-bound _ _).
 %total { } (false-implies-bound _ _).
+
+
+%theorem bound-respects-eq :
+	forall*	{M1} {N1} {M2} {N2}
+	forall	{B1: bound M1 N1}
+		{EM: eq M1 M2}
+		{EN: nat`eq N1 N2}
+	exists	{B2: bound M2 N2}
+	true.
+
+- : bound-respects-eq B _ _ B.
+
+%worlds (WORLDS) (bound-respects-eq _ _ _ _).
+%total { } (bound-respects-eq _ _ _ _).
+
+
+%theorem bound-unique :
+	forall*	{M1} {N1} {M2} {N2}
+	forall	{B1: bound M1 N1}
+		{B2: bound M2 N2}
+		{EM: eq M1 M2}
+	exists	{EN: nat`eq N1 N2}
+	true.
+
+%abbrev bound-deterministic = bound-unique.
+
+- : bound-unique bound/0 bound/0 _ nat`eq/.
+
+- : bound-unique (bound/+ P1 B1) (bound/+ P2 B2) eq/ EQ2
+    <- bound-unique B1 B2 eq/ EQ1
+    <- plus-unique P1 P2 nat`eq/ EQ1 EQ2.
+
+%worlds (WORLDS) (bound-unique _ _ _ _).
+%total (B) (bound-unique B _ _ _).
 
 
 %theorem bound-total* :
