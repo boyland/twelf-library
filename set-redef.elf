@@ -79,6 +79,18 @@
 	intersection-meets-lookup-converse 
 		A^B MC unit/ unit/ MA MB unit`union/.
 
+%abbrev max-implies-member :
+	max S N -> member S N -> type =
+	[MX] [ME] max-implies-lookup MX unit/ ME.
+
+%abbrev max-member-implies-ge = max-lookup-implies-ge.
+
+%abbrev min-implies-member :
+	min S N -> member S N -> type =
+	[MN] [ME] min-implies-lookup MN unit/ ME.
+
+%abbrev min-member-implies-ge = min-lookup-implies-ge.
+
 
 %% using "add"
 
