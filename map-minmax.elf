@@ -1,0 +1,325 @@
+%%%% Map min and max
+
+%{%
+#define MAP_MINMAX 1
+%}%
+
+
+%%% Definition of max and min
+
+
+%abbrev max : map -> nat -> type = [M] [N] bound M (s N).
+
+
+min : map -> nat -> type.
+
+min/+ : min (map/+ N D M) N.
+
+
+
+%%% Theorems about max
+
+
+%abbrev false-implies-max = false-implies-bound.
+
+
+%theorem max-respects-eq:
+	forall*	{M1} {N1} {M2} {N2}
+	forall	{MX1: max M1 N1}
+		{EM: eq M1 M2}
+		{EN: nat`eq N1 N2}
+	exists	{MX2: max M2 N2}
+	true.
+
+- : max-respects-eq M _ _ M.
+
+%worlds (WORLDS) (max-respects-eq _ _ _ _).
+%total { } (max-respects-eq _ _ _ _).
+
+
+%theorem max-unique :
+	forall*	{M1} {N1} {M2} {N2}
+	forall	{MX1: max M1 N1}
+		{MX2: max M2 N2}
+		{EM: eq M1 M2}
+	exists	{EN: nat`eq N1 N2}
+	true.
+
+%abbrev max-deterministic = max-unique.
+
+- : max-unique B1 B2 EQ1 EQ3
+    <- bound-unique B1 B2 EQ1 EQ2
+    <- succ-cancels EQ2 EQ3.
+
+%worlds (WORLDS) (max-unique _ _ _ _).
+%total (M) (max-unique M _ _ _).
+
+
+%theorem max-implies-lookup :
+	forall*	{M} {N}
+	forall	{MX: max M N}
+	exists	{D}
+		{L: lookup M N D}
+	true.
+
+- : max-implies-lookup (bound/+ (plus/s P) bound/0) _ (lookup/= EQ)
+    <- plus-right-identity _ PP
+    <- plus-unique PP P nat`eq/ nat`eq/ EQ.
+
+- : max-implies-lookup (bound/+ (plus/s P) B1) _ (lookup/> L1 Pc)
+    <- max-implies-lookup B1 _ L1
+    <- plus-commutative P Pc.
+
+%worlds (WORLDS) (max-implies-lookup _ _ _).
+%total (M) (max-implies-lookup M _ _).
+
+
+%theorem max-lookup-implies-ge :
+	forall*	{M} {N1} {N2} {D}
+	forall	{MX: max M N1}
+		{ML: lookup M N2 D}
+	exists	{GE: nat`ge N1 N2}
+	true.
+
+- : max-lookup-implies-ge B L GE
+    <- bound-lookup-implies-gt B L GT
+    <- succ-gt-implies-ge GT GE.
+
+%worlds (WORLDS) (max-lookup-implies-ge _ _ _).
+%total { } (max-lookup-implies-ge _ _ _).
+
+
+%theorem gt-max-implies-fresh :
+	forall*	{M} {N1} {N2}
+	forall	{MX: max M N1}
+		{GT: nat`gt N2 N1}
+	exists	{F: fresh M N2}
+	true.
+
+- : gt-max-implies-fresh B GT F
+    <- gt-implies-ge-succ GT GE
+    <- ge-bound-implies-fresh B GE F.
+
+%worlds (WORLDS) (gt-max-implies-fresh _ _ _).
+%total { } (gt-max-implies-fresh _ _ _).
+
+
+
+%%% Theorems about min
+
+
+%theorem false-implies-min :
+	forall* {M} {N}
+	forall {F:void}
+	exists {D:min M N}
+	true.
+
+%worlds (WORLDS) (false-implies-min _ _).
+%total {} (false-implies-min _ _).
+
+
+%theorem min-respects-eq :
+	forall* {M1} {M2} {N1} {N2}
+	forall {D1:min M1 N1} {E1:eq M1 M2} {E2:nat`eq N1 N2}
+	exists {D2:min M2 N2}
+	true.
+
+- : min-respects-eq M eq/ nat`eq/ M.
+
+%worlds (WORLDS) (min-respects-eq _ _ _ _).
+%total {} (min-respects-eq _ _ _ _).
+%reduces A = AP (join-respects-eq A _ _ _ AP).
+
+
+%% Inversion lemmas for map
+
+%theorem min/+-inversion :
+	forall* {M} {N}
+	forall {A:min M N}
+	exists {D} {MP} 
+               {E:eq M (map/+ N D MP)}
+	true.
+
+- : min/+-inversion min/+ _ _ eq/.
+
+%worlds (WORLDS) (min/+-inversion _ _ _ _).
+%total {} (min/+-inversion _ _ _ _).
+
+
+%theorem min-deterministic :
+	forall* {M1} {M2} {N1} {N2}
+	forall {A:min M1 N1} {D2:min M2 N2}
+               {E1:eq M1 M2}
+	exists {E3:nat`eq N1 N2}
+	true.
+
+%abbrev min-unique = min-deterministic.
+
+- : min-deterministic min/+ min/+ _ nat`eq/.
+
+%worlds (WORLDS) (min-deterministic _ _ _ _).
+%total { } (min-deterministic _ _ _ _).
+
+
+%theorem min-implies-lookup:
+	forall*	{M} {N}
+	forall	{D: min M N}
+	exists	{D}
+		{L: lookup M N D}
+	true.
+
+- : min-implies-lookup min/+ _ (lookup/= nat`eq/).
+
+%worlds (WORLDS) (min-implies-lookup _ _ _).
+%total { } (min-implies-lookup _ _ _).
+
+
+%theorem min-lookup-implies-ge:
+	forall*	{M} {N1} {N2} {D}
+	forall	{MN: min M N1}
+		{ML: lookup M N2 D}
+	exists	{G: nat`ge N2 N1}
+	true.
+
+- : min-lookup-implies-ge min/+ (lookup/= nat`eq/) (nat`ge/= nat`eq/).
+
+- : min-lookup-implies-ge min/+ L G
+    <- lookup-implies-ge L G.
+
+%worlds (WORLDS) (min-lookup-implies-ge _ _ _).
+%total { } (min-lookup-implies-ge _ _ _).
+
+
+%theorem min-gt-implies-fresh :
+	forall*	{M} {N} {NP}
+	forall	{D: min M N}
+		{G: nat`gt N NP}
+	exists	{F: fresh M NP}
+	true.
+
+- : min-gt-implies-fresh min/+ GT (fresh/< GT).
+
+%worlds (WORLDS) (min-gt-implies-fresh _ _ _).
+%total { } (min-gt-implies-fresh _ _ _).
+
+
+%theorem min-implies-max :
+	forall* {M} {N1}
+	forall	{MN: min M N1}
+	exists	{N2}
+		{MX: max M N2}
+	true.
+
+- : min-implies-max min/+ _ (bound/+ (plus/s P) B)
+    <- bound-total B
+    <- plus-total P.
+
+%worlds (WORLDS) (min-implies-max _ _ _).
+%total { } (min-implies-max _ _ _).
+
+
+%theorem max-implies-min:
+	forall* {M} {N1}
+	forall	{MN: max M N1}
+	exists	{N2}
+		{MX: min M N2}
+	true.
+
+- : max-implies-min _ _ min/+.
+
+%worlds (WORLDS) (max-implies-min _ _ _).
+%total { } (max-implies-min _ _ _).
+
+
+%theorem maxmin-implies-ge :
+	forall*	{M} {N1} {N2}
+	forall	{MX: max M N1}
+		{MN: min M N2}
+	exists	{GE: nat`ge N1 N2}
+	true.
+
+- : maxmin-implies-ge MX MN GE
+    <- min-implies-lookup MN _ LK
+    <- bound-lookup-implies-gt MX LK GT
+    <- succ-gt-implies-ge GT GE.
+
+%worlds (WORLDS) (maxmin-implies-ge _ _ _).
+%total { } (maxmin-implies-ge _ _ _).
+
+
+%{%
+#ifdef MAP_LEQ
+BEGIN_ELF
+%%% Theorems about min/max and leq
+
+END_ELF
+%}%
+
+%abbrev max-preserves-leq* = leq-implies-bound-le.
+
+%theorem min-reverses-leq* :
+	forall*	{M1} {N1} {M2} {N2}
+	forall	{LE:leq M1 M2}
+		{X1:min M1 N1}
+		{X2:min M2 N2}
+	exists	{LE:nat`ge N1 N2}
+	true.
+
+- : min-reverses-leq* (leq/= _ _ nat`eq/) min/+ min/+ (nat`ge/= nat`eq/).
+
+- : min-reverses-leq* (leq/> _ P) min/+ min/+ (nat`ge/> GT)
+    <- plus-implies-gt P nat`eq/ GT.
+
+%worlds (WORLDS) (min-reverses-leq* _ _ _ _).
+%total { } (min-reverses-leq* _ _ _ _).
+
+
+%{%
+#endif /* MAP_LEQ */
+#ifdef MAP_JOIN
+BEGIN_ELF
+%%% Theorems about minmax and join
+
+END_ELF
+%}%
+
+%theorem max-commute-join*:
+	forall*	{M1} {M2} {M3} {N1} {N2} {N3}
+	forall	{MX1: max M1 N1}
+		{MX2: max M2 N2}
+		{MX3: max M3 N3}
+		{J: join M1 M2 M3}
+	exists	{MX: nat`max N1 N2 N3}
+	true.
+
+- : max-commute-join* M1 M2 M3 J M
+    <- bound-commute-join* M1 M2 M3 J MP
+    <- succ-preserves-max-converse MP M.
+
+%worlds (WORLDS) (max-commute-join* _ _ _ _ _).
+%total { } (max-commute-join* _ _ _ _ _).
+
+
+%theorem min-commute-join*:
+	forall*	{M1} {M2} {M3} {N1} {N2} {N3}
+	forall	{MX1: min M1 N1}
+		{MX2: min M2 N2}
+		{MX3: min M3 N3}
+		{J: join M1 M2 M3}
+	exists	{MX: nat`min N1 N2 N3}
+	true.
+
+- : min-commute-join* min/+ min/+ min/+ (join/= _ _ nat`eq/) nat`min/=.
+
+- : min-commute-join* min/+ min/+ min/+ (join/< _ P) (nat`min/< G)
+    <- plus-implies-gt P nat`eq/ G.
+
+- : min-commute-join* min/+ min/+ min/+ (join/> _ P) (nat`min/> G)
+    <- plus-implies-gt P nat`eq/ G.
+
+%worlds (WORLDS) (min-commute-join* _ _ _ _ _).
+%total { } (min-commute-join* _ _ _ _ _).
+
+%{%
+#endif /* MAP_JOIN */
+%}%
