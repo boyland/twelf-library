@@ -82,3 +82,177 @@ END_ELF
 %worlds () (succ-preserves-max-converse _ _).
 %total { } (succ-preserves-max-converse _ _).
 
+
+%theorem plus-left-preserves-min :
+	forall*	{N1} {N2} {N3} {N4} {N5} {N6} {N7}
+	forall	{MN: min N1 N2 N3}
+		{P1: plus N4 N1 N5}
+		{P2: plus N4 N2 N6}
+		{P3: plus N4 N3 N7}
+	exists	{MN: min N5 N6 N7}
+	true.
+
+- : plus-left-preserves-min MN plus/z plus/z plus/z MN.
+
+- : plus-left-preserves-min MN0 (plus/s P1) (plus/s P2) (plus/s P3) MN2
+    <- plus-left-preserves-min MN0 P1 P2 P3 MN1
+    <- succ-preserves-min MN1 MN2.
+
+%worlds () (plus-left-preserves-min _ _ _ _ _).
+%total (P) (plus-left-preserves-min _ P _ _ _).
+
+
+%theorem  plus-right-preserves-min :
+	forall*	{N1} {N2} {N3} {N4} {N5} {N6} {N7}
+	forall	{MN: min N1 N2 N3}
+		{P1: plus N1 N4 N5}
+		{P2: plus N2 N4 N6}
+		{P3: plus N3 N4 N7}
+	exists	{MN: min N5 N6 N7}
+	true.
+
+- : plus-right-preserves-min MN P1 P2 P3 MNP
+    <- plus-commutative P1 P1c
+    <- plus-commutative P2 P2c
+    <- plus-commutative P3 P3c
+    <- plus-left-preserves-min MN P1c P2c P3c MNP.
+
+%worlds () (plus-right-preserves-min _ _ _ _ _).
+%total (P) (plus-right-preserves-min _ P _ _ _).
+
+
+%theorem plus-left-preserves-max :
+	forall*	{N1} {N2} {N3} {N4} {N5} {N6} {N7}
+	forall	{MN: max N1 N2 N3}
+		{P1: plus N4 N1 N5}
+		{P2: plus N4 N2 N6}
+		{P3: plus N4 N3 N7}
+	exists	{MN: max N5 N6 N7}
+	true.
+
+- : plus-left-preserves-max MN plus/z plus/z plus/z MN.
+
+- : plus-left-preserves-max MN0 (plus/s P1) (plus/s P2) (plus/s P3) MN2
+    <- plus-left-preserves-max MN0 P1 P2 P3 MN1
+    <- succ-preserves-max MN1 MN2.
+
+%worlds () (plus-left-preserves-max _ _ _ _ _).
+%total (P) (plus-left-preserves-max _ P _ _ _).
+
+
+%theorem  plus-right-preserves-max :
+	forall*	{N1} {N2} {N3} {N4} {N5} {N6} {N7}
+	forall	{MN: max N1 N2 N3}
+		{P1: plus N1 N4 N5}
+		{P2: plus N2 N4 N6}
+		{P3: plus N3 N4 N7}
+	exists	{MN: max N5 N6 N7}
+	true.
+
+- : plus-right-preserves-max MN P1 P2 P3 MNP
+    <- plus-commutative P1 P1c
+    <- plus-commutative P2 P2c
+    <- plus-commutative P3 P3c
+    <- plus-left-preserves-max MN P1c P2c P3c MNP.
+
+%worlds () (plus-right-preserves-max _ _ _ _ _).
+%total (P) (plus-right-preserves-max _ P _ _ _).
+
+
+%theorem times-left-preserves-min :
+	forall*	{N1} {N2} {N3} {N4} {N5} {N6} {N7}
+	forall	{MN: min N1 N2 N3}
+		{P1: times N4 N1 N5}
+		{P2: times N4 N2 N6}
+		{P3: times N4 N3 N7}
+	exists	{MN: min N5 N6 N7}
+	true.
+
+- : times-left-preserves-min _ times/z times/z times/z min/=.
+
+- : times-left-preserves-min min/= T1 T2 T3 M
+    <- times-unique T3 T1 eq/ eq/ N3=N1
+    <- times-unique T3 T2 eq/ eq/ N3=N2
+    <- min-respects-eq min/= N3=N1 N3=N2 eq/ M.
+
+- : times-left-preserves-min (min/< N2>N1) T1 T2 T3 M
+    <- times-left-preserves-gt N2>N1 T2 T1 N6>N5
+    <- times-unique T1 T3 eq/ eq/ N5=N7
+    <- min-respects-eq (min/< N6>N5) eq/ eq/ N5=N7 M.
+
+- : times-left-preserves-min (min/> N1>N2) T1 T2 T3 M
+    <- times-left-preserves-gt N1>N2 T1 T2 N5>N6
+    <- times-unique T2 T3 eq/ eq/ N6=N7
+    <- min-respects-eq (min/> N5>N6) eq/ eq/ N6=N7 M.
+
+%worlds () (times-left-preserves-min _ _ _ _ _).
+%total (P) (times-left-preserves-min _ P _ _ _).
+
+
+%theorem  times-right-preserves-min :
+	forall*	{N1} {N2} {N3} {N4} {N5} {N6} {N7}
+	forall	{MN: min N1 N2 N3}
+		{P1: times N1 N4 N5}
+		{P2: times N2 N4 N6}
+		{P3: times N3 N4 N7}
+	exists	{MN: min N5 N6 N7}
+	true.
+
+- : times-right-preserves-min MN P1 P2 P3 MNP
+    <- times-commutative P1 P1c
+    <- times-commutative P2 P2c
+    <- times-commutative P3 P3c
+    <- times-left-preserves-min MN P1c P2c P3c MNP.
+
+%worlds () (times-right-preserves-min _ _ _ _ _).
+%total (P) (times-right-preserves-min _ P _ _ _).
+
+
+%theorem times-left-preserves-max :
+	forall*	{N1} {N2} {N3} {N4} {N5} {N6} {N7}
+	forall	{MN: max N1 N2 N3}
+		{P1: times N4 N1 N5}
+		{P2: times N4 N2 N6}
+		{P3: times N4 N3 N7}
+	exists	{MN: max N5 N6 N7}
+	true.
+
+- : times-left-preserves-max _ times/z times/z times/z max/=.
+
+- : times-left-preserves-max max/= T1 T2 T3 M
+    <- times-unique T3 T1 eq/ eq/ N3=N1
+    <- times-unique T3 T2 eq/ eq/ N3=N2
+    <- max-respects-eq max/= N3=N1 N3=N2 eq/ M.
+
+- : times-left-preserves-max (max/< N2>N1) T1 T2 T3 M
+    <- times-left-preserves-gt N2>N1 T2 T1 N6>N5
+    <- times-unique T2 T3 eq/ eq/ N6=N7
+    <- max-respects-eq (max/< N6>N5) eq/ eq/ N6=N7 M.
+
+- : times-left-preserves-max (max/> N1>N2) T1 T2 T3 M
+    <- times-left-preserves-gt N1>N2 T1 T2 N5>N6
+    <- times-unique T1 T3 eq/ eq/ N5=N7
+    <- max-respects-eq (max/> N5>N6) eq/ eq/ N5=N7 M.
+
+%worlds () (times-left-preserves-max _ _ _ _ _).
+%total (P) (times-left-preserves-max _ P _ _ _).
+
+
+%theorem  times-right-preserves-max :
+	forall*	{N1} {N2} {N3} {N4} {N5} {N6} {N7}
+	forall	{MN: max N1 N2 N3}
+		{P1: times N1 N4 N5}
+		{P2: times N2 N4 N6}
+		{P3: times N3 N4 N7}
+	exists	{MN: max N5 N6 N7}
+	true.
+
+- : times-right-preserves-max MN P1 P2 P3 MNP
+    <- times-commutative P1 P1c
+    <- times-commutative P2 P2c
+    <- times-commutative P3 P3c
+    <- times-left-preserves-max MN P1c P2c P3c MNP.
+
+%worlds () (times-right-preserves-max _ _ _ _ _).
+%total (P) (times-right-preserves-max _ P _ _ _).
+
