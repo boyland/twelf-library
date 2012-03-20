@@ -26,6 +26,7 @@ BEGIN_ELF
 #include "map-leq.elf"
 #include "map-join.elf"
 #include "map-meet.elf"
+#include "map-minmax.elf"
 END_ELF
 %}%
 
