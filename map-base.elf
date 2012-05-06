@@ -12,6 +12,7 @@ map/0 : map.
 
 map/+ : nat -> data -> map -> map.
 
+%abbrev map/1 : nat -> data -> map = [N] [D] (map/+ N D map/0).
 
 
 %%%% Relations on maps
