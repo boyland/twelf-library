@@ -1,0 +1,813 @@
+%%%%% map-restrict.elf
+%%%%% Restricting a map to a domain inside a set.
+%%%%% This file is one of the add-ons to the map ``functor''
+%%%%% It requires set, map-base, map-join, map-domain
+
+
+%%%% Definitions
+
+
+%%% restriction
+
+restrict : map -> set -> map -> type.
+
+restrict/ : 
+	join M3 M2 M1 ->
+	domain M3 S3 ->
+	set`leq S3 S ->
+	domain M2 S2 ->
+	set`disjoint S2 S ->	
+    restrict M1 S M3.
+
+
+
+%%%% Theorems
+
+
+%%% Theorems about restrict
+
+
+%theorem false-implies-restrict :
+	forall* {S1} {S2} {S3}
+	forall {F:void}
+	exists {D:restrict S1 S2 S3}
+	true.
+
+%worlds () (false-implies-restrict _ _).
+%total {} (false-implies-restrict _ _).
+
+
+%theorem restrict-respects-eq :
+	forall* {S1} {S2} {S3} {T1} {T2} {T3}
+	forall {DS:restrict S1 S2 S3}
+               {E1:eq S1 T1} {E2:set`eq S2 T2} {E3:eq S3 T3}
+	exists {DT:restrict T1 T2 T3}
+	true.
+
+- : restrict-respects-eq R eq/ set`eq/ eq/ R.
+
+%worlds () (restrict-respects-eq _ _ _ _ _).
+%total {} (restrict-respects-eq _ _ _ _ _).
+%reduces R = RP (restrict-respects-eq R _ _ _ RP).
+
+
+%theorem restrict-total* :
+	forall {S1} {S2}
+	exists {S3} {R:restrict S1 S2 S3}
+	true.
+
+%abbrev restrict-total = restrict-total* _ _ _.
+
+%theorem restrict-total/L1 :
+        forall* {A} {S}
+	forall	{N}
+	       	{Z: size A N}
+        exists	{C} 
+		{R:restrict A S C}
+	true.
+
+- : restrict-total/L1 nat`z _ _ 
+	(restrict/ join/L domain/0 set`leq/0 domain/0 set`disjoint/L).
+
+%theorem restrict-total/L2 :
+        forall* {A} {S} {X} {B} {D}
+	forall	{N}
+	       	{Z: size A N}
+		{L: lookup A X D}
+		{M: set`member? S X B}
+        exists	{C} 
+		{R:restrict A S C}
+	true.
+
+- : restrict-total/L1 (s _) Z _ R
+    <- set`member?-total M?
+    <- restrict-total/L2 _ Z (lookup/= nat`eq/) M? _ R.
+
+- : restrict-total/L2 (s _) Z L (set`member?/in S<-X) _
+	(restrict/ CUB=A DC LE DB DJ) 
+    <- lookup-implies-fresh-update L _ A1</-X A1+X->D=A 
+    <- fresh-update-increases-size-converse Z A1</-X A1+X->D=A Z1
+    <- fresh-update-implies-unit-join A1</-X A1+X->D=A A1U<X->D>=A
+    <- restrict-total/L1 _ Z1 _ (restrict/ C1UB=A1 DC1 LE1 DB DJ)
+    <- join-commutative C1UB=A1 BUC1=A1
+    <- join-associative BUC1=A1 A1U<X->D>=A C C1U<X->D>=C BUC=A
+    <- join-commutative BUC=A CUB=A
+    <- set`member-implies-unit-leq S<-X X<=S
+    <- domain-total DC
+    <- join-commute-domain C1U<X->D>=C DC1 (domain/+ domain/0) DC CD1UX=CD
+    <- union-idempotent SUS=S
+    <- union-preserves-leq* LE1 X<=S CD1UX=CD SUS=S LE.
+
+- : restrict-total/L2 (s _) Z L (set`member?/out S</-X) _
+	(restrict/ CUB=A DC LE DB DJ)
+    <- lookup-implies-fresh-update L _ A1</-X A1+X->D=A 
+    <- fresh-update-increases-size-converse Z A1</-X A1+X->D=A Z1
+    <- fresh-update-implies-unit-join A1</-X A1+X->D=A A1U<X->D>=A
+    <- restrict-total/L1 _ Z1 _ (restrict/ CUB1=A1 DC LE DB1 DJ1)
+    <- join-associative CUB1=A1 A1U<X->D>=A B B1U<X->D>=B CUB=A
+    <- domain-total DB
+    <- join-commute-domain B1U<X->D>=B DB1 (domain/+ domain/0) DB BD1UX=BD
+    <- set`not-member-implies-unit-disjoint S</-X S^X
+    <- set`disjoint-symmetric S^X X^S
+    <- union-preserves-disjoint* DJ1 X^S BD1UX=BD DJ.
+
+%worlds () (restrict-total/L2 _ _ _ _ _ _)
+	   (restrict-total/L1 _ _ _ _).
+%total (N2 N1) 
+	   (restrict-total/L2 N2 _ _ _ _ _)
+	   (restrict-total/L1 N1 _ _ _).
+
+- : restrict-total R
+    <- size-total SZ
+    <- restrict-total/L1 _ SZ _ R.
+
+%worlds () (restrict-total* _ _ _ _).
+%total { } (restrict-total* _ _ _ _).
+
+
+%theorem restrict-unique :
+	forall* {S1} {S2} {S3} {T1} {T2} {T3}
+	forall {RS:restrict S1 S2 S3} {RT:restrict T1 T2 T3}
+	       {E1:eq S1 T1} {E2:set`eq S2 T2}
+	exists {E3:eq S3 T3}
+	true.
+
+%abbrev restrict-deterministic = restrict-unique.
+
+%theorem restrict-unique/L1 :
+	forall* {A} {S} {C} {E}
+	forall  {N} {SZ: size A N}
+		{RS1:restrict A S C}
+		{RS2:restrict A S E}
+	exists	{E3:eq C E}
+	true.
+
+- : restrict-unique R1 R2 eq/ set`eq/ EQ
+    <- size-total Z
+    <- restrict-unique/L1 _ Z R1 R2 EQ.
+
+- : restrict-unique/L1
+	z _
+	(restrict/ CUB=0 DC DC<=S DB DB^S)
+	(restrict/ EUD=0 DE DE<=S DD DD^S) C=E
+    <- join-empty-implies-empty CUB=0 C=0 _
+    <- join-empty-implies-empty EUD=0 E=0 _
+    <- eq-symmetric E=0 ZERO=E
+    <- eq-transitive C=0 ZERO=E C=E.
+
+%theorem restrict-unique/L2:
+	forall* {A} {S} {C} {E} {X} {D} {B}
+	forall  {N} {SZ: size A N}
+		{L: lookup A X D}
+		{M?: set`member? S X B}
+		{RS1:restrict A S C}
+		{RS2:restrict A S E}
+	exists	{E3:eq C E}
+	true.
+
+- : restrict-unique/L1 _ Z R1 R2 EQ
+    <- set`member?-total M?
+    <- restrict-unique/L2 _ Z (lookup/= nat`eq/) M? R1 R2 EQ.
+
+%theorem restrict-unique/L3 :
+	forall* {A} {B} {C} {A1} {X} {D}
+	forall	{J: join C B A}
+		{F: fresh B X}
+		{F1: fresh A1 X}
+		{L: update A1 X D A}
+	exists  {C1}
+		{F2: fresh C1 X}
+		{U1: update C1 X D C}
+		{J1: join C1 B A1}
+	true.
+
+- : restrict-unique/L3 
+	CUB=A B-/>X A1-/>X A1+X->D=A C1 
+	C1-/>X C1+X->D=C C1UB=A1
+    <- update-implies-lookup A1+X->D=A L
+    <- fresh-join-right-preserves-lookup-converse L B-/>X CUB=A LC
+    <- lookup-implies-fresh-update LC C1 C1-/>X C1+X->D=C
+    <- fresh-update-implies-unit-join C1-/>X C1+X->D=C C1U<X->D>=C
+    <- join-commutative C1U<X->D>=C I<X->D>UC1=C
+    <- join-associative I<X->D>UC1=C CUB=A A1C C1UB=A1C I<X->D>UA1C=A
+    <- join-commutative I<X->D>UA1C=A A1CU<X->D>=A
+    <- join-preserves-fresh* C1-/>X B-/>X C1UB=A1C A1C-/>X
+    <- fresh-unit-join-implies-update A1C-/>X A1CU<X->D>=A A1C+X->D=A
+    <- fresh-update-cancels A1C-/>X A1C+X->D=A A1-/>X A1+X->D=A nat`eq/ eq/
+	_ A1C=A1
+    <- join-respects-eq C1UB=A1C eq/ eq/ A1C=A1 C1UB=A1.
+
+%worlds () (restrict-unique/L3 _ _ _ _ _ _ _ _).
+%total { } (restrict-unique/L3 _ _ _ _ _ _ _ _).
+
+%theorem restrict-unique/L3c :
+	forall* {A} {B} {C} {A1} {X} {D}
+	forall	{J: join C B A}
+		{F: fresh C X}
+		{F1: fresh A1 X}
+		{L: update A1 X D A}
+	exists  {B1}
+		{F2: fresh B1 X}
+		{U1: update B1 X D B}
+		{J1: join C B1 A1}
+	true.
+
+- : restrict-unique/L3c J F F1 L B1 F2 U1 J1
+    <- join-commutative J Jc
+    <- restrict-unique/L3 Jc F F1 L B1 F2 U1 J1c
+    <- join-commutative J1c J1.
+
+%worlds () (restrict-unique/L3c _ _ _ _ _ _ _ _).
+%total { } (restrict-unique/L3c _ _ _ _ _ _ _ _).
+
+- : restrict-unique/L2 _ Z L (member?/in S->X) 
+	(restrict/ CUB=A DC DC<=S DB DB^S)
+	(restrict/ EUD=A DE DE<=S DD DD^S) C=E
+    <- lookup-implies-fresh-update L _ A1-/>X A1+X->D=A 
+    <- fresh-update-increases-size-converse Z A1-/>X A1+X->D=A Z1
+    <- fresh-update-implies-unit-join A1-/>X A1+X->D=A A1U<X->D>=A
+    <- domain-total DA
+    <- join-commute-domain CUB=A DC DB DA DCUDB=DA
+    <- join-commute-domain EUD=A DE DD DA DEUDD=DA
+    <- domain-preserves-lookup L DA DA->X
+    <- set`disjoint-symmetric DB^S S^DB
+    <- set`disjoint-symmetric DD^S S^DD
+    <- disjoint-member-implies-not-member S->X S^DB DB-/>X
+    <- disjoint-member-implies-not-member S->X S^DD DD-/>X
+    <- domain-preserves-fresh-converse DB-/>X DB B-/>X
+    <- domain-preserves-fresh-converse DD-/>X DD D-/>X
+    <- restrict-unique/L3 
+	CUB=A B-/>X A1-/>X A1+X->D=A C1 C1-/>X C1+X->D=C C1UB=A1
+    <- restrict-unique/L3 
+	EUD=A D-/>X A1-/>X A1+X->D=A E1 E1-/>X E1+X->D=E E1UD=A1
+    <- domain-total DC1
+    <- domain-total DE1
+    <- update-commute-domain C1+X->D=C DC1 DC DC1+X=DC
+    <- update-commute-domain E1+X->D=E DE1 DE DE1+X=DE
+    <- set`add-implies-leq DC1+X=DC DC1<=DC
+    <- set`add-implies-leq DE1+X=DE DE1<=DE
+    <- set`leq-transitive DC1<=DC DC<=S DC1<=S
+    <- set`leq-transitive DE1<=DE DE<=S DE1<=S
+    <- restrict-unique/L1 _ Z1
+	(restrict/ C1UB=A1 DC1 DC1<=S DB DB^S)
+	(restrict/ E1UD=A1 DE1 DE1<=S DD DD^S) C1=E1
+    <- update-unique C1+X->D=C E1+X->D=E C1=E1 nat`eq/ data`eq/ C=E.
+
+- : restrict-unique/L2 _ Z L (member?/out S-/>X) 
+	(restrict/ CUB=A DC DC<=S DB DB^S)
+	(restrict/ EUD=A DE DE<=S DD DD^S) C=E
+    <- lookup-implies-fresh-update L _ A1-/>X A1+X->D=A 
+    <- fresh-update-increases-size-converse Z A1-/>X A1+X->D=A Z1
+    <- fresh-update-implies-unit-join A1-/>X A1+X->D=A A1U<X->D>=A
+    <- not-member-respects-geq S-/>X DC<=S DC-/>X
+    <- not-member-respects-geq S-/>X DE<=S DE-/>X
+    <- domain-preserves-fresh-converse DC-/>X DC C-/>X
+    <- domain-preserves-fresh-converse DE-/>X DE E-/>X
+    <- domain-total DA
+    <- join-commute-domain CUB=A DC DB DA DCUDB=DA
+    <- join-commute-domain EUD=A DE DD DA DEUDD=DA
+    <- domain-preserves-lookup L DA DA->X
+    <- restrict-unique/L3c
+	CUB=A C-/>X A1-/>X A1+X->D=A B1 B1-/>X B1+X->D=B CUB1=A1
+    <- restrict-unique/L3c 
+	EUD=A E-/>X A1-/>X A1+X->D=A D1 D1-/>X D1+X->D=D EUD1=A1
+    <- domain-total DB1
+    <- domain-total DD1
+    <- update-commute-domain B1+X->D=B DB1 DB DB1+X=DB
+    <- update-commute-domain D1+X->D=D DD1 DD DD1+X=DD
+    <- set`add-implies-leq DB1+X=DB DB1<=DB
+    <- set`add-implies-leq DD1+X=DD DD1<=DD
+    <- set`disjoint-respects-geq* DB^S DB1<=DB DB1^S
+    <- set`disjoint-respects-geq* DD^S DD1<=DD DD1^S
+    <- restrict-unique/L1 _ Z1
+	(restrict/ CUB1=A1 DC DC<=S DB1 DB1^S)
+	(restrict/ EUD1=A1 DE DE<=S DD1 DD1^S) C=E.
+
+%worlds () (restrict-unique/L2 _ _ _ _ _ _ _)
+	   (restrict-unique/L1 _ _ _ _ _).
+%total (N1 N2) (restrict-unique/L2 N2 _ _ _ _ _ _)
+	       (restrict-unique/L1 N1 _ _ _ _).
+
+%worlds () (restrict-unique _ _ _ _ _).
+%total { } (restrict-unique _ _ _ _ _).
+
+
+%theorem restrict-implies-leq :
+	forall* {S1} {S2} {S3}
+	forall {D:restrict S1 S2 S3}
+	exists {L:leq S3 S1}
+	true.
+
+- : restrict-implies-leq (restrict/ J _ _ _ _) L
+    <- join-implies-leq J L _.
+
+%worlds () (restrict-implies-leq _ _).
+%total { } (restrict-implies-leq _ _).
+
+
+%theorem restrict-implies-domain-leq :
+	forall* {A} {S} {C}
+	forall	{R:restrict A S C}
+	exists	{DC}
+		{D: domain C DC}
+		{L: set`leq DC S}
+	true.
+
+- : restrict-implies-domain-leq (restrict/ _ D L _ _) _ D L.
+
+%worlds () (restrict-implies-domain-leq _ _ _ _).
+%total { } (restrict-implies-domain-leq _ _ _ _).
+
+
+%theorem restrict-implies-domain-leq* :
+	forall* {A} {S} {C} {DC}
+	forall	{R:restrict A S C}
+		{D: domain C DC}
+	exists	{L: set`leq DC S}
+	true.
+
+- : restrict-implies-domain-leq* R D L
+    <- restrict-implies-domain-leq R _ DP LP
+    <- domain-unique DP D eq/ DP=D
+    <- set`leq-respects-eq LP DP=D set`eq/ L.
+
+%worlds () (restrict-implies-domain-leq* _ _ _).
+%total { } (restrict-implies-domain-leq* _ _ _).
+
+
+%theorem restrict-implies-domain-intersection* :
+	forall* {A} {S} {C} {DC} {DA}
+	forall	{R: restrict A S C}
+		{D1: domain A DA}
+		{D2: domain C DC}
+	exists	{L: set`intersection DA S DC}
+	true.
+
+- : restrict-implies-domain-intersection* 
+	(restrict/ CUB=A DCP DCP<=S DB DB^S) DA DC I
+    <- domain-unique DCP DC eq/ DCP=DC
+    <- set`leq-respects-eq DCP<=S DCP=DC set`eq/ DC<=S
+    <- set`leq-implies-union DC<=S DCUS=S
+    <- join-commute-domain CUB=A DC DB DA DCUDB=DA
+    <- set`intersection-characterization DCUDB=DA DCUS=S DB^S I.
+ 
+%worlds () (restrict-implies-domain-intersection* _ _ _ _).
+%total { } (restrict-implies-domain-intersection* _ _ _ _).
+
+
+%theorem restrict-preserves-lookup:
+	forall* {A} {S} {C} {X} {D}
+	forall	{L: lookup A X D}
+		{R: restrict A S C}
+		{L: set`member S X}
+	exists	{L: lookup C X D}
+	true.
+
+- : restrict-preserves-lookup LA (restrict/ CUB=A DC DC<=S DB DB^S) S->X LC
+    <- domain-total DA
+    <- domain-preserves-lookup LA DA DA->X
+    <- set`disjoint-symmetric DB^S S^DB
+    <- disjoint-member-implies-not-member S->X S^DB DB-/>X
+    <- domain-preserves-fresh-converse DB-/>X DB B-/>X
+    <- fresh-join-right-preserves-lookup-converse LA B-/>X CUB=A LC.
+
+%worlds () (restrict-preserves-lookup _ _ _ _).
+%total { } (restrict-preserves-lookup _ _ _ _).
+
+
+%theorem domain-leq-implies-no-restriction:
+	forall*	{A} {S} {D}
+	forall	{X: domain A D}
+		{L: set`leq D S}
+	exists	{R: restrict A S A}
+	true.
+
+- : domain-leq-implies-no-restriction D L 
+	(restrict/ join/R D L domain/0 set`disjoint/L).
+
+%worlds () (domain-leq-implies-no-restriction _ _ _).
+%total { } (domain-leq-implies-no-restriction _ _ _).
+
+
+%theorem domain-disjoint-implies-restrict-empty:
+	forall*	{A} {S} {D}
+	forall	{X: domain A D}
+		{L: set`disjoint D S}
+	exists	{R: restrict A S map/0}
+	true.
+
+- : domain-disjoint-implies-restrict-empty D D^S
+	(restrict/ join/L domain/0 set`leq/0 D D^S).
+
+%worlds () (domain-disjoint-implies-restrict-empty _ _ _).
+%total { } (domain-disjoint-implies-restrict-empty _ _ _).
+
+
+%theorem restrict-characterization:
+	forall*	{A} {B} {C} {DB} {DC} {S}
+	forall	{J1: join C B A}
+		{D2: domain C DC}
+		{L3: set`leq DC S}
+		{D4: domain B DB}
+		{D5: set`disjoint DB S}
+	exists	{R: restrict A S C}
+	true.
+
+- : restrict-characterization D1 D2 D3 D4 D5 (restrict/ D1 D2 D3 D4 D5).
+
+%worlds () (restrict-characterization _ _ _ _ _ _).
+%total { } (restrict-characterization _ _ _ _ _ _).
+
+
+%theorem restrict-left-preserves-disjoint:
+	forall*	{A} {C} {E} {S} {T}
+	forall	{D: set`disjoint S T}
+		{R1: restrict A S C}
+		{R2: restrict A T E}
+	exists	{D: disjoint C E}
+	true.
+
+- : restrict-left-preserves-disjoint S^T
+	(restrict/ CUB=A DC DC<=S DB DB^S)
+	(restrict/ EUD=A DE DE<=T DD DD^T) C^E
+    <- set`disjoint-symmetric DB^S S^DB
+    <- set`disjoint-symmetric DD^T T^DD
+    <- set`disjoint-respects-geq* S^DB DC<=S DC^DB
+    <- set`disjoint-respects-geq* T^DD DE<=T DE^DD
+    <- set`disjoint-respects-geq S^T DC<=S DE<=T DC^DE
+    <- domain-preserves-disjoint-converse DC^DE DC DE C^E.
+
+%worlds () (restrict-left-preserves-disjoint _ _ _ _).
+%total { } (restrict-left-preserves-disjoint _ _ _ _).
+
+
+% trivial but no reason not to define:
+%theorem restrict-right-preserves-disjoint:
+	forall*	{A} {C} {E} {G} {S} {T}
+	forall	{D: disjoint A E}
+		{R1: restrict A S C}
+		{R2: restrict E T G}
+	exists	{D: disjoint C G}
+	true.
+
+- : restrict-right-preserves-disjoint A^E A|S=C E|T=G C^G
+    <- restrict-implies-leq A|S=C C<=A 
+    <- restrict-implies-leq E|T=G G<=E
+    <- disjoint-respects-geq A^E C<=A G<=E C^G.
+
+%worlds () (restrict-right-preserves-disjoint _ _ _ _).
+%total { } (restrict-right-preserves-disjoint _ _ _ _).
+
+
+%theorem restrict-associates-disjoint-union* :
+	forall*	{A} {C} {E} {G} {S} {T} {U}
+	forall	{R1: restrict A S C}
+		{R2: restrict A T E}
+		{D: set`disjoint S T}
+		{U1: union S T U}
+		{J2: join C E G}
+	exists	{R3: restrict A U G}
+	true.
+
+- : restrict-associates-disjoint-union* 
+	(restrict/ CUB=A DC DC<=S DB DB^S)
+	(restrict/ EUD=A DE DE<=T DD DD^T) S^T SUT=V CUE=G
+	(restrict/ GUF=A DG DG<=V DF DF^V)
+    <- set`disjoint-symmetric DB^S S^DB
+    <- set`disjoint-symmetric DD^T T^DD
+    <- set`disjoint-respects-geq* S^DB DC<=S DC^DB
+    <- set`disjoint-respects-geq* T^DD DE<=T DE^DD
+    <- domain-preserves-disjoint-converse DC^DB DC DB C^B
+    <- domain-preserves-disjoint-converse DE^DD DE DD E^D
+    <- set`disjoint-respects-geq S^T DC<=S DE<=T DC^DE
+    <- domain-preserves-disjoint-converse DC^DE DC DE C^E
+    <- disjoint-join-cross-comparable C^B CUB=A E^D EUD=A CE CP EP F
+	CEUCP=C EPUF=B CEUEP=E CPUF=D
+    <- join-implies-leq CEUCP=C CE<=C _
+    <- join-implies-leq CEUEP=E CE<=E _
+    <- disjoint-respects-geq C^E CE<=C CE<=E CE^CE
+    <- disjoint-anti-reflexive CE^CE ZERO=CE
+    <- join-unique join/L CEUCP=C ZERO=CE eq/ CP=C
+    <- join-unique join/L CEUEP=E ZERO=CE eq/ EP=E
+    <- join-respects-eq EPUF=B EP=E eq/ eq/ EUF=B
+    <- join-respects-eq CPUF=D CP=C eq/ eq/ CUF=D
+    <- join-associative-converse* EUF=B CUB=A CUE=G GUF=A
+    <- domain-total DF
+    <- domain-total DG
+    <- join-commute-domain CUE=G DC DE DG DCUDE=DG
+    <- union-implies-leq SUT=V S<=V T<=V
+    <- set`leq-transitive DC<=S S<=V DC<=V
+    <- set`leq-transitive DE<=T T<=V DE<=V
+    <- union-is-lub DCUDE=DG DC<=V DE<=V DG<=V
+    <- join-implies-leq EUF=B _ F<=B
+    <- join-implies-leq CUF=D _ F<=D
+    <- domain-preserves-leq* F<=B DF DB DF<=DB
+    <- domain-preserves-leq* F<=D DF DD DF<=DD
+    <- set`disjoint-respects-geq* DB^S DF<=DB DF^S 
+    <- set`disjoint-respects-geq* DD^T DF<=DD DF^T
+    <- set`union-right-preserves-disjoint* DF^S DF^T SUT=V DF^V.
+
+%worlds () (restrict-associates-disjoint-union* _ _ _ _ _ _).
+%total { } (restrict-associates-disjoint-union* _ _ _ _ _ _).
+
+
+%theorem restrict-associates-disjoint-union-converse* :
+	forall*	{A} {C} {E} {G} {S} {T} {U}
+	forall	{R1: restrict A S C}
+		{R2: restrict A T E}
+		{D: set`disjoint S T}
+		{U1: union S T U}
+		{R3: restrict A U G}
+	exists	{J2: join C E G}
+	true.
+
+- : restrict-associates-disjoint-union-converse*
+	A|S=C A|T=E S^T SUT=V A|U=G CUE=G
+    <- restrict-left-preserves-disjoint S^T A|S=C A|T=E C^E
+    <- disjoint-join-total C^E GP CUE=GP
+    <- restrict-associates-disjoint-union* A|S=C A|T=E S^T SUT=V CUE=GP A|U=GP
+    <- restrict-unique A|U=GP A|U=G eq/ set`eq/ GP=G
+    <- join-respects-eq CUE=GP eq/ eq/ GP=G CUE=G.
+
+%worlds () (restrict-associates-disjoint-union-converse* _ _ _ _ _ _).
+%total { } (restrict-associates-disjoint-union-converse* _ _ _ _ _ _).
+
+
+%theorem restrict-left-preserves-disjoint-union:
+	forall*	{A} {C} {E} {G} {S} {T} {U}
+	forall	{D: set`disjoint S T}
+		{U1: union S T U}
+		{R1: restrict A S C}
+		{R2: restrict A T E}
+		{R3: restrict A U G}
+	exists	{D2: disjoint C E}
+		{J2: join C E G}
+	true.
+
+- : restrict-left-preserves-disjoint-union S^T SUT=V A|S=C A|T=E A|U=G C^E CUE=G
+    <- restrict-left-preserves-disjoint S^T A|S=C A|T=E C^E
+    <- restrict-associates-disjoint-union-converse* 
+	A|S=C A|T=E S^T SUT=V A|U=G CUE=G.
+
+%worlds () (restrict-left-preserves-disjoint-union _ _ _ _ _ _ _).
+%total { } (restrict-left-preserves-disjoint-union _ _ _ _ _ _ _).
+
+
+%theorem restrict-associates-join* :
+	forall*	{A} {C} {D} {F} {G} {I} {S}
+	forall	{R1: restrict A S C}
+		{R2: restrict D S F}
+		{U1: join A D G}
+		{J2: join C F I}
+	exists	{R3: restrict G S I}
+	true.
+
+- : restrict-associates-join*
+	(restrict/ CUB=A DC DC<=S DB DB^S)
+	(restrict/ FUE=D DF DF<=S DE DE^S)
+	AUD=G CUF=I
+	(restrict/ IUH=G DI DI<=S DH DH^S)
+    <- join-double-associative CUB=A FUE=D AUD=G IP H CUF=IP BUE=H IPUH=G
+    <- join-unique CUF=IP CUF=I eq/ eq/ IP=I
+    <- join-respects-eq IPUH=G IP=I eq/ eq/ IUH=G
+    <- domain-total DI
+    <- domain-total DH
+    <- join-commute-domain CUF=I DC DF DI DCUDF=DI
+    <- join-commute-domain BUE=H DB DE DH DBUDE=DH
+    <- union-is-lub DCUDF=DI DC<=S DF<=S DI<=S
+    <- set`union-left-preserves-disjoint* DB^S DE^S DBUDE=DH DH^S.
+
+%worlds () (restrict-associates-join* _ _ _ _ _).
+%total { } (restrict-associates-join* _ _ _ _ _).
+
+
+%theorem join-commute-restrict* :
+	forall*	{M1} {M2} {M3} {S} {M1P} {M2P} {M3P}
+	forall	{J: join M1 M2 M3}
+		{R1: restrict M1 S M1P}
+		{R2: restrict M2 S M2P}
+		{R3: restrict M3 S M3P}
+	exists	{J: join M1P M2P M3P}
+	true.
+
+%abbrev restrict-right-preserves-join = join-commute-restrict*.
+
+- : join-commute-restrict* 
+	A1UA2=A3
+	(restrict/ C1UB1=A1 DC1 DC1<=S DB1 DB1^S)
+	(restrict/ C2UB2=A2 DC2 DC2<=S DB2 DB2^S)
+	A3|S=C3
+	C1UC2=C3
+    <- join-double-associative C1UB1=A1 C2UB2=A2 A1UA2=A3 C3P B3P
+	C1UC2=C3P B1UB2=B3P C3PUB3P=A3P
+    <- restrict-associates-join*
+	(restrict/ C1UB1=A1 DC1 DC1<=S DB1 DB1^S)
+	(restrict/ C2UB2=A2 DC2 DC2<=S DB2 DB2^S)
+	A1UA2=A3 C1UC2=C3P A3|S=C3P
+    <- restrict-unique A3|S=C3P A3|S=C3 eq/ set`eq/ C3P=CP
+    <- join-respects-eq C1UC2=C3P eq/ eq/ C3P=CP C1UC2=C3.
+    
+%worlds () (join-commute-restrict* _ _ _ _ _).
+%total { } (join-commute-restrict* _ _ _ _ _).
+% NB: converse isn't true or else AUB=C for all A,B,C (think S=0)
+
+
+%theorem restrict-associates-disjoint-union-converse :
+	forall*	{A} {S} {T} {V} {G}
+	forall	{D: set`disjoint S T}
+		{U: union S T V}
+		{R3: restrict A V G}
+	exists	{C} {E}
+		{R1: restrict A S C}
+		{R2: restrict A T E}
+		{D: disjoint C E}
+		{J: join C E G}
+	true.
+
+- : restrict-associates-disjoint-union-converse S^T SUT=V A|V=G C E
+	A|S=C A|T=E C^E CUE=G
+    <- restrict-total A|S=C 
+    <- restrict-total A|T=E
+    <- restrict-left-preserves-disjoint-union S^T SUT=V A|S=C A|T=E A|V=G
+	C^E CUE=G.
+
+%worlds () (restrict-associates-disjoint-union-converse _ _ _ _ _ _ _ _ _).
+%total { } (restrict-associates-disjoint-union-converse _ _ _ _ _ _ _ _ _).
+
+
+%theorem restrict-reorders* :
+	forall*	{A} {B} {C} {D} {E} {F}
+	forall	{R1: restrict A B C}
+		{R2: restrict C D E}
+		{R3: restrict A D F}
+	exists	{R4: restrict F B E}
+	true.
+
+- : restrict-reorders* A|S=C C|T=E 
+	(restrict/ GUF=A DG DG<=T DF DF^T) G|S=E
+    <- restrict-total G|S=EP
+    <- restrict-total F|S=D   % D not mentioned elsewhere
+    <- restrict-right-preserves-join GUF=A G|S=EP F|S=D A|S=C EPUD=C
+    <- domain-total DEP
+    <- restrict-implies-domain-intersection* G|S=EP DG DEP DG^S=DEP
+    <- intersection-implies-leq DG^S=DEP DEP<=DG DEP<=S
+    <- set`leq-transitive DEP<=DG DG<=T DEP<=T
+    <- domain-leq-implies-no-restriction DEP DEP<=T EP|T=EP
+    <- domain-total DD
+    <- restrict-implies-domain-intersection* F|S=D DF DD DF^S=DD
+    <- intersection-implies-leq DF^S=DD DD<=DF _
+    <- set`disjoint-respects-geq* DF^T DD<=DF DD^T
+    <- domain-disjoint-implies-restrict-empty DD DD^T D|T=0
+    <- restrict-right-preserves-join EPUD=C EP|T=EP D|T=0 C|T=E EPU0=E
+    <- join-unique join/R EPU0=E eq/ eq/ EP=E
+    <- restrict-respects-eq G|S=EP eq/ set`eq/ EP=E G|S=E.
+
+%worlds () (restrict-reorders* _ _ _ _).
+%total { } (restrict-reorders* _ _ _ _).
+
+
+%theorem restrict-reorders :
+	forall*	{A} {B} {C} {D} {E}
+	forall	{R1: restrict A B C}
+		{R2: restrict C D E}
+	exists	{F}
+		{R3: restrict A D F}
+		{R4: restrict F B E}
+	true.
+
+- : restrict-reorders A|B=C C|D=E G A|D=G G|B=E
+    <- restrict-total A|D=G
+    <- restrict-reorders* A|B=C C|D=E A|D=G G|B=E.
+
+%worlds () (restrict-reorders _ _ _ _ _).
+%total { } (restrict-reorders _ _ _ _ _).
+
+%theorem restrict-right-preserves-leq :
+	forall*	{A} {B} {C} {D} {E}
+	forall	{L: leq A D}
+		{R: restrict A B C}
+		{RP: restrict D B E}
+	exists	{LP: leq C E}
+	true.
+
+- : restrict-right-preserves-leq A<=D A|S=C D|S=F C<=F
+    <- leq-implies-join A<=D G GUA=D
+    <- restrict-total G|S=H
+    <- restrict-right-preserves-join GUA=D G|S=H A|S=C D|S=F HUC=F
+    <- join-implies-leq HUC=F _ C<=F.
+
+%worlds () (restrict-right-preserves-leq _ _ _ _).
+%total { } (restrict-right-preserves-leq _ _ _ _).
+
+
+%theorem restrict-left-preserves-leq :
+        forall* {A} {B} {C} {D} {E}
+        forall  {L: set`leq B D}
+                {R1: restrict A B C}
+                {R2: restrict A D E}
+        exists  {LP: leq C E}
+        true.
+
+- : restrict-left-preserves-leq S<=T
+	(restrict/ CUB=A DC DC<=S DB DB^S)
+	(restrict/ EUD=A DE DE<=T DD DD^T) C<=E
+    <- join-cross-comparable CUB=A EUD=A W X Y Z
+	WUX=C YUZ=B WUY=E XUZ=D
+    <- join-implies-leq WUX=C _ X<=C
+    <- join-implies-leq XUZ=D X<=D _
+    <- domain-total DX
+    <- domain-preserves-leq* X<=C DX DC DX<=DC
+    <- domain-preserves-leq* X<=D DX DD DX<=DD
+    <- set`leq-transitive DX<=DC DC<=S DX<=S
+    <- set`disjoint-respects-geq DD^T DX<=DD S<=T DX^S
+    <- set`disjoint-leq-implies-empty DX^S DX<=S ZERO=DX
+    <- set`eq-symmetric ZERO=DX DX=0
+    <- domain-respects-eq DX eq/ DX=0 DX0
+    <- domain-empty-implies-empty DX0 X=0
+    <- join-respects-eq WUX=C eq/ X=0 eq/ WU0=C
+    <- join-unique join/R WU0=C eq/ eq/ W=C
+    <- join-respects-eq WUY=E W=C eq/ eq/ CUY=E
+    <- join-implies-leq CUY=E C<=E _.
+
+%worlds () (restrict-left-preserves-leq _ _ _ _).
+%total { } (restrict-left-preserves-leq _ _ _ _).
+
+
+%theorem restrict-associate-intersection* :
+	forall* {A} {C} {E} {S} {T} {V}
+	forall	{R1: restrict A S C}
+		{R2: restrict C T E}
+		{I: intersection S T V}
+	exists	{R3: restrict A V E}
+	true.
+
+- : restrict-associate-intersection*
+	(restrict/ CUB=A DC DC<=S DB DB^S)
+	(restrict/ EUD=C DE DE<=T DD DD^T) S^T=V
+	(restrict/ EUF=A DE DE<=V DF DF^V)
+    <- join-associative EUD=C CUB=A F DUB=F EUF=A
+    <- join-implies-leq EUD=C E<=C _
+    <- domain-preserves-leq* E<=C DE DC DE<=DC
+    <- set`leq-transitive DE<=DC DC<=S DE<=S
+    <- intersection-is-glb S^T=V DE<=S DE<=T DE<=V
+    <- domain-total DF
+    <- join-commute-domain DUB=F DD DB DF DDUDB=DF
+    <- intersection-implies-leq S^T=V V<=S V<=T
+    <- set`leq-reflexive _ DB<=DB
+    <- set`leq-reflexive _ DD<=DD
+    <- set`disjoint-respects-geq DB^S DB<=DB V<=S DB^V
+    <- set`disjoint-respects-geq DD^T DD<=DD V<=T DD^V
+    <- union-left-preserves-disjoint* DD^V DB^V DDUDB=DF DF^V.
+
+%worlds () (restrict-associate-intersection* _ _ _ _).
+%total { } (restrict-associate-intersection* _ _ _ _).
+
+
+%theorem restrict-associate-intersection :
+	forall* {A} {C} {E} {S} {T}
+	forall	{R1: restrict A S C}
+		{R2: restrict C T E}
+	exists	{V} {I: intersection S T V}
+		{R3: restrict A V E}
+	true.
+
+- : restrict-associate-intersection R1 R2 _ I R3
+    <- intersection-total I
+    <- restrict-associate-intersection* R1 R2 I R3.
+
+%worlds () (restrict-associate-intersection _ _ _ _ _).
+%total { } (restrict-associate-intersection _ _ _ _ _).
+
+
+%theorem fresh-update-implies-restrict :
+	forall*	{A} {N} {D} {B}
+	forall	{F: fresh A N}
+		{U: update A N D B}
+	exists	{R: restrict B (set/1 N) (map/+ N D map/0)}
+	true.
+
+- : fresh-update-implies-restrict A-/>N U
+	(restrict/ Jc (domain/+ domain/0) DN<=DN DA DA^N)
+    <- fresh-update-implies-unit-join A-/>N U J
+    <- join-commutative J Jc
+    <- set`leq-reflexive _ DN<=DN
+    <- domain-total DA
+    <- domain-preserves-fresh A-/>N DA DA-/>N
+    <- not-member-implies-unit-disjoint DA-/>N DA^N.
+
+%worlds () (fresh-update-implies-restrict _ _ _).
+%total { } (fresh-update-implies-restrict _ _ _).
+
+
+%theorem restrict-idempotent :
+	forall*	{A} {B} {C}
+	forall	{R:restrict A B C}
+	exists	{R:restrict C B C}
+	true.
+
+- : restrict-idempotent A|B=C C|B=C
+    <- restrict-implies-domain-leq A|B=C _ DC DC<=B
+    <- domain-leq-implies-no-restriction DC DC<=B C|B=C.
+
+%worlds () (restrict-idempotent _ _).
+%total { } (restrict-idempotent _ _).
