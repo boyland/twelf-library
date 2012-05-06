@@ -1883,6 +1883,140 @@ END_ELF
 #endif /* DATA_JOIN_COMMUTATIVE */
 %}%
 
+%theorem disjoint-join-cross-comparable :
+	forall* {C} {C1} {C2} {C3} {C4}
+	forall	{D12:disjoint C1 C2}
+		{A12:join C1 C2 C} 
+		{D34:disjoint C3 C4}
+		{A34:join C3 C4 C}
+	exists {C13} {C14} {C23} {C24}
+	       {A1:join C13 C14 C1} {A2:join C23 C24 C2}
+	       {A3:join C13 C23 C3} {A4:join C14 C24 C4}
+	true.
+
+%{
+NB: The client can easily prove all pieces are mutually disjoint.
+For example C13 ^ C14 because C13 <= C3 and C14 <= C4 and C3^C4
+            C13 ^ C23 because C13 <= C1 and C23 <= C2 and C1^C2
+%}
+
+- : disjoint-join-cross-comparable _ join/L _ C3+C4=C2 _ _ _ _ join/L C3+C4=C2 join/L join/L.
+
+- : disjoint-join-cross-comparable _ join/R _ C3+C4=C1 _ _ _ _ C3+C4=C1 join/R join/R join/R.
+
+- : disjoint-join-cross-comparable _ C1+C2=C4 _ join/L _ _ _ _ join/L join/L join/L C1+C2=C4.
+
+- : disjoint-join-cross-comparable _ C1+C2=C3 _ join/R _ _ _ _ join/R join/R C1+C2=C3 join/R.
+
+- : disjoint-join-cross-comparable D (join/= _ _ nat`eq/) _ _ _ _ _ _
+	join/L join/L J1 J2
+    <- disjoint/=-contradiction D nat`eq/ F
+    <- false-implies-join F J1
+    <- false-implies-join F J2.
+
+- : disjoint-join-cross-comparable _ _ D (join/= _ _ nat`eq/) _ _ _ _
+	join/L join/L J1 J2
+    <- disjoint/=-contradiction D nat`eq/ F
+    <- false-implies-join F J1
+    <- false-implies-join F J2.
+
+- : disjoint-join-cross-comparable 
+	D12 (join/< C1+CX2=C N0+1+N1=N2)
+	D34 (join/< C3+CX4=C N5+1+N3=N4) _ _ _ _ % NB N1=N3=N
+	CY1Y3+CY14=CY1 C2Y3+C24=C2
+	CY1Y3+C2Y3=CY3 CY14+C24=C4
+    <- disjoint/<-inversion D12 N0+1+N1=N2 D12P
+    <- disjoint/<-inversion D34 N5+1+N3=N4 D34P
+    <- disjoint-join-cross-comparable D12P C1+CX2=C D34P C3+CX4=C 
+	C13 C1X4 CX23 CX2X4
+	C13+C1X4=C1 CX23+CX2X4=CX2 C13+CX23=C3 C1X4+CX2X4=CX4
+    <- shift-total C1X4<<N=CY14
+    <- shift-total CX23<<N=C2Y3
+    <- shift-total CX2X4<<N=C24
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
+    <- shift-right-preserves-join C13+C1X4=C1 C1X4<<N=CY14 CY1Y3+CY14=CY1
+    <- shift-preserves-join* CX23+CX2X4=CX2 
+	CX23<<N=C2Y3 CX2X4<<N=C24 (shift/+ N1+1+N0=N2) C2Y3+C24=C2
+    <- shift-right-preserves-join C13+CX23=C3 CX23<<N=C2Y3 CY1Y3+C2Y3=CY3
+    <- plus-swap-succ N5+1+N3=N4 N5+N3+1=N4
+    <- plus-commutative N5+N3+1=N4 N3+1+N5=N4
+    <- shift-preserves-join* C1X4+CX2X4=CX4
+	C1X4<<N=CY14 CX2X4<<N=C24 (shift/+ N3+1+N5=N4) CY14+C24=C4.
+
+- : disjoint-join-cross-comparable 
+	D12 (join/< C1+CX2=C N0+1+N1=N2)
+	D34 (join/> CX3+C4=C N5+1+N4=N3) _ _ _ _ % NB N1=N4=N
+	CY13+CY1Y4=CY1 C23+C2Y4=C2 CY13+C23=C3 CY1Y4+C2Y4=CY4
+    <- disjoint/<-inversion D12 N0+1+N1=N2 D12P
+    <- disjoint/>-inversion D34 N5+1+N4=N3 D34P
+    <- disjoint-join-cross-comparable D12P C1+CX2=C D34P CX3+C4=C 
+	C1X3 C14 CX2X3 CX24
+	C1X3+C14=C1 CX2X3+CX24=CX2 C1X3+CX2X3=CX3 C14+CX24=C4
+    <- shift-total C1X3<<N=CY13
+    <- shift-total CX2X3<<N=C23
+    <- shift-total CX24<<N=C2Y4
+    <- shift-left-preserves-join C1X3+C14=C1 C1X3<<N=CY13 CY13+CY1Y4=CY1
+    <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
+    <- plus-commutative N0+N1+1=N2 N1+1+N0=N2
+    <- shift-preserves-join* CX2X3+CX24=CX2 
+	CX2X3<<N=C23 CX24<<N=C2Y4 (shift/+ N1+1+N0=N2) C23+C2Y4=C2
+    <- plus-swap-succ N5+1+N4=N3 N5+N4+1=N3
+    <- plus-commutative N5+N4+1=N3 N4+1+N5=N3
+    <- shift-preserves-join* C1X3+CX2X3=CX3
+	C1X3<<N=CY13 CX2X3<<N=C23 (shift/+ N4+1+N5=N3) CY13+C23=C3
+    <- shift-right-preserves-join C14+CX24=C4 CX24<<N=C2Y4 CY1Y4+C2Y4=CY4.
+
+- : disjoint-join-cross-comparable 
+	D12 (join/> CX1+C2=C N0+1+N2=N1)
+        D34 (join/< C3+CX4=C N5+1+N3=N4) _ _ _ _ % NB N2=N3=N
+ 	C1Y3+C14=C1 CY2Y3+CY24=CY2 C1Y3+CY2Y3=CY3 C14+CY24=C4
+    <- disjoint/>-inversion D12 N0+1+N2=N1 D12P
+    <- disjoint/<-inversion D34 N5+1+N3=N4 D34P
+    <- disjoint-join-cross-comparable D12P CX1+C2=C D34P C3+CX4=C 
+	CX13 CX1X4 C23 C2X4
+	CX13+CX1X4=CX1 C23+C2X4=C2 CX13+C23=C3 CX1X4+C2X4=CX4
+    <- shift-total CX13<<N=C1Y3
+    <- shift-total CX1X4<<N=C14
+    <- shift-total C2X4<<N=CY24
+    <- plus-swap-succ N0+1+N2=N1 N0+N2+1=N1
+    <- plus-commutative N0+N2+1=N1 N2+1+N0=N1
+    <- shift-preserves-join* CX13+CX1X4=CX1 
+	CX13<<N=C1Y3 CX1X4<<N=C14 (shift/+ N2+1+N0=N1) C1Y3+C14=C1
+    <- shift-right-preserves-join C23+C2X4=C2 C2X4<<N=CY24 CY2Y3+CY24=CY2
+    <- shift-left-preserves-join CX13+C23=C3 CX13<<N=C1Y3 C1Y3+CY2Y3=CY3
+    <- plus-swap-succ N5+1+N3=N4 N5+N3+1=N4
+    <- plus-commutative N5+N3+1=N4 N3+1+N5=N4
+    <- shift-preserves-join* CX1X4+C2X4=CX4
+	CX1X4<<N=C14 C2X4<<N=CY24 (shift/+ N3+1+N5=N4) C14+CY24=C4.
+
+- : disjoint-join-cross-comparable 
+	D12 (join/> CX1+C2=C N0+1+N2=N1)
+	D34 (join/> CX3+C4=C N5+1+N4=N3) _ _ _ _ % NB N2=N4=N
+	C13+C1Y4=C1 CY23+CY2Y4=CY2 C13+CY23=C3 C1Y4+CY2Y4=CY4
+    <- disjoint/>-inversion D12 N0+1+N2=N1 D12P
+    <- disjoint/>-inversion D34 N5+1+N4=N3 D34P
+    <- disjoint-join-cross-comparable D12P CX1+C2=C D34P CX3+C4=C 
+	CX1X3 CX14 C2X3 C2C4
+	CX1X3+CX14=CX1 C2X3+C24=C2 CX1X3+C2X3=CX3 CX14+C24=C4
+    <- shift-total CX1X3<<N=C13
+    <- shift-total CX14<<N=C1Y4
+    <- shift-total C2X3<<N=CY23
+    <- plus-swap-succ N0+1+N2=N1 N0+N2+1=N1
+    <- plus-commutative N0+N2+1=N1 N2+1+N0=N1
+    <- shift-preserves-join* CX1X3+CX14=CX1 
+	CX1X3<<N=C13 CX14<<N=C1Y4 (shift/+ N2+1+N0=N1) C13+C1Y4=C1
+    <- shift-left-preserves-join C2X3+C24=C2 C2X3<<N=CY23 CY23+CY2Y4=CY2
+    <- plus-swap-succ N5+1+N4=N3 N5+N4+1=N3
+    <- plus-commutative N5+N4+1=N3 N4+1+N5=N3
+    <- shift-preserves-join* CX1X3+C2X3=CX3
+	CX1X3<<N=C13 C2X3<<N=CY23 (shift/+ N4+1+N5=N3) C13+CY23=C3
+    <- shift-left-preserves-join CX14+C24=C4 CX14<<N=C1Y4 C1Y4+CY2Y4=CY4.
+
+%worlds (WORLDS) (disjoint-join-cross-comparable _ _ _ _ _ _ _ _ _ _ _ _).
+%total (A) (disjoint-join-cross-comparable _ A _ _ _ _ _ _ _ _ _ _).
+
+
 %theorem disjoint-join-left-preserves-lookup* :
 	forall* {M1} {M2} {M3} {N} {D}
 	forall {L2:lookup M2 N D}
