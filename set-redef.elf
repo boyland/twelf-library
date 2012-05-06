@@ -66,6 +66,7 @@
 %abbrev disjoint-member-contradiction = disjoint-lookup-contradiction.
 %abbrev disjoint-member-implies-not-member = disjoint-lookup-implies-not-member.
 %abbrev not-member-union-left-preserves-member-converse = not-member-union-left-preserves-lookup-converse.
+%abbrev not-member-union-right-preserves-member-converse = not-member-union-right-preserves-lookup-converse.
 
 %abbrev intersection-preserves-member =
 	[MA: member A N] [MB:member B N]
@@ -112,6 +113,8 @@
 % should not need NE : %abbrev add-preserves-member = update-preserves-lookup.
 %abbrev add-preserves-not-member = update-preserves-not-member.
 %abbrev add-preserves-membership = update-preserves-membership.
+%abbrev add-preserves-member-converse = update-preserves-lookup-converse.
+%abbrev add-preserves-not-member-converse = update-preserves-not-member-converse.
 %abbrev add-overwrites = update-overwrites.
 %abbrev add-member-has-no-effect 
 	: member S1 X -> add S1 X S2 -> eq S1 S2 -> type
