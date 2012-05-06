@@ -1894,11 +1894,11 @@ END_ELF
 	       {A3:join C13 C23 C3} {A4:join C14 C24 C4}
 	true.
 
-%{
+%{%
 NB: The client can easily prove all pieces are mutually disjoint.
 For example C13 ^ C14 because C13 <= C3 and C14 <= C4 and C3^C4
             C13 ^ C23 because C13 <= C1 and C23 <= C2 and C1^C2
-%}
+%}%
 
 - : disjoint-join-cross-comparable _ join/L _ C3+C4=C2 _ _ _ _ join/L C3+C4=C2 join/L join/L.
 
