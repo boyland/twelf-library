@@ -609,7 +609,7 @@ restrict/ :
     
 %worlds () (join-commute-restrict* _ _ _ _ _).
 %total { } (join-commute-restrict* _ _ _ _ _).
-% NB: converse isn't true or else AUB=C for all A,B,C (think S=0)
+% NB: converse is not true or else AUB=C for all A,B,C (think S=0)
 
 
 %theorem restrict-associates-disjoint-union-converse :
