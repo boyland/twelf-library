@@ -3,14 +3,14 @@
  * Using this functor:
  * You should define the types from map-base.elf
  * and also:
- *   relation
+ *   relation : nat -> data -> arg -> type
  *   allrelation
- *   arg
- *   leq (optional, used as arg`leq)
+ *   arg (and we need arg`eq arg`eq/, and optionally arg`leq)
  * We need the following theorems:
- *   false-implies-relation
- *   relation-respects-eq
  *   relation-respects-leq (optional)
+ *
+ * NB: We define
+ *   relation-respects-eq
  *
  * If you are using "leq", you must define MAP_ALL_LEQ
  */
@@ -35,6 +35,26 @@ allrelation/U :
 
 
 %%%% Theorems
+
+
+
+%%% Extra Theorems about relation
+
+
+%theorem relation-respects-eq :
+	forall*	{N1} {D1} {X1}
+		{N2} {D2} {X2}
+	forall	{R1: relation N1 D1 X1}
+		{EN: nat`eq N1 N2}
+		{ED: data`eq D1 D2}
+		{EX: arg`eq X1 X2}
+	exists	{R2: relation N2 D2 X2}
+	true.
+
+- : relation-respects-eq R _ _ _ R.
+
+%worlds () (relation-respects-eq _ _ _ _ _).
+%total { } (relation-respects-eq _ _ _ _ _).
 
 
 
