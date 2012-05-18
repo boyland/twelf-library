@@ -3,6 +3,7 @@
 #else
 #define WORLDS %{nothing}%
 #endif
+#define MAP_DOMAIN 1
 %}%
 
 %%%% Map domain
