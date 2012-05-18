@@ -1,0 +1,750 @@
+%{%
+/*
+ * Using this functor:
+ * You should define the types from map-base.elf
+ * and also:
+ *   trans : nat -> data -> arg -> data -> type
+ *   alltrans
+ *   arg (and we need arg`eq arg`eq/, and optionally arg`leq if MAP_TRANS_LEQ)
+ * We need the following theorems:
+ *   trans-unique (if using unique)
+ *   trans-total* (if unique total)
+ *   trans-right-preserves-leq* (if MAP_LEQ is set)
+ *   trans-left-preserves-leq* (if additionally MAP_TRANS_LEQ is set)
+ *
+ * NB: We define
+ *   relation-respects-eq
+ *
+ * If you are using "unique", you must define MAP_TRANS_UNIQUE
+ * If you are using "total", you must define MAP_TRANS_TOTAL
+ * If you are using "leq", you must define MAP_TRANS_LEQ
+ */
+%}%
+
+
+%%%% Definitions
+
+
+
+alltrans : map -> arg -> map -> type.
+
+alltrans/0 : alltrans map/0 S map/0.
+
+alltrans/U :
+	alltrans M1 X M2 ->
+	trans N D1 X D2 ->
+        fresh M1 N ->
+	update M1 N D1 M1P ->
+	update M2 N D2 M2P ->
+    alltrans M1P X M2P.
+
+
+
+
+%%%% Theorems
+
+
+
+%%% Extra Theorems about trans
+
+
+%theorem trans-respects-eq :
+	forall*	{N1} {D1} {X1} {D1P}
+		{N2} {D2} {X2} {D2P}
+	forall	{R1: trans N1 D1 X1 D1P}
+		{EN: nat`eq N1 N2}
+		{ED: data`eq D1 D2}
+		{EX: arg`eq X1 X2}
+		{ED: data`eq D1P D2P}
+	exists	{R2: trans N2 D2 X2 D2P}
+	true.
+
+- : trans-respects-eq R _ _ _ _ R.
+
+%worlds () (trans-respects-eq _ _ _ _ _ _).
+%total { } (trans-respects-eq _ _ _ _ _ _).
+
+
+
+%%% Theorems about alltrans
+
+
+%theorem false-implies-alltrans :
+	forall*	{M} {X} {MP}
+	forall	{F: void}
+	exists	{A: alltrans M X MP}
+	true.
+
+%worlds () (false-implies-alltrans _ _).
+%total { } (false-implies-alltrans _ _).
+
+
+%theorem alltrans-respects-eq :
+	forall*	{M1} {X1} {M2} {X2} {M1P} {M2P}
+	forall	{A1: alltrans M1 X1 M1P}
+		{ME: eq M1 M2}
+		{XE: arg`eq X1 X2}
+		{EP: eq M1P M2P}
+	exists	{A2: alltrans M2 X2 M2P}
+	true.
+
+- : alltrans-respects-eq A _ _ _ A.
+
+%worlds () (alltrans-respects-eq _ _ _ _ _).
+%total { } (alltrans-respects-eq _ _ _ _ _).
+
+
+%theorem alltrans/U-inversion :
+	forall*	{M1} {M2} {X} {N} {D} {M2P}
+	forall	{A2: alltrans M2 X M2P}
+		{F: fresh M1 N}
+		{U: update M1 N D M2} 
+	exists	{M1P} {DP} 
+		{A1: alltrans M1 X M1P}
+		{R: trans N D X DP}
+		{U: update M1P N DP M2P}
+	true.
+
+%theorem alltrans/U-inversion/L :
+	forall*	{N0} {D0} {M0} {X} {N} {D} {B} {M1} {M2} {M0P} {D0P} {M2P}
+	forall	{A0: alltrans M0 X M0P}
+		{R1: trans N0 D0 X D0P}
+		{F0: fresh M0 N0}
+		{U0: update M0 N0 D0 M2}
+		{UP: update M0P N0 D0P M2P}
+		{F1: fresh M1 N}
+		{U1: update M1 N D M2}
+		{EQ?: nat`eq? N N0 B}
+	exists	{M1P} {DP}
+		{A1: alltrans M1 X M1P}
+		{R: trans N D X DP}	
+		{U: update M1P N DP M2P}	
+	true.
+
+- : alltrans/U-inversion/L A0 R0 F0 U0 U0P F1 U1 nat`eq?/yes _ _
+	A1 R1 U0P
+    <- fresh-update-cancels F0 U0 F1 U1 (nat`eq/:nat`eq N N) eq/ D0=D1 M0=M1
+    <- alltrans-respects-eq A0 M0=M1 arg`eq/ eq/ A1
+    <- trans-respects-eq R0 (nat`eq/: nat`eq N N) D0=D1 arg`eq/ data`eq/ R1.
+
+- : alltrans/U-inversion/L A0 R0 F0 U0 U0P F1 U1 (nat`eq?/no N<>N1) _ _
+	(alltrans/U A2 R0 F3 U3 U3P) R1 U1P
+    <- update-commutes-converse U1 U0 N<>N1 _ U3 U2
+    <- update-preserves-fresh-converse F1 U3 F2
+    <- update-preserves-fresh-converse F0 U2 F3
+    <- alltrans/U-inversion A0 F2 U2 _ _ A2 R1 U2P
+    <- update-commutes U2P U0P N<>N1 _ U3P U1P.
+
+- : alltrans/U-inversion (alltrans/U A0 R0 F0 U0 U0P) F U _ _ A1 R U1P
+    <- nat`eq?-total EQ?
+    <- alltrans/U-inversion/L A0 R0 F0 U0 U0P F U EQ? _ _ A1 R U1P.
+
+%worlds () (alltrans/U-inversion _ _ _ _ _ _ _ _)
+           (alltrans/U-inversion/L _ _ _ _ _ _ _ _ _ _ _ _ _).
+%total (A B) 
+	   (alltrans/U-inversion A _ _ _ _ _ _ _)
+           (alltrans/U-inversion/L B _ _ _ _ _ _ _ _ _ _ _ _).
+
+
+%theorem alltrans-lookup-implies-trans-lookup :
+	forall*	{M} {X} {N} {D} {MP}
+	forall	{A: alltrans M X MP}
+		{L: lookup M N D}
+	exists	{DP}
+		{R: trans N D X DP}
+		{L: lookup MP N DP}
+	true.
+
+- : alltrans-lookup-implies-trans-lookup A L DP T LP
+    <- lookup-implies-fresh-update L _ F U
+    <- alltrans/U-inversion A F U _ _ AP T UP
+    <- update-implies-lookup UP LP.
+
+%worlds () (alltrans-lookup-implies-trans-lookup _ _ _ _ _).
+%total { } (alltrans-lookup-implies-trans-lookup _ _ _ _ _).
+
+
+%theorem alltrans-preserves-fresh:
+	forall*	{M} {X} {N} {MP}
+	forall	{F: fresh M N}
+		{A: alltrans M X MP}
+	exists	{F: fresh MP N}
+	true.
+
+- : alltrans-preserves-fresh _ alltrans/0 fresh/0.
+
+- : alltrans-preserves-fresh F1 (alltrans/U A _ _ U UP) F4
+    <- update-implies-lookup U L
+    <- fresh-lookup-not-equal F1 L NE
+    <- update-preserves-fresh-converse F1 U F2
+    <- alltrans-preserves-fresh F2 A F3
+    <- update-preserves-fresh F3 UP NE F4.
+
+%worlds () (alltrans-preserves-fresh _ _ _).
+%total (A) (alltrans-preserves-fresh _ A _).
+
+
+%theorem alltrans-preserves-fresh-converse:
+	forall*	{M} {X} {N} {MP}
+	forall	{F: fresh MP N}
+		{A: alltrans M X MP}
+	exists	{F: fresh M N}
+	true.
+
+- : alltrans-preserves-fresh-converse _ alltrans/0 fresh/0.
+
+- : alltrans-preserves-fresh-converse F1 (alltrans/U A _ _ U UP) F4
+    <- update-implies-lookup UP L
+    <- fresh-lookup-not-equal F1 L NE
+    <- update-preserves-fresh-converse F1 UP F2
+    <- alltrans-preserves-fresh-converse F2 A F3
+    <- update-preserves-fresh F3 U NE F4.
+
+%worlds () (alltrans-preserves-fresh-converse _ _ _).
+%total (A) (alltrans-preserves-fresh-converse _ A _).
+
+
+%theorem alltrans-lookup-implies-trans-lookup-converse :
+	forall*	{M} {X} {N} {DP} {MP}
+	forall	{A: alltrans M X MP}
+		{L: lookup MP N DP}
+	exists	{D}
+		{R: trans N D X DP}
+		{L: lookup M N D}
+	true.
+
+%theorem alltrans-lookup-implies-trans-lookup-converse/L :
+	forall*	{M} {X} {N} {DP} {MP} {B}
+	forall	{A: alltrans M X MP}
+		{L: lookup MP N DP}
+		{D?: domain? M N B}
+	exists	{D}
+		{R: trans N D X DP}
+		{L: lookup M N D}
+	true.
+
+- : alltrans-lookup-implies-trans-lookup-converse/L 
+	A LP (domain?/in L) _ T L
+    <- lookup-implies-fresh-update L _ F U
+    <- lookup-implies-fresh-update LP _ FP UP
+    <- alltrans/U-inversion A F U _ _ _ T1 UP1
+    <- update-implies-lookup UP1 LP1
+    <- lookup-unique LP1 LP eq/ (nat`eq/:nat`eq N N) DP1=DP
+    <- trans-respects-eq T1 (nat`eq/:nat`eq N N) data`eq/ arg`eq/ DP1=DP T.
+
+%theorem alltrans-lookup-implies-trans-lookup-converse/F :
+	forall*	{M} {X} {N} {D} {DP}
+	forall	{F: void}
+	exists	{R: trans N D X DP}
+		{L: lookup M N D}
+	true.
+
+%worlds () (alltrans-lookup-implies-trans-lookup-converse/F _ _ _).
+%total { } (alltrans-lookup-implies-trans-lookup-converse/F _ _ _).
+
+- : alltrans-lookup-implies-trans-lookup-converse/L 
+	A (LP:lookup MP N DP) (domain?/out F) DP T L
+    <- alltrans-preserves-fresh F A FP
+    <- fresh-lookup-not-equal FP LP N<>N
+    <- nat`ne-anti-reflexive N<>N V
+    <- alltrans-lookup-implies-trans-lookup-converse/F V T L.
+
+%worlds () (alltrans-lookup-implies-trans-lookup-converse/L _ _ _ _ _ _).
+%total { } (alltrans-lookup-implies-trans-lookup-converse/L _ _ _ _ _ _).
+
+- : alltrans-lookup-implies-trans-lookup-converse A LP DP T L
+    <- domain?-total D?
+    <- alltrans-lookup-implies-trans-lookup-converse/L A LP D? DP T L.
+
+%worlds () (alltrans-lookup-implies-trans-lookup-converse _ _ _ _ _).
+%total { } (alltrans-lookup-implies-trans-lookup-converse _ _ _ _ _).
+ 
+
+%theorem alltrans-preserves-domain? :
+	forall*	{M} {N} {B} {X} {MP}
+	forall	{D1: domain? M N B}
+		{A: alltrans M X MP}
+	exists	{D2: domain? MP N B}
+	true.
+
+- : alltrans-preserves-domain? (domain?/in L) A (domain?/in LP)
+    <- lookup-implies-fresh-update L _ F U
+    <- alltrans/U-inversion A F U _ _ _ _ UP
+    <- update-implies-lookup UP LP.
+
+- : alltrans-preserves-domain? (domain?/out F) A (domain?/out FP)
+    <- alltrans-preserves-fresh F A FP.
+
+%worlds () (alltrans-preserves-domain? _ _ _).
+%total { } (alltrans-preserves-domain? _ _ _).
+
+
+%theorem alltrans-preserves-domain?-converse :
+	forall*	{M} {N} {B} {X} {MP}
+	forall	{D1: domain? MP N B}
+		{A: alltrans M X MP}
+	exists	{D2: domain? M N B}
+	true.
+
+- : alltrans-preserves-domain?-converse (domain?/in LP) A (domain?/in L)
+    <- alltrans-lookup-implies-trans-lookup-converse A LP _ _ L.
+
+- : alltrans-preserves-domain?-converse (domain?/out FP) A (domain?/out F)
+    <- alltrans-preserves-fresh-converse FP A F.
+
+%worlds () (alltrans-preserves-domain?-converse _ _ _).
+%total { } (alltrans-preserves-domain?-converse _ _ _).
+
+
+%theorem alltrans/UP-inversion :
+	forall*	{M1P} {M2} {X} {N} {DP} {M2P}
+	forall	{A2: alltrans M2 X M2P}
+		{F: fresh M1P N}
+		{U: update M1P N DP M2P} 
+	exists	{M1} {D} 
+		{A1: alltrans M1 X M1P}
+		{R: trans N D X DP}
+		{U: update M1 N D M2}
+	true.
+
+- : alltrans/UP-inversion A FP UP _ _ A1 T U
+    <- update-implies-lookup UP LP
+    <- alltrans-lookup-implies-trans-lookup-converse A LP _ _ L
+    <- lookup-implies-fresh-update L _ F U
+    <- alltrans/U-inversion A F U _ _ A2 T2 UP2
+    <- alltrans-preserves-fresh F A2 FP2
+    <- fresh-update-cancels FP2 UP2 FP UP (nat`eq/:nat`eq N N) eq/ DP2=DP M2P=MP
+    <- trans-respects-eq T2 (nat`eq/:nat`eq N N) data`eq/ arg`eq/ DP2=DP T
+    <- alltrans-respects-eq A2 eq/ arg`eq/ M2P=MP A1.
+
+%worlds () (alltrans/UP-inversion _ _ _ _ _ _ _ _).
+%total { } (alltrans/UP-inversion _ _ _ _ _ _ _ _).
+
+
+%theorem trans-update-preserves-alltrans :
+	forall*	{M1} {X} {N} {D} {M2} {M1P} {M2P} {DP}
+	forall	{A1: alltrans M1 X M1P}
+		{R: trans N D X DP}
+		{U: update M1 N D M2}
+		{UP:update M1P N DP M2P}
+	exists	{A2: alltrans M2 X M2P}
+	true.
+
+%theorem trans-update-preserves-alltrans/L :
+	forall*	{M1} {X} {N} {D} {M2} {M1P} {M2P} {DP} {B}
+	forall	{A1: alltrans M1 X M1P}
+		{R: trans N D X DP}
+		{D?: domain? M1 N B}
+		{U: update M1 N D M2}
+		{UP:update M1P N DP M2P}
+	exists	{A2: alltrans M2 X M2P}
+	true.
+
+- : trans-update-preserves-alltrans/L A T (domain?/out F) U UP 
+	(alltrans/U A T F U UP).
+
+- : trans-update-preserves-alltrans/L A T (domain?/in L) U UP
+	(alltrans/U A1 T F U3 UP3)
+    <- lookup-implies-fresh-update L _ F U1
+    <- alltrans/U-inversion A F U1 _ _ A1 TX U2
+    <- update-overwrites U1 U nat`eq/ U3
+    <- update-overwrites U2 UP nat`eq/ UP3.
+
+%worlds () (trans-update-preserves-alltrans/L _ _ _ _ _ _).
+%total { } (trans-update-preserves-alltrans/L _ _ _ _ _ _).
+
+- : trans-update-preserves-alltrans A T U UP AP
+    <- domain?-total D?
+    <- trans-update-preserves-alltrans/L A T D? U UP AP.
+
+%worlds () (trans-update-preserves-alltrans _ _ _ _ _).
+%total { } (trans-update-preserves-alltrans _ _ _ _ _).
+
+
+%theorem alltrans-preserves-size :
+	forall*	{M1} {N} {X} {M2}
+	forall	{Z1: size M1 N}
+		{A: alltrans M1 X M2}
+	exists	{Z2: size M2 N}
+	true.
+
+- : alltrans-preserves-size size/0 alltrans/0 size/0.
+
+- : alltrans-preserves-size Z (alltrans/U A T F U UP) ZP
+    <- fresh-update-increases-size-converse Z F U Z1
+    <- alltrans-preserves-size Z1 A ZP1
+    <- alltrans-preserves-fresh F A FP
+    <- fresh-update-increases-size ZP1 FP UP ZP.
+
+%worlds () (alltrans-preserves-size _ _ _).
+%total (A) (alltrans-preserves-size _ A _).
+
+
+%theorem alltrans-preserves-size-converse :
+	forall*	{M1} {N} {X} {M2}
+	forall	{Z1: size M2 N}
+		{A: alltrans M1 X M2}
+	exists	{Z2: size M1 N}
+	true.
+
+- : alltrans-preserves-size-converse size/0 alltrans/0 size/0.
+
+- : alltrans-preserves-size-converse ZP (alltrans/U A T F U UP) Z
+    <- alltrans-preserves-fresh F A FP
+    <- fresh-update-increases-size-converse ZP FP UP ZP1
+    <- alltrans-preserves-size-converse ZP1 A Z1
+    <- fresh-update-increases-size Z1 F U Z.
+
+%worlds () (alltrans-preserves-size-converse _ _ _).
+%total (A) (alltrans-preserves-size-converse _ A _).
+
+%{%
+#ifdef MAP_DOMAIN
+%}%
+
+%theorem alltrans-preserves-domain:
+	forall*	{M} {S} {X} {MP}
+	forall	{D: domain M S}
+		{A: alltrans M X MP}
+	exists	{DP: domain MP S}
+	true.
+
+- : alltrans-preserves-domain domain/0 alltrans/0 domain/0.
+
+- : alltrans-preserves-domain D (alltrans/U A T F U UP) DP
+    <- domain-total D1
+    <- alltrans-preserves-domain D1 A DP1
+    <- update-commute-domain U D1 D SA
+    <- domain-commute-update DP1 UP SA DP.
+
+%worlds () (alltrans-preserves-domain _ _ _).
+%total (A) (alltrans-preserves-domain _ A _).
+
+
+%theorem alltrans-preserves-domain-converse:
+	forall*	{M} {S} {X} {MP}
+	forall	{D: domain MP S}
+		{A: alltrans M X MP}
+	exists	{DP: domain M S}
+	true.
+
+- : alltrans-preserves-domain-converse domain/0 alltrans/0 domain/0.
+
+- : alltrans-preserves-domain-converse DP (alltrans/U A T F U UP) D
+    <- domain-total D1P
+    <- alltrans-preserves-domain-converse D1P A D1
+    <- update-commute-domain UP D1P DP SA
+    <- domain-commute-update D1 U SA D.
+
+%worlds () (alltrans-preserves-domain-converse _ _ _).
+%total (A) (alltrans-preserves-domain-converse _ A _).
+
+%{%
+#endif /* MAP_DOMAIN */
+%}%
+
+%{%
+#ifdef MAP_TRANS_TOTAL
+%}%
+
+%theorem alltrans-total* :
+	forall	{M}
+		{X}
+	exists	{MP}
+		{A: alltrans M X MP}
+	true.
+
+%abbrev alltrans-total = alltrans-total* _ _ _.
+
+%theorem alltrans-total/L :
+	forall*	{M}
+	forall	{N} {Z: size M N}
+		{X}
+	exists	{MP}
+		{A: alltrans M X MP}
+	true.
+
+- : alltrans-total/L _ _ _ _ alltrans/0.
+
+- : alltrans-total/L _ Z _ _ (alltrans/U A1 T F U UP)
+    <- lookup-implies-fresh-update (lookup/= (nat`eq/:nat`eq N N)) _ F U
+    <- fresh-update-increases-size-converse Z F U Z1
+    <- alltrans-total/L _ Z1 _ _ A1
+    <- trans-total* N _ _ _ T
+    <- update-total UP.
+
+%worlds () (alltrans-total/L _ _ _ _ _).
+%total (N) (alltrans-total/L N _ _ _ _).
+
+- : alltrans-total A
+    <- size-total Z
+    <- alltrans-total/L _ Z _ _ A.
+
+%worlds () (alltrans-total* _ _ _ _).
+%total { } (alltrans-total* _ _ _ _).
+
+%{%
+#endif /*MAP_TRANS_TOTAL*/
+%}%
+
+%{%
+#ifdef MAP_TRANS_UNIQUE
+%}%
+
+%theorem alltrans-unique :
+	forall*	{M1} {X1} {M2} {X2} {M1P} {M2P}
+	forall	{A1: alltrans M1 X1 M1P}
+		{A2: alltrans M2 X2 M2P}
+		{ME: eq M1 M2}
+		{XE: arg`eq X1 X2}
+	exists	{EP: eq M1P M2P}
+	true.
+
+%theorem alltrans-unique/L :
+	forall*	{M} {X} {M1P} {M2P}
+	forall	{N} {Z: size M N}
+		{A1: alltrans M X M1P}
+		{A2: alltrans M X M2P}
+	exists	{EP: eq M1P M2P}
+	true.
+
+- : alltrans-unique/L _ _ alltrans/0 alltrans/0 eq/.
+
+- : alltrans-unique/L _ Z A1 A2 MEQ
+    <- lookup-implies-fresh-update (lookup/= nat`eq/) _ F U
+    <- fresh-update-increases-size-converse Z F U ZR
+    <- alltrans/U-inversion A1 F U _ _ A1R T1 U1
+    <- alltrans/U-inversion A2 F U _ _ A2R T2 U2
+    <- alltrans-unique/L _ ZR A1R A2R MEQR
+    <- trans-unique T1 T2 data`eq/ arg`eq/ DEQ
+    <- update-unique U1 U2 MEQR nat`eq/ DEQ MEQ.
+
+%worlds () (alltrans-unique/L _ _ _ _ _).
+%total (N) (alltrans-unique/L N _ _ _ _).
+
+- : alltrans-unique A1 A2 _ _ MEQ
+    <- size-total Z
+    <- alltrans-unique/L _ Z A1 A2 MEQ.
+
+%worlds () (alltrans-unique _ _ _ _ _).
+%total { } (alltrans-unique _ _ _ _ _).
+
+%{%
+#endif /* MAP_TRANS_UNIQUE */
+%}%
+
+%{%
+#ifdef MAP_TRANS_REORDER
+%}%
+
+%theorem alltrans-reorder* :
+	forall*	{M0} {M1} {M2} {M3} {X1} {X2}
+	forall	{A01: alltrans M0 X1 M1}
+		{A12: alltrans M1 X2 M3}
+		{A02: alltrans M0 X2 M2}
+	exists	{A21: alltrans M2 X1 M3}
+	true.
+
+- : alltrans-reorder* alltrans/0 alltrans/0 alltrans/0 alltrans/0.
+
+- : alltrans-reorder* 
+	(alltrans/U A01R T01 F0 U01 UP01) A12 A02
+	(alltrans/U A21R T21 F2 U21 UP21)
+    <- alltrans/U-inversion A02 F0 U01 _ _ A02R T02 U21 % UP02
+    <- alltrans-preserves-fresh F0 A02R F2
+    <- alltrans-preserves-fresh F0 A01R F1
+    <- alltrans/U-inversion A12 F1 UP01 _ _ A12R T12 UP21 % UP12
+    <- alltrans-reorder* A01R A12R A02R A21R
+    <- trans-reorder* T01 T12 T02 T21.
+
+%worlds () (alltrans-reorder* _ _ _ _).
+%total (A) (alltrans-reorder* A _ _ _).
+
+%{%
+#ifdef MAP_TRANS_TOTAL
+%}%
+
+%theorem alltrans-reorder :
+	forall*	{M0} {M1} {M3} {X1} {X2}
+	forall	{A01: alltrans M0 X1 M1}
+		{A12: alltrans M1 X2 M3}
+	exists	{M2}
+		{A02: alltrans M0 X2 M2}
+		{A21: alltrans M2 X1 M3}
+	true.
+
+- : alltrans-reorder A01 A12 _ A02 A21
+    <- alltrans-total A02
+    <- alltrans-reorder* A01 A12 A02 A21.
+
+%worlds () (alltrans-reorder _ _ _ _ _).
+%total { } (alltrans-reorder _ _ _ _ _).
+
+%{%
+#endif /* MAP_TRANS_TOTAL */
+#endif /* MAP_TRANS_REORDER */
+%}%
+
+%{%
+#ifdef MAP_TRANS_COMBINE
+%}%
+
+%theorem alltrans-combines:
+	forall*	{M0} {M1} {M3} {X1} {X2} {X3}
+	forall	{A1: alltrans M0 X1 M1}
+		{A2: alltrans M1 X2 M3}
+		{XC: arg`combine X1 X2 X3}
+	exists	{A3: alltrans M0 X3 M3}
+	true.
+
+- : alltrans-combines alltrans/0 alltrans/0 _ alltrans/0.
+
+- : {A1R: alltrans M0R X1 M1R} {A2R: alltrans M1R X2 M3R}
+    alltrans-combines (alltrans/U A1R T1 F1 U1 UP1) A2 XC A3
+    <- alltrans-preserves-fresh F1 A1R F2
+    <- alltrans/U-inversion A2 F2 UP1 _ _ A2R T2 UP2
+    <- alltrans-combines A1R A2R XC A3R
+    <- trans-combines T1 T2 XC T3
+    <- trans-update-preserves-alltrans A3R T3 U1 UP2 A3.
+
+%worlds () (alltrans-combines _ _ _ _).
+%total (A) (alltrans-combines A _ _ _).
+
+
+%theorem alltrans-combines-converse:
+	forall*	{M0} {M3} {X1} {X2} {X3}
+	forall	{A3: alltrans M0 X3 M3}
+		{XC: arg`combine X1 X2 X3}
+	exists	{M1}
+		{A1: alltrans M0 X1 M1}
+		{A2: alltrans M1 X2 M3}
+	true.
+
+- : alltrans-combines-converse alltrans/0 _ _ alltrans/0 alltrans/0.
+
+- : alltrans-combines-converse
+	(alltrans/U A3 T3 F U UP) XC _
+	(alltrans/U A1 T1 F U UP1)
+	(alltrans/U A2 T2 F1 UP1 UP)
+    <- alltrans-combines-converse A3 XC _ A1 A2
+    <- trans-combines-converse T3 XC _ T1 T2
+    <- alltrans-preserves-fresh F A1 F1
+    <- update-total UP1.
+
+%worlds () (alltrans-combines-converse _ _ _ _ _).
+%total (A) (alltrans-combines-converse A _ _ _ _).
+
+%{%
+#endif /* MAP_TRANS_COMBINE */
+%}%
+
+%{%
+#ifdef MAP_TRANS_CANCEL
+%}%
+
+%theorem alltrans-right-cancels :
+	forall*	{M1} {X1} {M1P}
+		{M2} {X2} {M2P}
+	forall	{A1: alltrans M1 X1 M1P}
+		{A2: alltrans M2 X2 M2P}
+		{EX: arg`eq X1 X2}
+		{EP: eq M1P M2P}
+	exists	{E: eq M1 M2}
+	true.
+
+- : alltrans-right-cancels alltrans/0 alltrans/0 _ _ eq/.
+
+- : alltrans-right-cancels
+	(alltrans/U A1R T1 F1 U1 UP1) A2 XEQ eq/ M1=M2
+    <- alltrans-preserves-fresh F1 A1R FP1
+    <- alltrans/UP-inversion A2 FP1 UP1 _ _ A2R T2 U2
+    <- alltrans-right-cancels A1R A2R XEQ eq/ M1R=M2R
+    <- trans-right-cancels T1 T2 XEQ data`eq/ D1=D2
+    <- update-unique U1 U2 M1R=M2R nat`eq/ D1=D2 M1=M2.
+
+%worlds () (alltrans-right-cancels _ _ _ _ _).
+%total (A) (alltrans-right-cancels A _ _ _ _).
+
+%{%
+#endif /* MAP_TRANS_CANCEL */
+%}%
+
+%{%
+#ifdef MAP_LEQ
+%}%
+
+%theorem alltrans-right-preserves-leq* :
+	forall*	{M1} {X} {M1P} {M2} {M2P}
+	forall	{L: leq M1 M2}
+		{A1: alltrans M1 X M1P}
+		{A2: alltrans M2 X M2P}
+	exists	{LP: leq M1P M2P}
+	true.
+
+- : alltrans-right-preserves-leq* _ alltrans/0 _ leq/0.
+
+- : alltrans-right-preserves-leq* M1<=M2 
+	(alltrans/U A1R T1 F1 U1 U1P) A2 M1P<=M2P
+    <- update-implies-lookup U1 L1
+    <- lookup-respects-leq L1 M1<=M2 _ L2 _
+    <- lookup-implies-fresh-update L2 _ F2 U2
+    <- alltrans/U-inversion A2 F2 U2 _ _ A2R T2 U2P
+    <- fresh-update-preserves-leq-converse M1<=M2 F1 U1 F2 U2 M1R<=M2R D1<=D2 
+    <- alltrans-right-preserves-leq* M1R<=M2R A1R A2R M1PR<=M2PR
+    <- trans-right-preserves-leq* D1<=D2 T1 T2 D1P<=D2P
+    <- update-preserves-leq* M1PR<=M2PR D1P<=D2P U1P U2P M1P<=M2P.
+
+%worlds () (alltrans-right-preserves-leq* _ _ _ _).
+%total (A) (alltrans-right-preserves-leq* _ A _ _).
+
+%{%
+#ifdef MAP_TRANS_LEQ
+%}%
+
+%theorem alltrans-left-preserves-leq* :
+	forall*	{M} {X1} {M1P} {X2} {M2P}
+	forall	{L: arg`leq X1 X2}
+		{A1: alltrans M X1 M1P}
+		{A2: alltrans M X2 M2P}
+	exists	{LP: leq M1P M2P}
+	true.
+
+- : alltrans-left-preserves-leq* _ alltrans/0 _ leq/0.
+
+- : alltrans-left-preserves-leq* X1<=X2 
+	(alltrans/U A1R T1 F U U1P) A2 M1P<=M2P
+    <- alltrans/U-inversion A2 F U _ _ A2R T2 U2P
+    <- alltrans-left-preserves-leq* X1<=X2 A1R A2R M1PR<=M2PR
+    <- trans-left-preserves-leq* X1<=X2 T1 T2 D1P<=D2P
+    <- update-preserves-leq* M1PR<=M2PR D1P<=D2P U1P U2P M1P<=M2P.
+
+%worlds () (alltrans-left-preserves-leq* _ _ _ _).
+%total (A) (alltrans-left-preserves-leq* _ A _ _).
+
+%{%
+#ifdef MAP_TRANS_TOTAL
+%}%
+
+%theorem alltrans-preserves-leq* :
+	forall*	{M1} {X1} {M1P} {M2} {X2} {M2P}
+	forall	{LM: leq M1 M2}
+		{LX: arg`leq X1 X2}
+		{A1: alltrans M1 X1 M1P}
+		{A2: alltrans M2 X2 M2P}
+	exists	{LP: leq M1P M2P}
+	true.
+
+- : alltrans-preserves-leq* M1<=M2 X1<=X2 A1 A2 M1P<=M2P
+    <- alltrans-total AH
+    <- alltrans-right-preserves-leq* M1<=M2 A1 AH M1P<=MH
+    <- alltrans-left-preserves-leq* X1<=X2 AH A2 MH<=M2P
+    <- leq-transitive M1P<=MH MH<=M2P M1P<=M2P.
+
+%worlds () (alltrans-preserves-leq* _ _ _ _ _).
+%total { } (alltrans-preserves-leq* _ _ _ _ _).
+
+%{%
+#endif /* MAP_TRANS_TOTAL */
+#endif /* MAP_TRANS_LEQ */
+#endif /* MAP_LEQ */
+%}%
