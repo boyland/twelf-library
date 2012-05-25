@@ -243,6 +243,43 @@ END_ELF
 %total { } (leq-union-disjoint-implies-leq _ _ _ _).
 
 
+%theorem leq-intersection-disjoint-implies-disjoint:
+	forall*	{A} {B} {C} {D}
+	forall	{L: leq A B}
+		{I: intersection B C D}
+		{X: disjoint A D}
+	exists	{X: disjoint A C}
+	true.
+
+%theorem leq-intersection-disjoint-implies-disjoint/L:
+	forall*	{A} {B} {C} {D} {Q}
+	forall	{L: leq A B}
+		{I: intersection B C D}
+		{X: disjoint A D}
+		{Y: disjoint? A C Q}
+	exists	{Z: disjoint A C}
+	true.
+
+- : leq-intersection-disjoint-implies-disjoint/L _ _ _ (disjoint?/yes D) D.
+
+- : leq-intersection-disjoint-implies-disjoint/L 
+	A<=B B^C=D A^D (disjoint?/no A->X C->X) Z
+    <- member-respects-leq A->X A<=B B->X
+    <- intersection-preserves-member B->X C->X B^C=D D->X
+    <- disjoint-member-contradiction A^D A->X D->X F
+    <- false-implies-disjoint F Z.
+
+%worlds () (leq-intersection-disjoint-implies-disjoint/L _ _ _ _ _).
+%total { } (leq-intersection-disjoint-implies-disjoint/L _ _ _ _ _).
+
+- : leq-intersection-disjoint-implies-disjoint L I X Z
+    <- disjoint?-total Y
+    <- leq-intersection-disjoint-implies-disjoint/L L I X Y Z.
+
+%worlds () (leq-intersection-disjoint-implies-disjoint _ _ _ _).
+%total { } (leq-intersection-disjoint-implies-disjoint _ _ _ _).
+
+
 % not true for general maps.
 %theorem leq-size-eq-implies-eq :
         forall* {S1} {S2} {Z1} {Z2}
