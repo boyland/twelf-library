@@ -560,6 +560,31 @@ scale/+ : scale S (map/+ N D M) (map/+ N DP MP)
 
 %{%
 #endif
+#ifdef SCALAR_LEQ
+%}%
+
+%theorem scale-right-preserves-leq* :
+        forall* {M} {S1} {S2} {SM1} {SM2}
+	forall	{L: scalar`leq S1 S2}
+		{SC1:scale S1 M SM1}
+		{SC2:scale S2 M SM2}
+	exists	{L: leq SM1 SM2}
+	true.
+
+- : scale-right-preserves-leq* S1<=S2 scale/0 _ leq/0.
+
+- : scale-right-preserves-leq* Q1<=Q2
+	(scale/+ SC1 Q1*Q=Q1P)
+	(scale/+ SC2 Q2*Q=Q2P)
+	(leq/= SR1<=SR2 Q1P<=Q2P nat`eq/)
+    <- scale-right-preserves-leq* Q1<=Q2 SC1 SC2 SR1<=SR2
+    <- data`scale-right-preserves-leq* Q1<=Q2 Q1*Q=Q1P Q2*Q=Q2P Q1P<=Q2P.
+
+%worlds () (scale-right-preserves-leq* _ _ _ _).
+%total (S) (scale-right-preserves-leq* _ S _ _).
+
+%{%
+#endif /* SCALAR_LEQ */
 #endif /* MAP_LEQ */
 
 #ifdef MAP_JOIN
