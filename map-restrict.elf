@@ -142,9 +142,9 @@ restrict/ :
 	exists	{E3:eq C E}
 	true.
 
-- : restrict-unique R1 R2 eq/ set`eq/ EQ
+- : restrict-unique R1 R2 eq/ set`eq/ EQX
     <- size-total Z
-    <- restrict-unique/L1 _ Z R1 R2 EQ.
+    <- restrict-unique/L1 _ Z R1 R2 EQX.
 
 - : restrict-unique/L1
 	z _
@@ -165,9 +165,9 @@ restrict/ :
 	exists	{E3:eq C E}
 	true.
 
-- : restrict-unique/L1 _ Z R1 R2 EQ
+- : restrict-unique/L1 _ Z R1 R2 EQX
     <- set`member?-total M?
-    <- restrict-unique/L2 _ Z (lookup/= nat`eq/) M? R1 R2 EQ.
+    <- restrict-unique/L2 _ Z (lookup/= nat`eq/) M? R1 R2 EQX.
 
 %theorem restrict-unique/L3 :
 	forall* {A} {B} {C} {A1} {X} {D}
@@ -733,7 +733,7 @@ restrict/ :
 %total { } (restrict-left-preserves-leq _ _ _ _).
 
 
-%theorem restrict-associate-intersection* :
+%theorem restrict-associates-intersection* :
 	forall* {A} {C} {E} {S} {T} {V}
 	forall	{R1: restrict A S C}
 		{R2: restrict C T E}
@@ -741,7 +741,7 @@ restrict/ :
 	exists	{R3: restrict A V E}
 	true.
 
-- : restrict-associate-intersection*
+- : restrict-associates-intersection*
 	(restrict/ CUB=A DC DC<=S DB DB^S)
 	(restrict/ EUD=C DE DE<=T DD DD^T) S^T=V
 	(restrict/ EUF=A DE DE<=V DF DF^V)
@@ -759,11 +759,11 @@ restrict/ :
     <- set`disjoint-respects-geq DD^T DD<=DD V<=T DD^V
     <- union-left-preserves-disjoint* DD^V DB^V DDUDB=DF DF^V.
 
-%worlds () (restrict-associate-intersection* _ _ _ _).
-%total { } (restrict-associate-intersection* _ _ _ _).
+%worlds () (restrict-associates-intersection* _ _ _ _).
+%total { } (restrict-associates-intersection* _ _ _ _).
 
 
-%theorem restrict-associate-intersection :
+%theorem restrict-associates-intersection :
 	forall* {A} {C} {E} {S} {T}
 	forall	{R1: restrict A S C}
 		{R2: restrict C T E}
@@ -771,12 +771,84 @@ restrict/ :
 		{R3: restrict A V E}
 	true.
 
-- : restrict-associate-intersection R1 R2 _ I R3
+- : restrict-associates-intersection R1 R2 _ I R3
     <- intersection-total I
-    <- restrict-associate-intersection* R1 R2 I R3.
+    <- restrict-associates-intersection* R1 R2 I R3.
 
-%worlds () (restrict-associate-intersection _ _ _ _ _).
-%total { } (restrict-associate-intersection _ _ _ _ _).
+%worlds () (restrict-associates-intersection _ _ _ _ _).
+%total { } (restrict-associates-intersection _ _ _ _ _).
+
+
+%theorem restrict-associates-intersection-converse* :
+	forall* {A} {E} {S} {T} {V} {C}
+	forall	{R3: restrict A V E}
+		{I: intersection S T V}
+		{R1: restrict A S C}
+	exists	{R2: restrict C T E}
+	true.
+
+- : restrict-associates-intersection-converse*
+	(restrict/ EUF=A DE DE<=V DF DF^V) S^T=V
+	(restrict/ CUB=A DC DC<=S DB DB^S)
+	(restrict/ EUD=C DE DE<=T DD DD^T)
+    <- intersection-implies-leq S^T=V V<=S V<=T
+    <- set`leq-transitive DE<=V V<=S DE<=S
+    <- set`leq-transitive DE<=V V<=T DE<=T
+    <- set`disjoint-symmetric DF^V V^DF
+    <- set`disjoint-symmetric DB^S S^DB
+    <- set`disjoint-respects-geq* V^DF DE<=V DE^DF
+    <- set`disjoint-respects-geq* S^DB DC<=S DC^DB
+    <- set`disjoint-respects-geq* S^DB DE<=S DE^DB
+    <- domain-preserves-disjoint-converse DE^DF DE DF E^F
+    <- domain-preserves-disjoint-converse DC^DB DC DB C^B
+    <- disjoint-join-cross-comparable E^F EUF=A C^B CUB=A EP X D BP
+	EPUX=E DUBP=F EPUD=C XUBP=B
+    <- domain-total DX
+    <- domain-total DEP
+    <- domain-total DBP
+    <- join-commute-domain EPUX=E DEP DX DE DEPUDX=DE
+    <- join-commute-domain XUBP=B DX DBP DB DXUDBP=DB
+    <- union-implies-leq DEPUDX=DE _ DX<=DE
+    <- union-implies-leq DXUDBP=DB DX<=DB _
+    <- set`disjoint-respects-geq DE^DB DX<=DE DX<=DB DX^DX
+    <- set`disjoint-anti-reflexive DX^DX Z=DX
+    <- set`eq-symmetric Z=DX DX=0
+    <- domain-respects-eq DX eq/ DX=0 DOMX=0
+    <- domain-empty-implies-empty DOMX=0 X=0
+    <- join-unique EPUX=E join/R eq/ X=0 E=EP
+    <- join-unique XUBP=B join/L X=0 eq/ B=BP
+    <- eq-symmetric E=EP EP=E
+    <- eq-symmetric B=BP BP=B
+    <- join-respects-eq EPUD=C EP=E eq/ eq/ EUD=C
+    <- join-respects-eq DUBP=F eq/ BP=B eq/ DUB=F
+    <- domain-total DD
+    <- join-commute-domain DUB=F DD DB DF DDUDB=DF
+    <- join-commute-domain EUD=C DE DD DC DEUDD=DC
+    <- union-implies-leq DDUDB=DF DD<=DF _
+    <- union-implies-leq DEUDD=DC _ DD<=DC
+    <- set`leq-transitive DD<=DC DC<=S DD<=S
+    <- set`disjoint-respects-geq* DF^V DD<=DF DD^V
+    <- leq-intersection-disjoint-implies-disjoint DD<=S S^T=V DD^V DD^T.
+
+%worlds () (restrict-associates-intersection-converse* _ _ _ _).
+%total { } (restrict-associates-intersection-converse* _ _ _ _).
+
+
+%theorem restrict-associates-intersection-converse :
+	forall* {A} {E} {S} {T} {V}
+	forall	{R3: restrict A V E}
+		{I: intersection S T V}
+	exists	{C}
+		{R1: restrict A S C}
+		{R2: restrict C T E}
+	true.
+
+- : restrict-associates-intersection-converse R3 I _ R1 R2
+    <- restrict-total R1
+    <- restrict-associates-intersection-converse* R3 I R1 R2.
+
+%worlds () (restrict-associates-intersection-converse _ _ _ _ _).
+%total { } (restrict-associates-intersection-converse _ _ _ _ _).
 
 
 %theorem fresh-update-implies-restrict :
