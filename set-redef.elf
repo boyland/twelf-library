@@ -63,6 +63,7 @@
     [L:member M N] [LE:leq (set/1 N) M]
     lookup-implies-unit-leq L LE.
 
+%abbrev not-member-member-not-equal = not-member-lookup-not-equal.
 %abbrev disjoint-member-contradiction = disjoint-lookup-contradiction.
 %abbrev disjoint-member-implies-not-member = disjoint-lookup-implies-not-member.
 %abbrev not-member-union-left-preserves-member-converse = not-member-union-left-preserves-lookup-converse.
