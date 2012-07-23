@@ -127,6 +127,8 @@
 %abbrev not-member-add-preserves-disjoint = 
 	not-member-update-preserves-disjoint.
 %abbrev not-member-add-increases-size = not-member-update-increases-size.
+%abbrev not-member-add-increases-size-converse = 
+	not-member-update-increases-size-converse.
 
 
 %% using "union"
