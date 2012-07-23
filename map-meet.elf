@@ -1110,6 +1110,74 @@ END_ELF
 %worlds () (meet-meets-lookup* _ _ _ _ _).
 %total { } (meet-meets-lookup* _ _ _ _ _).
 
+
+%theorem meet-right-preserves-fresh:
+	forall*	{M1} {N} {M2} {M3}
+	forall	{F1: fresh M1 N}
+		{M: meet M1 M2 M3}
+	exists	{F3: fresh M3 N}
+	true.
+
+%theorem meet-right-preserves-fresh/L:
+	forall*	{M1} {N} {M2} {M3} {B}
+	forall	{F1: fresh M1 N}
+		{M: meet M1 M2 M3}
+		{F3: domain? M3 N B}
+	exists	{F3: fresh M3 N}
+	true.
+
+- : meet-right-preserves-fresh/L _ _ (domain?/out F) F.
+
+- : meet-right-preserves-fresh/L F1 M (domain?/in L3) F3
+    <- meet-meets-lookup-converse M L3 _ _ L1 L2 MD
+    <- fresh-lookup-not-equal F1 L1 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-fresh F F3.
+
+%worlds () (meet-right-preserves-fresh/L _ _ _ _).
+%total { } (meet-right-preserves-fresh/L _ _ _ _).
+
+- : meet-right-preserves-fresh F1 M F3
+    <- domain?-total D?
+    <- meet-right-preserves-fresh/L F1 M D? F3.
+
+%worlds () (meet-right-preserves-fresh _ _ _).
+%total { } (meet-right-preserves-fresh _ _ _).
+
+
+%theorem meet-left-preserves-fresh:
+	forall*	{M1} {N} {M2} {M3}
+	forall	{F2: fresh M2 N}
+		{M: meet M1 M2 M3}
+	exists	{F3: fresh M3 N}
+	true.
+
+%theorem meet-left-preserves-fresh/L:
+	forall*	{M1} {N} {M2} {M3} {B}
+	forall	{F2: fresh M2 N}
+		{M: meet M1 M2 M3}
+		{F3: domain? M3 N B}
+	exists	{F3: fresh M3 N}
+	true.
+
+- : meet-left-preserves-fresh/L _ _ (domain?/out F) F.
+
+- : meet-left-preserves-fresh/L F2 M (domain?/in L3) F3
+    <- meet-meets-lookup-converse M L3 _ _ L1 L2 MD
+    <- fresh-lookup-not-equal F2 L2 N<>N
+    <- nat`ne-anti-reflexive N<>N F
+    <- false-implies-fresh F F3.
+
+%worlds () (meet-left-preserves-fresh/L _ _ _ _).
+%total { } (meet-left-preserves-fresh/L _ _ _ _).
+
+- : meet-left-preserves-fresh F2 M F3
+    <- domain?-total D?
+    <- meet-left-preserves-fresh/L F2 M D? F3.
+
+%worlds () (meet-left-preserves-fresh _ _ _).
+%total { } (meet-left-preserves-fresh _ _ _).
+
 %{%
 #ifdef MAP_LEQ
 #ifdef DATA_MEET_IMPLIES_LEQ
