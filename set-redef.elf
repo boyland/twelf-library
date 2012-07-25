@@ -24,6 +24,8 @@
 
 %abbrev member = [S] [N] lookup S N unit/.
 
+%abbrev member/1 = (lookup/= nat`eq/).
+
 %{%
 /*
 %abbrev not-member = fresh.
