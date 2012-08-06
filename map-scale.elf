@@ -534,43 +534,43 @@ scale/+ : scale S (map/+ N D M) (map/+ N DP MP)
 
 %theorem fresh-update-commutes-inv-scale:
 	forall*	{M3} {N} {D4} {M4} {X2} {M2}
-	forall	{F: ratmap`fresh M3 N}
-		{U: ratmap`update M3 N D4 M4}
-		{S: ratmap`scale X2 M2 M4}
+	forall	{F: fresh M3 N}
+		{U: update M3 N D4 M4}
+		{S: scale X2 M2 M4}
 	exists	{M1} {D2}
-		{S: ratmap`scale X2 M1 M3}
-		{D: rat`scale X2 D2 D4}
-		{U: ratmap`update M1 N D2 M2}
+		{S: scale X2 M1 M3}
+		{D: data`scale X2 D2 D4}
+		{U: update M1 N D2 M2}
 	true.
 
 - : fresh-update-commutes-inv-scale
-	ratmap`fresh/0 ratmap`update/0 (scale/+ scale/0 DS) _ _
-	scale/0 DS ratmap`update/0.
+	fresh/0 update/0 (scale/+ scale/0 DS) _ _
+	scale/0 DS update/0.
 
 - : fresh-update-commutes-inv-scale
-	(ratmap`fresh/< GT) U34 SC _ _
+	(fresh/< GT) U34 SC _ _
 	(scale/+ SC3 DS3) DS U12
     <- gt-implies-plus GT _ P
-    <- ratmap`update/<-inversion U34 P EQ1
-    <- ratmap`eq-symmetric EQ1 EQ1s
-    <- scale-respects-eq SC rat`eq/ ratmap`eq/ EQ1s SC1
+    <- update/<-inversion U34 P EQ1
+    <- eq-symmetric EQ1 EQ1s
+    <- scale-respects-eq SC scalar`eq/ eq/ EQ1s SC1
     <- scale/+-inversion SC1 _ _ SC2 DS EQ2
     <- scale/+-inversion SC2 _ _ SC3 DS3 EQ3
-    <- ratmap`map/+-preserves-eq nat`eq/ rat`eq/ EQ3 EQ4
-    <- ratmap`eq-transitive EQ4 EQ2 EQ5
-    <- ratmap`update-respects-eq 
-	(ratmap`update/< P) ratmap`eq/ nat`eq/ rat`eq/ EQ5 U12.
+    <- map/+-preserves-eq nat`eq/ data`eq/ EQ3 EQ4
+    <- eq-transitive EQ4 EQ2 EQ5
+    <- update-respects-eq 
+	(update/< P) eq/ nat`eq/ data`eq/ EQ5 U12.
 
 - : fresh-update-commutes-inv-scale
-	(ratmap`fresh/> F1 P) U34 SC _ _
+	(fresh/> F1 P) U34 SC _ _
 	(scale/+ SC2 DS) DS2 U12
-    <- ratmap`update/>-inversion U34 P _ U1 EQ1
-    <- ratmap`eq-symmetric EQ1 EQ1s
-    <- scale-respects-eq SC rat`eq/ ratmap`eq/ EQ1s SCx
+    <- update/>-inversion U34 P _ U1 EQ1
+    <- eq-symmetric EQ1 EQ1s
+    <- scale-respects-eq SC scalar`eq/ eq/ EQ1s SCx
     <- scale/+-inversion SCx _ _ SC1 DS EQ2
     <- fresh-update-commutes-inv-scale F1 U1 SC1 _ _ SC2 DS2 UP1
-    <- ratmap`update-respects-eq
-	(ratmap`update/> UP1 P) ratmap`eq/ nat`eq/ rat`eq/ EQ2 U12.
+    <- update-respects-eq
+	(update/> UP1 P) eq/ nat`eq/ data`eq/ EQ2 U12.
 
 %worlds () (fresh-update-commutes-inv-scale _ _ _ _ _ _ _ _).
 %total (F) (fresh-update-commutes-inv-scale F _ _ _ _ _ _ _).
