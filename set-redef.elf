@@ -131,7 +131,12 @@
 %abbrev not-member-add-increases-size = not-member-update-increases-size.
 %abbrev not-member-add-increases-size-converse = 
 	not-member-update-increases-size-converse.
-
+%abbrev not-member-add-cancels
+	: not-member M1 N1 -> add M1 N1 M1P ->
+	  not-member M2 N2 -> add M2 N2 M2P -> 
+	  nat`eq N1 N2 -> eq M1P M2P -> eq M1 M2 -> type
+	= [F1] [A1] [F2] [A2] [EQ1] [EQ2] [EQ3]
+	  not-member-update-cancels F1 A1 F2 A2 EQ1 EQ2 unit`eq/ EQ3.
 
 %% using "union"
 
