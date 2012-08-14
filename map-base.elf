@@ -2706,6 +2706,21 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (update-commutes-shift-converse _ _ _ _ _ _ _).
 
 
+%theorem fresh-update-preserves-lookup :
+	forall* {M} {N1} {D1} {MP} {N2} {D2}
+	forall {L:lookup M N2 D2} {F: fresh M N1} {U:update M N1 D1 MP}
+        exists {LP:lookup MP N2 D2}
+	true.
+
+- : fresh-update-preserves-lookup L F U LP
+    <- fresh-lookup-not-equal F L NE
+    <- nat`ne-symmetric NE NEs
+    <- update-preserves-lookup L U NEs LP.
+
+%worlds () (fresh-update-preserves-lookup _ _ _ _).
+%total { } (fresh-update-preserves-lookup _ _ _ _).
+
+
 %theorem fresh-update-increases-size :
 	forall* {M1} {S} {N} {D} {M2}
 	forall	{S1: size M1 S}
@@ -3213,3 +3228,21 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds () (shift-implies-update _ _).
 %total { } (shift-implies-update _ _).
+
+
+%theorem fresh-update-implies-shift:
+	forall* {M} {N} {D} {M1}
+	forall	{F: fresh M N}
+		{U: update M N D (map/+ N D M1)}
+	exists	{S: shift N M1 M}
+	true.
+
+- : fresh-update-implies-shift F U S
+    <- shift-total SP
+    <- shift-implies-update SP UP
+    <- shift-implies-fresh SP FP
+    <- fresh-update-cancels FP UP F U nat`eq/ eq/ data`eq/ MEQ
+    <- shift-respects-eq SP nat`eq/ eq/ MEQ S.
+
+%worlds () (fresh-update-implies-shift _ _ _).
+%total { } (fresh-update-implies-shift _ _ _).
