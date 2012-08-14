@@ -634,7 +634,7 @@ domain/+ : domain M S ->
 %}%
 
 %theorem scale-preserves-domain:
-	forall* {M1} {M2} {S}
+	forall* {M1} {M2} {S} {X}
 	forall	{D1: domain M1 S}
 		{MS: scale X M1 M2}
 	exists	{D2: domain M2 S}
@@ -642,7 +642,7 @@ domain/+ : domain M S ->
 
 - : scale-preserves-domain domain/0 scale/0 domain/0.
 
-- : scale-preserves-domain (domain/+ D1) (scale/+ S) (domain/+ D2)
+- : scale-preserves-domain (domain/+ D1) (scale/+ S _) (domain/+ D2)
     <- scale-preserves-domain D1 S D2.
 
 %worlds (WORLDS) (scale-preserves-domain _ _ _).
@@ -650,7 +650,7 @@ domain/+ : domain M S ->
 
 
 %theorem scale-preserves-domain-converse:
-	forall* {M1} {M2} {S}
+	forall* {M1} {M2} {S} {X}
 	forall	{D1: domain M2 S}
 		{MS: scale X M1 M2}
 	exists	{D2: domain M1 S}
@@ -658,7 +658,7 @@ domain/+ : domain M S ->
 
 - : scale-preserves-domain-converse domain/0 scale/0 domain/0.
 
-- : scale-preserves-domain-converse (domain/+ D1) (scale/+ S) (domain/+ D2)
+- : scale-preserves-domain-converse (domain/+ D1) (scale/+ S _) (domain/+ D2)
     <- scale-preserves-domain-converse D1 S D2.
 
 %worlds (WORLDS) (scale-preserves-domain-converse _ _ _).
