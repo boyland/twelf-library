@@ -1185,7 +1185,7 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 %total (J) (join-associative _ J _ _ _).
 
 %{%
-#if DATA_JOIN_DETERMINISTIC
+#ifdef DATA_JOIN_DETERMINISTIC
 #define EQ eq
 #define OPN join
 #define OP(X,Y) X+Y
