@@ -28,6 +28,7 @@ allrelation/0 : allrelation map/0 S.
 allrelation/U :
 	allrelation SM1 S ->
 	relation N S1 S ->
+	fresh SM1 N ->
 	update SM1 N S1 SM2 ->
     allrelation SM2 S.
 
@@ -95,10 +96,10 @@ allrelation/U :
 	true.
 
 %theorem allrelation/U-inversion/L :
-	forall*	{N0} {D0} {M0} {X} {N} {D} {B0} {B} {M1} {M2}
+	forall*	{N0} {D0} {M0} {X} {N} {D} {B} {M1} {M2}
 	forall	{A0: allrelation M0 X}
 		{R1: relation N0 D0 X}
-		{D0?: domain? M0 N0 B0}
+		{F0: fresh M0 N0}
 		{U0: update M0 N0 D0 M2}
 		{F1: fresh M1 N}
 		{U1: update M1 N D M2}
@@ -107,31 +108,21 @@ allrelation/U :
 		{R: relation N D X}		
 	true.
 
-- : allrelation/U-inversion/L A0 R0 (domain?/out F0) U0 F1 U1 nat`eq?/yes A1 R1
+- : allrelation/U-inversion/L A0 R0 F0 U0 F1 U1 nat`eq?/yes A1 R1
     <- fresh-update-cancels F0 U0 F1 U1 nat`eq/ eq/ D0=D1 M0=M1
     <- allrelation-respects-eq A0 M0=M1 arg`eq/ A1
     <- relation-respects-eq R0 nat`eq/ D0=D1 arg`eq/ R1.
 
-- : allrelation/U-inversion/L A0 R0 (domain?/in L0) U0 F1 U1 nat`eq?/yes A1 R1
-    <- lookup-implies-update L0 UX
-    <- update-overwrites-converse UX U0 U0r
-    <- update-overwrites U1 U0r nat`eq/ U2
-    <- allrelation/U-inversion A0 F1 U2 A1 _
-    <- update-implies-lookup U0 L2P
-    <- update-implies-lookup U1 L2
-    <- lookup-deterministic L2P L2 eq/ nat`eq/ DE
-    <- relation-respects-eq R0 nat`eq/ DE arg`eq/ R1.
-
 - : allrelation/U-inversion/L 
-	A0 R0 _ U0 F1 U1 (nat`eq?/no N<>N1) (allrelation/U A2 R0 U3) R1
+	A0 R0 F0 U0 F1 U1 (nat`eq?/no N<>N1) (allrelation/U A2 R0 F3 U3) R1
     <- update-commutes-converse U1 U0 N<>N1 _ U3 U2
     <- update-preserves-fresh-converse F1 U3 F2
-    <- allrelation/U-inversion A0 F2 U2 A2 R1.
+    <- allrelation/U-inversion A0 F2 U2 A2 R1
+    <- update-preserves-fresh-converse F0 U2 F3.
 
-- : allrelation/U-inversion (allrelation/U A0 R0 U0) F U A1 R
-    <- domain?-total D?
+- : allrelation/U-inversion (allrelation/U A0 R0 F0 U0) F U A1 R
     <- nat`eq?-total EQ?
-    <- allrelation/U-inversion/L A0 R0 D? U0 F U EQ? A1 R.
+    <- allrelation/U-inversion/L A0 R0 F0 U0 F U EQ? A1 R.
 
 %worlds () (allrelation/U-inversion _ _ _ _ _)
            (allrelation/U-inversion/L _ _ _ _ _ _ _ _ _).
@@ -184,7 +175,7 @@ allrelation/U :
     <- update-preserves-lookup-converse L U N<>N1 L1
     <- allrelation-lookup-implies-relation A1 L1 R.
 
-- : allrelation-lookup-implies-relation (allrelation/U A1 R1 U1) L R
+- : allrelation-lookup-implies-relation (allrelation/U A1 R1 _ U1) L R
     <- nat`eq?-total EQ?
     <- allrelation-lookup-implies-relation/L A1 R1 U1 L EQ? R.
 
@@ -203,7 +194,30 @@ allrelation/U :
 	exists	{A2: allrelation M2 X}
 	true.
 
-- : relation-update-preserves-allrelation A R U (allrelation/U A R U).
+%theorem relation-update-preserves-allrelation/L :
+	forall*	{M1} {X} {N} {D} {M2} {B}
+	forall	{A1: allrelation M1 X}
+		{R: relation N D X}
+		{D?: domain? M1 N B}
+		{U: update M1 N D M2}
+	exists	{A2: allrelation M2 X}
+	true.
+
+- : relation-update-preserves-allrelation/L A R (domain?/out F) U 
+	(allrelation/U A R F U).
+
+- : relation-update-preserves-allrelation/L A R (domain?/in L) U
+	(allrelation/U A1 R F U2)
+    <- lookup-implies-fresh-update L _ F U1
+    <- allrelation/U-inversion A F U1 A1 R1
+    <- update-overwrites U1 U nat`eq/ U2.
+ 
+%worlds () (relation-update-preserves-allrelation/L _ _ _ _ _).
+%total { } (relation-update-preserves-allrelation/L _ _ _ _ _).
+
+- : relation-update-preserves-allrelation A R U AP
+    <- domain?-total D?
+    <- relation-update-preserves-allrelation/L A R D? U AP.
 
 %worlds () (relation-update-preserves-allrelation _ _ _ _).
 %total { } (relation-update-preserves-allrelation _ _ _ _).
@@ -222,8 +236,8 @@ allrelation/U :
 - : allrelation-respects-leq allrelation/0 _ allrelation/0.
 
 - : allrelation-respects-leq
-	(allrelation/U A1 R1 U) XL
-	(allrelation/U A2 R2 U)
+	(allrelation/U A1 R1 F U) XL
+	(allrelation/U A2 R2 F U)
     <- allrelation-respects-leq A1 XL A2
     <- relation-respects-leq R1 XL R2.
 
