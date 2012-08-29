@@ -137,6 +137,13 @@
 	  nat`eq N1 N2 -> eq M1P M2P -> eq M1 M2 -> type
 	= [F1] [A1] [F2] [A2] [EQ1] [EQ2] [EQ3]
 	  not-member-update-cancels F1 A1 F2 A2 EQ1 EQ2 unit`eq/ EQ3.
+%abbrev not-member-add-preserves-leq-converse
+	: leq M1P M2P -> not-member M1 N -> add M1 N M1P ->
+	                 not-member M2 N -> add M2 N M2P ->
+          leq M1 M2 -> type
+	= [LP] [F1] [U1] [F2] [U2] [L]
+	  not-member-update-preserves-leq-converse LP F1 U1 F2 U2 L unit`eq/.
+
 
 %% using "union"
 
