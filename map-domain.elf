@@ -29,6 +29,8 @@ domain/0 : domain map/0 set`map/0.
 domain/+ : domain M S ->
 	domain (map/+ N _ M) (set`map/+ N unit/ S).
 
+%abbrev domain/1 : domain (map/1 N D) (set/1 N) = (domain/+ domain/0).
+
 %worlds (WORLDS) (domain _ _).
 %unique domain +M -1S.
 
@@ -584,6 +586,25 @@ domain/+ : domain M S ->
 
 %worlds (WORLDS) (join-commute-domain _ _ _ _ _).
 %total (J) (join-commute-domain J _ _ _ _).
+
+
+%theorem domain-commute-join:
+	forall* {M1} {M2} {M3} {S1} {S2} {S3}
+	forall	{D1: domain M1 S1}
+		{D2: domain M2 S2}
+		{J1: join M1 M2 M3}
+		{J2: set`union S1 S2 S3}
+	exists	{D3: domain M3 S3}
+	true.
+
+- : domain-commute-join D1 D2 J1 J2 D3
+    <- domain-total D3P
+    <- join-commute-domain J1 D1 D2 D3P J2P
+    <- set`union-unique J2P J2 set`eq/ set`eq/ S3P=S3
+    <- domain-respects-eq D3P eq/ S3P=S3 D3.
+
+%worlds () (domain-commute-join _ _ _ _ _).
+%total { } (domain-commute-join _ _ _ _ _).
 
 %{%
 #endif /* MAP_JOIN */
