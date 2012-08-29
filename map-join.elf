@@ -2844,6 +2844,7 @@ For example C13 ^ C14 because C13 <= C3 and C14 <= C4 and C3^C4
 %total (J) (join-left-preserves-leq* _ _ J _).
 
 %{%
+#ifdef DATA_JOIN_NO_RIGHT_IDENTITY
 #ifdef DATA_JOIN_LEFT_CANCELS
 #ifdef DATA_JOIN_COMMUTATIVE
 #ifdef DATA_JOIN_IMPLIES_LEQ
@@ -2871,6 +2872,7 @@ For example C13 ^ C14 because C13 <= C3 and C14 <= C4 and C3^C4
 %{%
 #define OP_CANCELS 1
 #define EQ eq
+#endif
 #endif
 #endif
 #endif
