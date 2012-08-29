@@ -177,7 +177,63 @@ scale/+ : scale S (map/+ N D M) (map/+ N DP MP)
 %worlds () (scale-associates-converse* _ _ _ _).
 %total { } (scale-associates-converse* _ _ _ _).
 
+
+%theorem scale-associates-converse :
+	forall*	{S1} {S2} {M4} {M6} {M7}
+	forall	{SC24:scale S2 M4 M6} 
+		{SC16:scale S1 M6 M7} 
+	exists	{S3}
+        	{C:data`combine-scalar S1 S2 S3}
+		{SC34:scale S3 M4 M7}
+	true.
+
+- : scale-associates-converse S2*M4=M6 S1*M6=M7 _ S1*S2=S3 S3*M4=M7
+    <- data`combine-scalar-total S1*S2=S3
+    <- scale-associates-converse* S2*M4=M6 S1*M6=M7 S1*S2=S3 S3*M4=M7.
+
+%worlds () (scale-associates-converse _ _ _ _ _).
+%total { } (scale-associates-converse _ _ _ _ _).
+
 %{%
+#ifdef DATA_COMBINE_SCALAR_COMMUTATIVE
+%}%
+
+%theorem scale-reorders:
+	forall*	{S1} {M2} {M3} {S4} {M7}
+	forall	{SC12: scale S1 M2 M3}
+		{SC43: scale S4 M3 M7}
+	exists	{M6}
+		{SC42: scale S4 M2 M6}
+		{SC16: scale S1 M6 M7}
+	true.
+
+- : scale-reorders S1*M2=M3 S4*M3=M7 _ S4*M2=M6 S1*M6=M7
+    <- scale-associates-converse S1*M2=M3 S4*M3=M7 _ S4*S1=S5 S5*M2=M7
+    <- data`combine-scalar-commutative S4*S1=S5 S1*S4=S5
+    <- scale-associates S1*S4=S5 S5*M2=M7 _ S4*M2=M6 S1*M6=M7.
+
+%worlds () (scale-reorders _ _ _ _ _).
+%total { } (scale-reorders _ _ _ _ _).
+
+
+%theorem scale-reorders*:
+	forall*	{S1} {M2} {M3} {S4} {M6} {M7}
+	forall	{SC12: scale S1 M2 M3}
+		{SC43: scale S4 M3 M7}
+		{SC42: scale S4 M2 M6}
+	exists	{SC16: scale S1 M6 M7}
+	true.
+
+- : scale-reorders* S1*M2=M3 S4*M3=M7 S4*M2=M6 S1*M6=M7
+    <- scale-reorders S1*M2=M3 S4*M3=M7 _ S4*M2=M6P S1*M6P=M7
+    <- scale-unique S4*M2=M6P S4*M2=M6 scalar`eq/ eq/ M6P=M6
+    <- scale-respects-eq S1*M6P=M7 scalar`eq/ M6P=M6 eq/ S1*M6=M7.
+
+%worlds () (scale-reorders* _ _ _ _).
+%total { } (scale-reorders* _ _ _ _).
+
+%{%
+#endif
 #endif
 #endif
 
