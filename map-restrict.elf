@@ -1,7 +1,8 @@
 %%%%% map-restrict.elf
 %%%%% Restricting a map to a domain inside a set.
 %%%%% This file is one of the add-ons to the map ``functor''
-%%%%% It requires set and map-base and optionally map-domain, map-leq, map-join
+%%%%% It requires set and map-base and 
+%%%%% optionally map-domain, map-leq, map-join, map-scale
 
 
 %%%% Definitions
@@ -736,6 +737,36 @@ restrict/in :
 %total { } (restrict-associates-intersection-converse _ _ _ _ _).
 
 
+%theorem empty-restriction:
+	forall*	{A}
+	exists	{R: restrict A set`0 map/0}
+	true.
+
+%theorem empty-restriction/L:
+	forall*	{A}
+	forall	{N} {Z: size A N}
+	exists	{R: restrict A set`0 map/0}
+	true.
+
+- : empty-restriction/L _ _ restrict/0.
+
+- : empty-restriction/L _ ZP 
+	(restrict/out R set`not-member/0 F U)
+    <- lookup-implies-fresh-update (lookup/= nat`eq/) _ F U
+    <- fresh-update-increases-size-converse ZP F U Z
+    <- empty-restriction/L _ Z R.
+
+%worlds () (empty-restriction/L _ _ _).
+%total (N) (empty-restriction/L N _ _).
+
+- : empty-restriction R
+    <- size-total Z
+    <- empty-restriction/L _ Z R.
+
+%worlds () (empty-restriction _).
+%total { } (empty-restriction _).
+
+
 %theorem fresh-implies-unit-restriction-empty:
 	forall*	{A} {N}
 	forall	{F: fresh A N}
@@ -1087,12 +1118,6 @@ restrict/in :
 
 %{%
 #ifdef MAP_JOIN
-#ifndef DATA_JOIN_COMMUTATIVE
-#error join must be commutative
-#endif
-#ifndef DATA_JOIN_TOTAL_STAR
-#error join must be total 
-#endif
 %}%
 
 %theorem restrict-associates-disjoint-union* :
@@ -1361,6 +1386,9 @@ restrict/in :
                   (restrict-associates-join*/in R2 _ _ _ _ _ _ _ _ _)
                   (restrict-associates-join*/out R3 _ _ _ _ _ _ _ _).
 
+%{%
+#ifdef DATA_JOIN_TOTAL_STAR
+%}%
 
 %theorem restrict-associates-join :
 	forall*	{A} {C} {D} {F} {G} {S}
@@ -1400,6 +1428,9 @@ restrict/in :
 %total { } (join-commute-restrict* _ _ _ _ _).
 % NB: converse is not true or else AUB=C for all A,B,C (think S=0)
 
+%{%
+#endif
+%}%
 
 %theorem restrict-associates-disjoint-union-converse :
 	forall*	{A} {S} {T} {V} {G}
@@ -1423,6 +1454,9 @@ restrict/in :
 %worlds () (restrict-associates-disjoint-union-converse _ _ _ _ _ _ _ _ _).
 %total { } (restrict-associates-disjoint-union-converse _ _ _ _ _ _ _ _ _).
 
+%{%
+#ifdef DATA_JOIN_COMMUTATIVE
+%}%
 
 %theorem restrict-implies-disjoint-join:
 	forall*	{A} {C} {S}
@@ -1459,6 +1493,7 @@ restrict/in :
 %total (R) (restrict-implies-disjoint-join R _ _ _).
 
 %{%
+#endif
 /* as well as join, we also can have ... */
 #ifdef MAP_DOMAIN
 %}%
@@ -1551,5 +1586,90 @@ restrict/in :
 %{%
 #endif /* MAP_DOMAIN */
 #endif /* MAP_JOIN */
+#ifdef MAP_SCALE
 %}%
 
+%theorem scale-commutes-restrict:
+	forall*	{V} {S} {M1} {M2} {M4}
+	forall	{SC: scale V M1 M2}
+		{MR: restrict M2 S M4}
+	exists	{M3}
+		{MR: restrict M1 S M3}
+		{SC: scale V M3 M4}
+	true.
+
+- : scale-commutes-restrict scale/0 restrict/0 _ restrict/0 scale/0.
+
+- : scale-commutes-restrict S1P
+	(restrict/out R2 NM F2 U2) _
+	(restrict/out R1 NM F1 U1) S3
+    <- fresh-update-commutes-inv-scale F2 U2 S1P _ _ S1 DS U1
+    <- scale-commutes-restrict S1 R2 _ R1 S3
+    <- scale-preserves-fresh-converse F2 S1 F1.
+
+- : scale-commutes-restrict S1P
+	(restrict/in R2 M F2 U2 U3) _
+	(restrict/in R1 M F1 U1 U4) S3P
+    <- fresh-update-commutes-inv-scale F2 U2 S1P _ _ S1 DS U1
+    <- scale-commutes-restrict S1 R2 _ R1 S3
+    <- scale-preserves-fresh-converse F2 S1 F1
+    <- scale-commutes-update S3 U3 DS _ U4 S3P.
+
+%worlds () (scale-commutes-restrict _ _ _ _ _).
+%total (R) (scale-commutes-restrict _ R _ _ _).
+
+
+%theorem scale-commutes-restrict*:
+	forall*	{V} {S} {M1} {M2} {M3} {M4}
+	forall	{SC: scale V M1 M2}
+		{MR: restrict M2 S M4}
+		{MR: restrict M1 S M3}
+	exists	{SC: scale V M3 M4}
+	true.
+
+- : scale-commutes-restrict* S1 R2 R1 S2
+    <- scale-commutes-restrict S1 R2 _ R1P S2P
+    <- restrict-unique R1P R1 eq/ set`eq/ M3P=M3
+    <- scale-respects-eq S2P scalar`eq/ M3P=M3 eq/ S2.
+
+%worlds () (scale-commutes-restrict* _ _ _ _).
+%total { } (scale-commutes-restrict* _ _ _ _).
+
+
+%theorem restrict-commutes-scale*:
+	forall*	{V} {S} {M1} {M2} {M3} {M4}
+	forall	{MR: restrict M1 S M3}
+		{SC: scale V M3 M4}
+		{SC: scale V M1 M2}
+	exists	{MR: restrict M2 S M4}
+	true.
+
+- : restrict-commutes-scale* R1 S3 S1 R2
+    <- restrict-total R2P
+    <- scale-commutes-restrict* S1 R2P R1 S3P
+    <- scale-unique S3P S3 scalar`eq/ eq/ M4P=M4
+    <- restrict-respects-eq R2P eq/ set`eq/ M4P=M4 R2.
+
+%worlds () (restrict-commutes-scale* _ _ _ _).
+%total { } (restrict-commutes-scale* _ _ _ _).
+
+
+%theorem restrict-commutes-scale:
+	forall*	{V} {S} {M1} {M3} {M4}
+	forall	{MR: restrict M1 S M3}
+		{SC: scale V M3 M4}
+	exists	{M2}
+		{SC: scale V M1 M2}
+		{MR: restrict M2 S M4}
+	true.
+
+- : restrict-commutes-scale R1 S3 _ S1 R2
+    <- scale-total S1
+    <- restrict-commutes-scale* R1 S3 S1 R2.
+
+%worlds () (restrict-commutes-scale _ _ _ _ _).
+%total { } (restrict-commutes-scale _ _ _ _ _).
+
+%{%
+#endif /* MAP_SCALE */
+%}%
