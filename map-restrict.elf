@@ -1118,6 +1118,7 @@ restrict/in :
 
 %{%
 #ifdef MAP_JOIN
+#ifdef DATA_JOIN_ASSOCIATIVE
 %}%
 
 %theorem restrict-associates-disjoint-union* :
@@ -1141,10 +1142,16 @@ restrict/in :
     <- restrict-preserves-fresh FA1 A1|S=C1 FC1
     <- fresh-update-implies-unit-join FC1 UC C1UN=C
     <- disjoint-join-total C1^E _ C1UE=G1
-    <- join-assoc-commutative* C1UN=C CUE=G C1UE=G1 G1UN=G
+    <- restrict-preserves-fresh FA1 A1|T=E FE
+    <- fresh-implies-unit-disjoint FC1 C1^N
+    <- disjoint-join-commutative C1^N C1UN=C NUC1=C
+    <- join-associative* NUC1=C CUE=G C1UE=G1 NUG1=G
+    <- join-preserves-fresh* FC1 FE C1UE=G1 FG1
+    <- fresh-implies-unit-disjoint FG1 G1^N
+    <- disjoint-symmetric G1^N N^G1
+    <- disjoint-join-commutative N^G1 NUG1=G G1UN=G
     <- restrict-associates-disjoint-union* 
 	A1|S=C1 A1|T=E S^T SUT=U C1UE=G1 A1|U=G1
-    <- restrict-preserves-fresh FA1 A1|U=G1 FG1
     <- fresh-unit-join-implies-update FG1 G1UN=G UG
     <- union-right-preserves-member* S->N SUT=U U->N.
 
@@ -1168,9 +1175,19 @@ restrict/in :
     <- restrict/in-inversion A|T=E T->N FA1 UA _ A1|T=E1 UE
     <- restrict-left-preserves-disjoint S^T A1|S=C A1|T=E1 C^E1
     <- restrict-preserves-fresh FA1 A1|T=E1 FE1
+    <- restrict-preserves-fresh FA1 A1|S=C FC
     <- fresh-update-implies-unit-join FE1 UE E1UN=E
-    <- disjoint-join-total C^E1 _ CUE1=G1
-    <- join-associative-converse* E1UN=E CUE=G CUE1=G1 G1UN=G
+    <- fresh-implies-unit-disjoint FE1 E1^N
+    <- fresh-implies-unit-disjoint FC C^N
+    <- join-right-preserves-disjoint* C^E1 C^N E1UN=E C^E
+    <- disjoint-join-commutative C^E CUE=G EUC=G
+    <- disjoint-join-commutative E1^N E1UN=E NUE1=E
+    <- join-associative NUE1=E EUC=G G1 E1UC=G1 NUG1=G
+    <- join-left-preserves-disjoint* E1^N C^N E1UC=G1 G1^N
+    <- disjoint-symmetric G1^N N^G1
+    <- disjoint-symmetric C^E1 E1^C
+    <- disjoint-join-commutative N^G1 NUG1=G G1UN=G
+    <- disjoint-join-commutative E1^C E1UC=G1 CUE1=G1
     <- restrict-associates-disjoint-union* 
 	A1|S=C A1|T=E1 S^T SUT=U CUE1=G1 A1|U=G1
     <- restrict-preserves-fresh FA1 A1|U=G1 FG1
@@ -1296,16 +1313,38 @@ restrict/in :
     <- fresh-update-implies-unit-join FC1 UC C1UP=C
     <- fresh-update-implies-unit-join FD1 UD D1UQ=D
     <- fresh-update-implies-unit-join FF1 UF F1UQ=F
+    %% workaround so that we don't require join to be commutative
+    %{%
     <- join-double-associative A1UP=A D1UQ=D AUD=G _ _ A1UD1=G1 PUQ=R G1UR=G
+    %}%
+    <- fresh-implies-unit-disjoint FD1 D1^P
+    <- fresh-implies-unit-disjoint FD1 D1^Q
+    <- disjoint-join-commutative D1^Q D1UQ=D QUD1=D
+    <- join-associative A1UP=A AUD=G DX PUD=DX A1UDX=G
+    <- join-associative-converse QUD1=D PUD=DX R PUQ=R RUD1=DX
+    <- join-right-preserves-disjoint* D1^P D1^Q PUQ=R D1^R
+    <- disjoint-symmetric D1^R R^D1
+    <- disjoint-join-commutative R^D1 RUD1=DX D1UR=DX
+    <- join-associative-converse D1UR=DX A1UDX=G G1 A1UD1=G1 G1UR=G
+    %{%
     <- join-double-associative C1UP=C F1UQ=F CUF=I _ _ C1UF1=I1 PUQ=RP I1URP=I
-    <- join-unique PUQ=RP PUQ=R eq/ eq/ RP=R
+    %}%
+    <- fresh-implies-unit-disjoint FF1 F1^P
+    <- fresh-implies-unit-disjoint FF1 F1^Q
+    <- disjoint-join-commutative F1^Q F1UQ=F QUF1=F
+    <- join-associative C1UP=C CUF=I FX PUF=FX C1UFX=I
+    <- join-associative-converse* QUF1=F PUF=FX PUQ=R RUF1=FX
+    <- join-right-preserves-disjoint* F1^P F1^Q PUQ=R F1^R
+    <- disjoint-symmetric F1^R R^F1
+    <- disjoint-join-commutative R^F1 RUF1=FX F1UR=FX
+    <- join-associative-converse F1UR=FX C1UFX=I I1 C1UF1=I1 I1UR=I
+    %% done
     <- join/=-inversion PUQ=R nat`eq/ XG ZP XAUXD=XG ZUZ=ZP R=XGZP
     <- join-unique ZUZ=ZP join/L eq/ eq/ ZP=Z
     <- map/+-preserves-eq nat`eq/ data`eq/ ZP=Z XGZP=UXG
     <- eq-transitive R=XGZP XGZP=UXG R=UXG
-    <- eq-transitive RP=R R=UXG RP=UXG
     <- join-respects-eq G1UR=G eq/ R=UXG eq/ G1UXG=G
-    <- join-respects-eq I1URP=I eq/ RP=UXG eq/ I1UXG=I
+    <- join-respects-eq I1UR=I eq/ R=UXG eq/ I1UXG=I
     <- join-preserves-fresh* FA1 FD1 A1UD1=G1 FG1
     <- join-preserves-fresh* FC1 FF1 C1UF1=I1 FI1
     <- fresh-unit-join-implies-update FG1 G1UXG=G UG
@@ -1319,8 +1358,20 @@ restrict/in :
     <- restrict-preserves-fresh FD D|S=F FF
     <- fresh-update-implies-unit-join FA1 UA A1UP=A
     <- fresh-update-implies-unit-join FC1 UC C1UP=C
+    %{%
     <- join-assoc-commutative A1UP=A AUD=G G1 A1UD=G1 G1UP=G
     <- join-assoc-commutative C1UP=C CUF=I I1 C1UF=I1 I1UP=I
+    %}%
+    <- fresh-implies-unit-disjoint FD D^P
+    <- fresh-implies-unit-disjoint FF F^P
+    <- join-associative A1UP=A AUD=G DX PUD=DX A1UDX=G
+    <- join-associative C1UP=C CUF=I FX PUF=FX C1UFX=I
+    <- disjoint-symmetric D^P P^D
+    <- disjoint-symmetric F^P P^F
+    <- disjoint-join-commutative P^D PUD=DX DUP=DX
+    <- disjoint-join-commutative P^F PUF=FX FUP=FX
+    <- join-associative-converse DUP=DX A1UDX=G G1 A1UD=G1 G1UP=G
+    <- join-associative-converse FUP=FX C1UFX=I I1 C1UF=I1 I1UP=I
     <- join-preserves-fresh* FA1 FD A1UD=G1 FG1
     <- join-preserves-fresh* FC1 FF C1UF=I1 FI1
     <- fresh-unit-join-implies-update FG1 G1UP=G UG
@@ -1353,7 +1404,16 @@ restrict/in :
     <- restrict/out-inversion D|S=F S-/>N FD1 UD D1|S=F
     <- fresh-update-implies-unit-join FA1 UA A1UP=A
     <- fresh-update-implies-unit-join FD1 UD D1UQ=D
-    <- join-double-associative A1UP=A D1UQ=D AUD=G _ _ A1UD1=G1 PUQ=R G1UR=G
+    %% <- join-double-associative A1UP=A D1UQ=D AUD=G _ _ A1UD1=G1 PUQ=R G1UR=G
+    <- fresh-implies-unit-disjoint FD1 D1^P
+    <- fresh-implies-unit-disjoint FD1 D1^Q
+    <- disjoint-join-commutative D1^Q D1UQ=D QUD1=D
+    <- join-associative A1UP=A AUD=G DX PUD=DX A1UDX=G
+    <- join-associative-converse QUD1=D PUD=DX R PUQ=R RUD1=DX
+    <- join-right-preserves-disjoint* D1^P D1^Q PUQ=R D1^R
+    <- disjoint-symmetric D1^R R^D1
+    <- disjoint-join-commutative R^D1 RUD1=DX D1UR=DX
+    <- join-associative-converse D1UR=DX A1UDX=G G1 A1UD1=G1 G1UR=G
     <- join/=-inversion PUQ=R nat`eq/ XG ZP XAUXD=XG ZUZ=ZP R=XGZP
     <- join-unique ZUZ=ZP join/L eq/ eq/ ZP=Z
     <- map/+-preserves-eq nat`eq/ data`eq/ ZP=Z XGZP=UXG
@@ -1369,7 +1429,12 @@ restrict/in :
     <- restrict-preserves-fresh FA1 A1|S=C FC
     <- restrict-preserves-fresh FD D|S=F FF
     <- fresh-update-implies-unit-join FA1 UA A1UP=A
-    <- join-assoc-commutative A1UP=A AUD=G G1 A1UD=G1 G1UP=G
+    %% <- join-assoc-commutative A1UP=A AUD=G G1 A1UD=G1 G1UP=G
+    <- fresh-implies-unit-disjoint FD D^P
+    <- join-associative A1UP=A AUD=G DX PUD=DX A1UDX=G
+    <- disjoint-symmetric D^P P^D
+    <- disjoint-join-commutative P^D PUD=DX DUP=DX
+    <- join-associative-converse DUP=DX A1UDX=G G1 A1UD=G1 G1UP=G
     <- join-preserves-fresh* FA1 FD A1UD=G1 FG1
     <- fresh-unit-join-implies-update FG1 G1UP=G UG
     <- restrict-associates-join* A1|S=C D|S=F A1UD=G1 CUF=I G1|S=I.
@@ -1454,9 +1519,6 @@ restrict/in :
 %worlds () (restrict-associates-disjoint-union-converse _ _ _ _ _ _ _ _ _).
 %total { } (restrict-associates-disjoint-union-converse _ _ _ _ _ _ _ _ _).
 
-%{%
-#ifdef DATA_JOIN_COMMUTATIVE
-%}%
 
 %theorem restrict-implies-disjoint-join:
 	forall*	{A} {C} {S}
@@ -1478,7 +1540,9 @@ restrict/in :
     <- fresh-update-preserves-disjoint C^B1 FC UB C^B
     <- disjoint-symmetric C^B B^C
     <- fresh-update-implies-unit-join FB1 UB B1UX=B
-    <- join-assoc-commutative* B1UC=A1 A1UX=A B1UX=B BUC=A.
+    <- disjoint-join-commutative B1^C B1UC=A1 CUB1=A1
+    <- join-associative* CUB1=A1 A1UX=A B1UX=B CUB=A
+    <- disjoint-join-commutative C^B CUB=A BUC=A.
 
 - : restrict-implies-disjoint-join 
 	(restrict/in A1|S=C1 S->N FA1 UA UC) _ B^C BUC=A
@@ -1493,7 +1557,7 @@ restrict/in :
 %total (R) (restrict-implies-disjoint-join R _ _ _).
 
 %{%
-#endif
+#endif /* DATA_JOIN_ASSOCIATIVE */
 /* as well as join, we also can have ... */
 #ifdef MAP_DOMAIN
 %}%
