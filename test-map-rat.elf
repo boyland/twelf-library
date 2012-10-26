@@ -1,0 +1,165 @@
+%abbrev data = rat.
+%abbrev data`eq = rat`equ.
+%abbrev data`eq/ = rat`equ/.
+%abbrev data`false-implies-eq = rat`false-implies-equ.
+
+%abbrev data`leq = rat`lse.
+%abbrev data`leq-reflexive = rat`lse-reflexive.
+%abbrev data`leq-anti-symmetric = rat`lse-anti-symmetric.
+%abbrev data`leq-transitive = rat`lse-transitive.
+
+%abbrev data`join = rat`add.
+%abbrev data`false-implies-join = rat`false-implies-add.
+%abbrev data`join-respects-eq = rat`add-respects-equ.
+%abbrev data`join-deterministic = rat`add-deterministic.
+%abbrev data`join-total* = rat`add-total*.
+%abbrev data`join-commutative = rat`add-commutative.
+%abbrev data`join-associative = rat`add-associative.
+%abbrev data`join-left-cancels = rat`add-left-cancels.
+%abbrev data`join-no-right-identity = rat`add-no-right-identity.
+%abbrev data`join-left-preserves-leq* = rat`add-left-preserves-lse*.
+%abbrev data`join-preserves-leq = rat`add-preserves-lse.
+
+%abbrev data`join-implies-leq* = add-implies-gre*.
+%abbrev data`join-implies-leq = rat`add-implies-gre.
+%abbrev data`join-cross-comparable = rat`add-cross-comparable.
+
+%theorem lse-neq-implies-add :
+	forall* {Q1} {Q2}
+	forall {L:lse Q1 Q2} {N:neq Q1 Q2}
+	exists {Q0} {A:rat`add Q0 Q1 Q2}
+	true.
+
+- : lse-neq-implies-add Q1<=Q2 Q1<>Q2 Q0 Q0+Q1=Q2
+    <- neq-symmetric Q1<>Q2 Q2<>Q1
+    <- gre-neq-implies-grt Q1<=Q2 Q2<>Q1 Q2>Q1
+    <- grt-implies-add Q2>Q1 Q0 Q0+Q1=Q2.
+
+%worlds () (lse-neq-implies-add _ _ _ _).
+%total { } (lse-neq-implies-add _ _ _ _).
+	
+%abbrev data`ne = rat`ne.
+%abbrev data`ne-anti-reflexive = rat`ne-anti-reflexive.
+%abbrev data`ne-symmetric = rat`ne-symmetric.
+%abbrev data`eq-ne-implies-false = rat`eq-ne-implies-false.
+%abbrev data`leq-ne-implies-join = lse-neq-implies-add.
+%abbrev data`eq?-total = rat`eq?-total.
+%abbrev data`eq? = rat`eq?.
+%abbrev data`eq?/yes = rat`eq?/yes.
+%abbrev data`eq?/no = rat`eq?/no.
+
+%abbrev data`false-implies-leq = rat`false-implies-gre.
+
+%abbrev data`leq = rat`leq.
+%abbrev data`false-implies-leq = rat`false-implies-leq.
+%abbrev data`leq-respects-eq = rat`leq-respects-eq.
+%abbrev data`leq-reflexive = rat`leq-reflexive.
+%abbrev data`leq-anti-symmetric = rat`leq-anti-symmetric.
+%abbrev data`leq-transitive = rat`leq-transitive.
+%abbrev data`nle = rat`nle.
+%abbrev data`false-implies-nle = rat`false-implies-nle.
+%abbrev data`nle-respects-eq = rat`nle-respects-eq.
+%abbrev data`nle-anti-reflexive = rat`nle-anti-reflexive.
+%abbrev data`nle-implies-ne = rat`nle-implies-ne.
+%abbrev data`leq? = rat`leq?.
+%abbrev data`leq?/yes = rat`leq?/yes.
+%abbrev data`leq?/no = rat`leq?/no.
+%abbrev data`leq?-total = rat`leq?-total.
+%abbrev data`leq?-total* = rat`leq?-total*.
+%abbrev data`leq-nle-contradiction = rat`leq-nle-contradiction.
+
+%abbrev data`meet = rat`mul.
+%abbrev data`false-implies-meet = rat`false-implies-mul.
+%abbrev data`meet-deterministic = rat`mul-deterministic.
+%abbrev data`meet-total* = rat`mul-total*.
+%abbrev data`meet-commutative = rat`mul-commutative.
+%abbrev data`meet-associative = rat`mul-associative.
+%abbrev data`meet-associative* = rat`mul-associative*.
+
+%abbrev data`meet-right-distributes-over-join = rat`mul-right-distributes-over-add.
+
+%abbrev scalar = rat.
+%abbrev scalar`eq = rat`equ.
+%abbrev scalar`eq/ = rat`equ/.
+%abbrev data`scale = rat`mul.
+%abbrev data`scale-deterministic = rat`mul-deterministic.
+%abbrev data`scale-total* = rat`mul-total*.
+%abbrev data`combine-scalar = rat`mul.
+%abbrev data`scale-associates* = rat`mul-associative*.
+%abbrev data`scale-preserves-leq* = rat`mul-left-preserves-lse*.
+%abbrev data`scale-cancels-leq = rat`mul-left-cancels-lse.
+%abbrev data`scale-distributes-over-join* = rat`mul-left-distributes-over-add*.
+
+%abbrev pred = [N] [Q] rat`grt (rat`whole N) Q.
+
+%theorem data`join-right-distributes-over-meet :
+	forall* {M1} {M2} {M3} {M4} {M7}
+        forall {J12:rat`mul M1 M2 M3} {A34:rat`add M3 M4 M7}
+        exists {M5} {M6} {A14:rat`add M1 M4 M5} {A24:rat`add M2 M4 M6}
+               {J56:rat`mul M5 M6 M7}
+	true.
+
+% actually false:
+%worlds () (data`join-right-distributes-over-meet _ _ _ _ _ _ _).
+%trustme 
+%total {} (data`join-right-distributes-over-meet _ _ _ _ _ _ _).
+
+x : type.
+
+%block WORLDS : block {_:x}.
+
+% trans testing
+
+%abbrev arg = rat.
+%abbrev arg`eq = rat`eq.
+%abbrev arg`eq/ = rat`eq/.
+
+%abbrev trans 
+	: nat -> rat -> rat -> rat -> type 
+	= [n:nat] [q1] [q2] [q3] (rat`add q1 q2 q3).
+
+%abbrev trans-total* 
+	: {n:nat} {q1} {q2} {q3} (trans n q1 q2 q3) -> type
+        = [n:nat] [q1] [q2] [q3] (rat`add-total* q1 q2 q3).
+
+%abbrev trans-unique
+	: (trans N A1 A2 A3) -> (trans N B1 B2 B3) -> 
+	  (rat`eq A1 B1) -> (rat`eq A2 B2) -> (rat`eq A3 B3) -> type
+	= [a1] [a2] [e1] [e2] [e3] (rat`add-unique a1 a2 e1 e2 e3).
+
+%abbrev trans-reorder*
+	: (trans N M0 X1 M1) -> (trans N M1 X2 M3) -> (trans N M0 X2 M2) ->
+          (trans N M2 X1 M3) -> type
+	= rat`add-assoc-commutative*.
+
+%abbrev arg`leq = rat`leq.
+
+%abbrev trans-right-preserves-leq*
+	: (data`leq D1 D2) -> (trans N D1 X D1P) -> (trans N D2 X D2P) ->
+	  (data`leq D1P D2P) -> type
+	= [D1<=D2] [T1] [T2] [D1P<=D2P] 
+	   (rat`add-right-preserves-gre* D1<=D2 T2 T1 D1P<=D2P).
+
+%abbrev trans-left-preserves-leq*
+	: (arg`leq X1 X2) -> (trans N D X1 D1P) -> (trans N D X2 D2P) ->
+	  (arg`leq D1P D2P) -> type
+	= [X1<=X2] [T1] [T2] [D1P<=D2P] 
+	   (rat`add-left-preserves-gre* X1<=X2 T2 T1 D1P<=D2P).
+
+%abbrev trans-right-cancels
+	: (trans N D1 X1 D1P) -> (trans N D2 X2 D2P) -> 
+	  (arg`eq X1 X2) -> (data`eq D1P D2P) ->
+	  (data`eq D1 D2) -> type
+	= rat`add-right-cancels.
+
+%abbrev arg`combine = rat`add.
+%abbrev trans-combines
+	: (trans N D1 X1 D1P) -> (trans N D1P X2 D2P) -> (arg`combine X1 X2 X3)
+        -> (trans N D1 X3 D2P) -> type
+	= rat`add-associative*.
+
+%abbrev trans-combines-converse
+	: (trans N D1 X3 D2P) -> (arg`combine X1 X2 X3) ->
+	  {D1P} (trans N D1 X1 D1P) -> (trans N D1P X2 D2P) -> type
+	= [T3] [AC] [D1P] [T1] [T2] 
+	  (rat`add-associative-converse AC T3 D1P T1 T2).
