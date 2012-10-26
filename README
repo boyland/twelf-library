@@ -1,4 +1,4 @@
-This is release 0.8 of John Boyland's Twelf library
+This is release 0.9 of John Boyland's Twelf library
 
 (If this directory includes a Makefile, it is the source
 of the library Twelf signatures.  The Makefile provided
@@ -49,7 +49,8 @@ The distribution includes the following Twelf files:
        It includes over 55 fully-proved theorems. Additionally, if the
        "data" datatype supports leq, join and/or meet operations, there
        are definitions of these operations for maps and over 100 extra
-       theorems involving them.
+       theorems involving them. We also have the map-domain and map-scale
+       add-ons and the map-trans, map-all, map-restrict helper functors.
        map.elf (the signature, hand-written), map.tgz (all of the
        map theorems).
 
@@ -82,6 +83,11 @@ without restriction to anyone who wishes to use them in any way.
 
 Release Notes:
 
+0.9:
+   helper functors for map: map-all map-trans map-restrict map-minmax
+   many theorems now have a definable worlds.
+   exported to git
+
 0.8: 
    README added to release
    single-quotes restricted so that "make" works with modern CPP
@@ -90,4 +96,4 @@ Release Notes:
 0.7:
    *-unique provided as an alternative to *-deterministic
 
-Last update: November 27, 2010.
+Last update: October 24, 2012.
