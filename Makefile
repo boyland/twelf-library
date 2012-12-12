@@ -1,6 +1,6 @@
 GEN = bool.elf nat.elf rat.elf rat0.elf set.elf natpair.elf \
       natvector.elf rat0vector.elf \
-      map.elf map-export.elf multiset.elf
+      multiset.elf
 
 BSRC = bool.cpp bool-base.elf
 
@@ -78,15 +78,6 @@ rat0vector.elf : ${RAT0VSRC} ${VSRC}
 
 natvector.elf : ${NATVSRC} ${VSRC}
 
-map.elf : ${MAP} map-export.elf
-	${CAT} ${MAP} map-export.elf > map.elf
-
-map-export.elf : ${MAP}
-	${GN} MAP ${MAP} > map-export.elf
-
-map-leq-export.elf : map-leq.elf
-	${GN} MAP map-leq.elf > map-leq-export.elf
-
 set.elf : ${SETSRC} ${MAPSRC} ${MAPMORE}
 
 multiset.elf : ${MSETSRC} ${MAPSRC}
@@ -98,7 +89,7 @@ DISTELF = std.elf bool.elf pair.elf \
             nat.elf natpair.elf rat.elf set.elf multiset.elf \
 	    rat0.elf natvector.elf rat0vector.elf README
 
-DISTFILES = ${DISTELF} map.elf \
+DISTFILES = ${DISTELF} \
             library.tgz map.tgz source.tgz
 
 library.tgz : sources.cfg ${DISTELF}

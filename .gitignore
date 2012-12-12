@@ -1,0 +1,11 @@
+RCS/
+nat.elf
+rat.elf
+set.elf
+multiset.elf
+*.tgz
+bool.elf
+natpair.elf
+natvector.elf
+rat0.elf
+rat0vector.elf
