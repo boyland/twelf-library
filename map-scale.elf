@@ -882,5 +882,42 @@ scale/+ : scale S (map/+ N D M) (map/+ N DP MP)
 %{%
 #endif
 #endif /* MAP_JOIN */
+#ifdef MAP_DOMAIN
 %}%
 
+%theorem scale-preserves-domain:
+	forall* {M1} {M2} {S} {X}
+	forall	{D1: domain M1 S}
+		{S1: scale X M1 M2}
+	exists	{D2: domain M2 S}
+	true.
+
+- : scale-preserves-domain domain/0 scale/0 domain/0.
+
+- : scale-preserves-domain 
+	(domain/+ D1) (scale/+ S1 _) (domain/+ D2)
+    <- scale-preserves-domain D1 S1 D2.
+
+%worlds () (scale-preserves-domain _ _ _).
+%total (D) (scale-preserves-domain D _ _).
+
+
+%theorem scale-preserves-domain-converse:
+	forall* {M1} {M2} {S} {X}
+	forall	{D1: domain M2 S}
+		{S1: scale X M1 M2}
+	exists	{D2: domain M1 S}
+	true.
+
+- : scale-preserves-domain-converse domain/0 scale/0 domain/0.
+
+- : scale-preserves-domain-converse
+	(domain/+ D2) (scale/+ S1 _) (domain/+ D1)
+    <- scale-preserves-domain-converse D2 S1 D1.
+
+%worlds () (scale-preserves-domain-converse _ _ _).
+%total (D) (scale-preserves-domain-converse D _ _).
+
+%{%
+#endif /* MAP_DOMAIN */
+%}%
