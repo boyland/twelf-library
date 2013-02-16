@@ -903,6 +903,27 @@ nle/= : lookup M1 N D1 -> lookup M2 N D2 -> data`nle D1 D2 -> nle M1 M2.
  	(fresh-update-preserves-leq-converse _ F1a _ F2a _ _ _)
         (fresh-update-preserves-leq-converse/> _ _ F1b _ _ F2b _ _ _ _).
 
+
+%theorem fresh-update2-preserves-leq-converse :
+	forall* {M1} {M2} {N} {D2} {M2P}
+	forall	{LP:leq M1 M2P}
+		{F1:fresh M1 N}
+		{F2:fresh M2 N}
+		{U2:update M2 N D2 M2P}
+	exists	{L:leq M1 M2} 
+	true.
+
+- : fresh-update2-preserves-leq-converse M1<=M2P F1 F2 U2 M1<=M2
+    <- update-total U1
+    <- update-implies-lookup U2 L2
+    <- lookup-implies-update L2 U2U
+    <- update-left-preserves-leq* M1<=M2P U1 U2U M1P<=M2P
+    <- fresh-update-preserves-leq-converse M1P<=M2P F1 U1 F2 U2 M1<=M2 _.
+
+%worlds () (fresh-update2-preserves-leq-converse _ _ _ _ _).
+%total { } (fresh-update2-preserves-leq-converse _ _ _ _ _).
+
+
 %theorem fresh-update-implies-leq :
 	forall* {M1} {N} {D} {M2}
 	forall {F:fresh M1 N} {U:update M1 N D M2}
