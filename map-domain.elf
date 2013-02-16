@@ -502,6 +502,30 @@ domain/+ : domain M S ->
 %worlds (WORLDS) (domain-commute-update _ _ _ _).
 %total (U) (domain-commute-update U _ _ _).
 
+
+%theorem domain-commute-fresh-update-converse:
+	forall*	{M1} {N} {D} {M2} {S1} {S2}
+	forall	{D1: domain M2 S2}
+		{F1: fresh M1 N}
+		{U1: update M1 N D M2}
+		{F2: set`not-member S1 N}
+		{U2: set`add S1 N S2}
+	exists	{D2: domain M1 S1}
+	true.
+
+- : domain-commute-fresh-update-converse D2 F1 U1 F2 U2 D1
+    <- domain-total D1p
+    <- set`add-total U2pp
+    <- domain-commute-update D1p U1 U2pp D2p
+    <- domain-unique D2p D2 eq/ S2p=S2
+    <- set`add-respects-eq U2pp set`eq/ nat`eq/ S2p=S2 U2p
+    <- domain-preserves-fresh F1 D1p F2p
+    <- not-member-add-cancels F2p U2p F2 U2 nat`eq/ set`eq/ S1p=S1
+    <- domain-respects-eq D1p eq/ S1p=S1 D1.
+
+%worlds () (domain-commute-fresh-update-converse _ _ _ _ _ _).
+%total { } (domain-commute-fresh-update-converse _ _ _ _ _ _).
+
 %{%
 #ifdef MAP_LEQ
 %}%
