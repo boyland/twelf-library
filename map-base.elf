@@ -2801,6 +2801,39 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (fresh-update-preserves-disjoint _ _ _ _).
 
 
+%theorem update-preserves-disjoint-converse :
+	forall* {M1} {M2} {N} {D} {M2P}
+	forall	{I: disjoint M1 M2P}
+		{U: update M2 N D M2P}
+	exists	{DP: disjoint M1 M2}
+	true.
+
+%theorem update-preserves-disjoint-converse/L :
+	forall* {M1} {M2} {N} {D} {M2P} {B}
+	forall	{I: disjoint M1 M2P}
+		{U: update M2 N D M2P}
+		{D: disjoint? M1 M2 B}
+	exists	{DP: disjoint M1 M2}
+	true.
+
+- : update-preserves-disjoint-converse/L _ _ (disjoint?/yes DJ) DJ.
+
+- : update-preserves-disjoint-converse/L DJP U (disjoint?/no L1 L2) DJ
+    <- update-preserves-in-domain (domain?/in L2) U (domain?/in L2P)
+    <- disjoint-lookup-contradiction DJP L1 L2P F
+    <- false-implies-disjoint F DJ.
+
+%worlds (WORLDS) (update-preserves-disjoint-converse/L _ _ _ _).
+%total { } (update-preserves-disjoint-converse/L _ _ _ _).
+
+- : update-preserves-disjoint-converse DP U D
+    <- disjoint?-total D?
+    <- update-preserves-disjoint-converse/L DP U D? D.
+
+%worlds (WORLDS) (update-preserves-disjoint-converse _ _ _).
+%total { } (update-preserves-disjoint-converse _ _ _).
+
+
 %theorem update-overwrites :
 	forall* {M1} {N1} {D1} {M2} {N2} {D2} {M3}
 	forall {U1:update M1 N1 D1 M2} {U2:update M2 N2 D2 M3}
