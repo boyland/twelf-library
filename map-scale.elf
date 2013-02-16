@@ -19,6 +19,12 @@ scale/+ : scale S (map/+ N D M) (map/+ N DP MP)
      <- scale S M MP.
 
 
+%abbrev scale/1 
+	: data`scale S D DP -> scale S (map/1 I D) (map/1 I DP)
+	= [s] (scale/+ scale/0 s).
+
+
+
 
 %%%% Theorems
 
