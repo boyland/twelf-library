@@ -272,6 +272,24 @@ remove/ : leq C A -> disjoint B C -> union B C D -> leq A D -> remove A B C.
 %total { } (remove-characterization _ _ _ _ _).
 
 
+%theorem disjoint-union-implies-remove:
+	forall*	{A} {B} {C}
+	forall	{U: union A B C}
+		{D: disjoint A B}
+	exists	{R: remove C B A}
+	true.
+
+- : disjoint-union-implies-remove U D R
+    <- leq-reflexive _ LL
+    <- disjoint-symmetric D Ds
+    <- union-commutative U Uc
+    <- union-implies-leq* U L
+    <- remove-characterization L Ds Uc LL R.
+
+%worlds () (disjoint-union-implies-remove _ _ _).
+%total { } (disjoint-union-implies-remove _ _ _).
+
+
 %theorem remove-preserves-member :
         forall* {A} {B} {C} {X}
         forall  {M: member A X}
