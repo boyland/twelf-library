@@ -1671,6 +1671,23 @@ END_ELF
 #endif
 %}%
 
+%theorem join-commutes-lookup :
+	forall* {M1} {M2} {M3} {N} {D1} {D2} {D3}
+	forall {A:join M1 M2 M3}
+	       {L1:lookup M1 N D1} {L2:lookup M2 N D2}
+               {L3:lookup M3 N D3}	       
+	exists {J:data`join D1 D2 D3} 
+	true.
+
+- : join-commutes-lookup M1+M2=M3 L1 L2 L3 D1+D2=D3
+    <- join-joins-lookup L1 L2 M1+M2=M3 D3X D1+D2=D3X L3X
+    <- lookup-unique L3X L3 eq/ nat`eq/ D3X=D3
+    <- data`join-respects-eq D1+D2=D3X data`eq/ data`eq/ D3X=D3 D1+D2=D3.
+
+%worlds () (join-commutes-lookup _ _ _ _ _).
+%total { } (join-commutes-lookup _ _ _ _ _).
+
+
 %theorem join-preserves-fresh* :
 	forall* {M1} {M2} {M3} {N}
 	forall {F1:fresh M1 N} {F2:fresh M2 N}
