@@ -305,6 +305,7 @@ restrict/in :
 	forall	{LC: lookup C N D}
 		{R: restrict A S C}
 	exists	{LA: lookup A N D}
+		{SM: member S N}
 	true.
 
 %theorem restrict-preserves-lookup-converse/L:
@@ -314,39 +315,75 @@ restrict/in :
 		{D?: domain? A N B}
 		{M?: member? S N B1}
 	exists	{LA: lookup A N D}
+		{SM: member S N}
 	true.
 
-- : restrict-preserves-lookup-converse/L LC R (domain?/in LAP) (member?/in M) LA
+- : restrict-preserves-lookup-converse/L LC R (domain?/in LAP) (member?/in M) LA M
     <- lookup-implies-fresh-update LAP _ F U
     <- restrict/in-inversion R M F U _ R1 UP
     <- update-implies-lookup UP LCP
     <- lookup-unique LCP LC eq/ nat`eq/ DP=D
     <- lookup-respects-eq LAP eq/ nat`eq/ DP=D LA.
 
-- : restrict-preserves-lookup-converse/L LC R (domain?/out FA) _ LA
+- : restrict-preserves-lookup-converse/L LC R (domain?/out FA) _ LA M
     <- restrict-preserves-fresh FA R FC
     <- fresh-lookup-not-equal FC LC N<>N
     <- nat`ne-anti-reflexive N<>N F
-    <- false-implies-lookup F LA.
+    <- false-implies-lookup F LA
+    <- false-implies-member F M.
 
-- : restrict-preserves-lookup-converse/L LC R (domain?/in LA) (member?/out NM) L
+- : restrict-preserves-lookup-converse/L LC R (domain?/in LA) (member?/out NM) L M
     <- lookup-implies-fresh-update LA _ FA U
     <- restrict/out-inversion R NM FA U R2
     <- restrict-preserves-fresh FA R2 FC
     <- fresh-lookup-not-equal FC LC N<>N
     <- nat`ne-anti-reflexive N<>N F
-    <- false-implies-lookup F L.
+    <- false-implies-lookup F L
+    <- false-implies-member F M.
 
-%worlds () (restrict-preserves-lookup-converse/L _ _ _ _ _).
-%total { } (restrict-preserves-lookup-converse/L _ _ _ _ _).
+%worlds () (restrict-preserves-lookup-converse/L _ _ _ _ _ _).
+%total { } (restrict-preserves-lookup-converse/L _ _ _ _ _ _).
 
-- : restrict-preserves-lookup-converse LC R LA
+- : restrict-preserves-lookup-converse LC R LA M
     <- domain?-total D?
     <- member?-total M?
-    <- restrict-preserves-lookup-converse/L LC R D? M? LA.
+    <- restrict-preserves-lookup-converse/L LC R D? M? LA M.
 
-%worlds () (restrict-preserves-lookup-converse _ _ _).
-%total { } (restrict-preserves-lookup-converse _ _ _).
+%worlds () (restrict-preserves-lookup-converse _ _ _ _).
+%total { } (restrict-preserves-lookup-converse _ _ _ _).
+
+
+%theorem restrict-not-member-implies-fresh:
+	forall* {A} {S} {C} {X}
+	forall	{R: restrict A S C}
+		{L: set`not-member S X}
+	exists	{L: fresh C X}
+	true.
+
+%theorem restrict-not-member-implies-fresh/L:
+	forall* {A} {S} {C} {X} {B}
+	forall	{R: restrict A S C}
+		{L: set`not-member S X}
+		{D: domain? C X B}
+	exists	{L: fresh C X}
+	true.
+
+- : restrict-not-member-implies-fresh/L _ _ (domain?/out F) F.
+
+- : restrict-not-member-implies-fresh/L R NM (domain?/in CL) CF
+    <- restrict-preserves-lookup-converse CL R AL M
+    <- member-not-member-contradiction M NM F
+    <- false-implies-fresh F CF.
+
+%worlds () (restrict-not-member-implies-fresh/L _ _ _ _).
+%total { } (restrict-not-member-implies-fresh/L _ _ _ _).
+
+- : restrict-not-member-implies-fresh R NM F
+    <- domain?-total D?
+    <- restrict-not-member-implies-fresh/L R NM D? F.
+
+%worlds () (restrict-not-member-implies-fresh _ _ _).
+%total { } (restrict-not-member-implies-fresh _ _ _).
 
 
 %theorem restrict-left-preserves-disjoint:
@@ -425,8 +462,8 @@ restrict/in :
 
 - : restrict-right-preserves-disjoint/L A^E A|S=C E|T=G 
 	(disjoint?/no LC LG) C^G
-    <- restrict-preserves-lookup-converse LC A|S=C LA
-    <- restrict-preserves-lookup-converse LG E|T=G LE
+    <- restrict-preserves-lookup-converse LC A|S=C LA _
+    <- restrict-preserves-lookup-converse LG E|T=G LE _
     <- disjoint-lookup-contradiction A^E LA LE F
     <- false-implies-disjoint F C^G.
 
@@ -470,6 +507,24 @@ restrict/in :
 
 %worlds () (fresh-add-preserves-restrict _ _ _ _).
 %total (R) (fresh-add-preserves-restrict R _ _ _).
+
+
+%theorem fresh-add-preserves-restrict-converse:
+	forall*	{A} {B1} {C} {B2} {N}
+	forall	{R1: restrict A B2 C}
+		{F: fresh A N}
+		{U: set`add B1 N B2}
+	exists	{R2: restrict A B1 C}
+	true.
+
+- : fresh-add-preserves-restrict-converse A|B2=C F SA A|B1=C
+    <- restrict-total A|B1=CX
+    <- fresh-add-preserves-restrict A|B1=CX F SA A|B2=CX
+    <- restrict-unique A|B2=CX A|B2=C eq/ set`eq/ CX=C
+    <- restrict-respects-eq A|B1=CX eq/ set`eq/ CX=C A|B1=C.
+
+%worlds () (fresh-add-preserves-restrict-converse _ _ _ _).
+%total { } (fresh-add-preserves-restrict-converse _ _ _ _).
 
 
 %theorem restrict-commute-update*:
