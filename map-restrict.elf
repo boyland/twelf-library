@@ -1368,7 +1368,7 @@ restrict/in :
     <- fresh-update-implies-unit-join FC1 UC C1UP=C
     <- fresh-update-implies-unit-join FD1 UD D1UQ=D
     <- fresh-update-implies-unit-join FF1 UF F1UQ=F
-    %% workaround so that we don't require join to be commutative
+    %% workaround so that we do not require join to be commutative
     %{%
     <- join-double-associative A1UP=A D1UQ=D AUD=G _ _ A1UD1=G1 PUQ=R G1UR=G
     %}%
