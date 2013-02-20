@@ -144,9 +144,9 @@
 	= [LP] [F1] [U1] [F2] [U2] [L]
 	  not-member-update-preserves-leq-converse LP F1 U1 F2 U2 L unit`eq/.
 %abbrev not-member-add2-preserves-leq-converse
-	: set`leq M1 M2P ->  not-member M1 N -> 
-	                 not-member M2 N -> set`add M2 N M2P ->
-          set`leq M1 M2 -> type
+	: leq M1 M2P ->  not-member M1 N -> 
+	                 not-member M2 N -> add M2 N M2P ->
+          leq M1 M2 -> type
 	= [LP] [F1] [F2] [U2] [L]
 	  not-member-update2-preserves-leq-converse LP F1 F2 U2 L.
 
