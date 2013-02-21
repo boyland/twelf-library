@@ -102,6 +102,7 @@
  %abbrev nat`join-implies-leq* = [G] [L] nat`max-implies-ge G L IG.
  %abbrev nat`join-implies-leq = nat`max-implies-ge.
  %abbrev nat`join-is-lub = nat`max-is-lub.
+ %abbrev nat`join-respects-eq = nat`max-respects-eq.
 
  %abbrev nat`meet = nat`min.
  %abbrev nat`false-implies-meet = nat`false-implies-min.
