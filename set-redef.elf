@@ -149,6 +149,8 @@
           leq M1 M2 -> type
 	= [LP] [F1] [F2] [U2] [L]
 	  not-member-update2-preserves-leq-converse LP F1 F2 U2 L.
+%abbrev member-implies-ge = lookup-implies-ge.
+%abbrev bound-member-implies-gt = bound-lookup-implies-gt.
 
 %% using "union"
 
