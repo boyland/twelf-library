@@ -307,6 +307,22 @@ scale/+ : scale S (map/+ N D M) (map/+ N DP MP)
 %total (L) (scale-affects-lookup L _ _ _ _).
 
 
+%theorem scale-affects-lookup* :
+	forall* {S} {M1} {M2} {N} {D1} {D2}
+	forall {L1:lookup M1 N D1} {SC:scale S M1 M2}
+	       {DS:data`scale S D1 D2} 
+	exists {L2:lookup M2 N D2}
+	true.
+
+- : scale-affects-lookup* L1 SC DS L2
+    <- scale-affects-lookup L1 SC _ DSP L2P
+    <- data`scale-deterministic DSP DS scalar`eq/ data`eq/ D2P=D2
+    <- lookup-respects-eq L2P eq/ nat`eq/ D2P=D2 L2.
+
+%worlds () (scale-affects-lookup* _ _ _ _).
+%total { } (scale-affects-lookup* _ _ _ _).
+
+
 %theorem scale-affects-lookup-converse :
 	forall* {S} {M1} {M2} {N} {D2}
 	forall {L1:lookup M2 N D2} {SC:scale S M1 M2}
@@ -323,6 +339,22 @@ scale/+ : scale S (map/+ N D M) (map/+ N DP MP)
 
 %worlds () (scale-affects-lookup-converse _ _ _ _ _).
 %total (L) (scale-affects-lookup-converse L _ _ _ _).
+
+
+%theorem scale-affects-lookup-converse* :
+	forall* {S} {M1} {M2} {N} {D1} {D2}
+	forall {L1:lookup M2 N D2} {SC:scale S M1 M2}
+	       {DS:frv`scale S D1 D2} 
+	exists {L2:lookup M1 N D1}
+	true.
+
+- : scale-affects-lookup-converse* L2 SC DS L1
+    <- scale-affects-lookup-converse L2 SC _ DSP L1P
+    <- data`scale-cancels DSP DS scalar`eq/ data`eq/ D1P=D1
+    <- lookup-respects-eq L1P eq/ nat`eq/ D1P=D1 L1.
+
+%worlds () (scale-affects-lookup-converse* _ _ _ _).
+%total { } (scale-affects-lookup-converse* _ _ _ _).
 
 
 %theorem scale-preserves-fresh :

@@ -74,6 +74,34 @@ min/+ : min (map/+ N D M) N.
 %total (M) (max-implies-lookup M _ _).
 
 
+%theorem lookup-implies-max :
+	forall*	{M} {N} {D}
+	forall	{L: lookup M N D}
+	exists	{NP}
+		{MX: max M NP}
+	true.
+
+%theorem lookup-implies-max/L :
+	forall*	{M} {N} {D} {B}
+	forall	{L: lookup M N D}
+		{B: bound M B}
+	exists	{NP}
+		{MX: max M NP}
+	true.
+
+- : lookup-implies-max/L (L:lookup (map/+ _ _ _) _ _) M _ M.
+
+%worlds (WORLDS) (lookup-implies-max/L _ _ _ _).
+%total { } (lookup-implies-max/L _ _ _ _).
+
+- : lookup-implies-max L _ M
+    <- bound-total B
+    <- lookup-implies-max/L L B _ M.
+
+%worlds (WORLDS) (lookup-implies-max _ _ _).
+%total { } (lookup-implies-max _ _ _).
+
+
 %theorem max-lookup-implies-ge :
 	forall*	{M} {N1} {N2} {D}
 	forall	{MX: max M N1}

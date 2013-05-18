@@ -2834,6 +2834,72 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (update-preserves-disjoint-converse _ _ _).
 
 
+%theorem update-preserves-bound:
+	forall* {M1} {N1} {N2} {D} {M2}
+	forall {F1:bound M1 N1} {U:update M1 N2 D M2} {N:nat`gt N1 N2}
+	exists {F2:bound M2 N1}
+	true.
+
+- : update-preserves-bound (bound/+ P B) (update/= nat`eq/) _ (bound/+ P B).
+
+- : update-preserves-bound (bound/+ I+1+J=K B) (update/< L+1+M=I) _ 
+	(bound/+ M+1+N=K (bound/+ L+1+J=N B))
+    <- plus-swap-succ I+1+J=K I+J+1=K
+    <- plus-swap-succ L+1+M=I L+M+1=I
+    <- plus-commutative L+M+1=I M+1+L=I
+    <- plus-associative M+1+L=I I+J+1=K N L+J+1=N M+1+N=K
+    <- plus-swap-succ-converse L+J+1=N L+1+J=N.
+
+- : update-preserves-bound (bound/+ I+1+J=K B) (update/> U L+1+I=M) K>M
+	(bound/+ I+1+J=K BP)
+    <- plus-swap-succ L+1+I=M L+I+1=M
+    <- plus-commutative L+I+1=M I+1+L=M
+    <- plus-left-cancels-gt I+1+J=K I+1+L=M nat`eq/ K>M J>L
+    <- update-preserves-bound B U J>L BP.
+
+%worlds () (update-preserves-bound _ _ _ _).
+%total (U) (update-preserves-bound _ U _ _).
+
+
+%theorem update-preserves-bound-converse:
+	forall* {M1} {N1} {N2} {D} {M2}
+	forall {F1:bound M2 N1} {U:update M1 N2 D M2} {N:nat`ne N1 (s N2)}
+	exists {F2:bound M1 N1}
+	true.
+
+- : update-preserves-bound-converse (bound/+ I+1+0=J bound/0) update/0 J<>I+1 B
+    <- plus-right-identity (s I) I+1+0=I+1
+    <- plus-unique I+1+0=J I+1+0=I+1 nat`eq/ nat`eq/ J=I+1
+    <- nat`eq-ne-implies-false J=I+1 J<>I+1 F
+    <- false-implies-bound F B.
+
+- : update-preserves-bound-converse (bound/+ P B) (update/= nat`eq/) _ 
+	(bound/+ P B).
+
+- : update-preserves-bound-converse
+	(bound/+ M+1+N=K (bound/+ L+1+J=N B))
+	(update/< L+1+M=I) _ 
+	(bound/+ I+1+J=K B) 
+    <- plus-swap-succ L+1+J=N L+J+1=N 
+    <- plus-swap-succ L+1+M=I L+M+1=I
+    <- plus-commutative L+M+1=I M+1+L=I
+    <- plus-associative-converse* L+J+1=N M+1+N=K M+1+L=I I+J+1=K
+    <- plus-swap-succ-converse I+J+1=K I+1+J=K.
+
+- : update-preserves-bound-converse 
+	(bound/+ I+1+J=K BP) (update/> U L+1+I=M) K<>M+1
+	(bound/+ I+1+J=K B)
+    <- plus-swap-succ L+1+I=M L+I+1=M
+    <- plus-commutative L+I+1=M I+1+L=M
+    <- plus-right-increase I+1+L=M I+1+L+1=M+1
+    <- plus-left-cancels-ne I+1+J=K I+1+L+1=M+1 nat`eq/ K<>M+1 J<>L+1
+    <- update-preserves-bound-converse BP U J<>L+1 B.
+
+%worlds () (update-preserves-bound-converse _ _ _ _).
+%total (U) (update-preserves-bound-converse _ U _ _).
+
+
+
 %theorem update-overwrites :
 	forall* {M1} {N1} {D1} {M2} {N2} {D2} {M3}
 	forall {U1:update M1 N1 D1 M2} {U2:update M2 N2 D2 M3}
@@ -3196,6 +3262,30 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds (WORLDS) (update-commutes-converse _ _ _ _ _ _).
 %total { } (update-commutes-converse _ _ _ _ _ _).
+
+
+%% NB: update-commutes-converse* (the obvious * variant) is NOT true.
+
+
+%theorem fresh-update-commutes-converse* :
+	forall* {M0} {M2} {N1} {D1} {M1} {N2} {D2} {M3}
+	forall	{F0: fresh M0 N1}
+		{U01:update M0 N1 D1 M1}
+		{U13:update M1 N2 D2 M3}
+        	{NE:nat`ne N1 N2}
+		{F2: fresh M2 N1}
+		{U23:update M2 N1 D1 M3} 
+	exists	{U02:update M0 N2 D2 M2} 
+	true.
+
+- : fresh-update-commutes-converse* F0 U01 U13 NE F2 U23 U02
+    <- update-commutes-converse U23 U13 NE M0X U02X U01X
+    <- update-preserves-fresh-converse F2 U02X F0X
+    <- fresh-update-cancels F0X U01X F0 U01 nat`eq/ eq/ DE M0X=M0
+    <- update-respects-eq U02X M0X=M0 nat`eq/ data`eq/ eq/ U02.
+
+%worlds () (fresh-update-commutes-converse* _ _ _ _ _ _ _).
+%total { } (fresh-update-commutes-converse* _ _ _ _ _ _ _).
 
 
 %% The following theorem is needed if you want to iteratively
