@@ -65,9 +65,13 @@
     [L:member M N] [LE:leq (set/1 N) M]
     lookup-implies-unit-leq L LE.
 
+%abbrev member-implies-ge = lookup-implies-ge.
+%abbrev bound-member-implies-gt = bound-lookup-implies-gt.
+
 %abbrev not-member-member-not-equal = not-member-lookup-not-equal.
 %abbrev disjoint-member-contradiction = disjoint-lookup-contradiction.
 %abbrev disjoint-member-implies-not-member = disjoint-lookup-implies-not-member.
+
 %abbrev not-member-union-left-preserves-member-converse = not-member-union-left-preserves-lookup-converse.
 %abbrev not-member-union-right-preserves-member-converse = not-member-union-right-preserves-lookup-converse.
 
@@ -86,6 +90,8 @@
 %abbrev max-implies-member :
 	max S N -> member S N -> type =
 	[MX] [ME] max-implies-lookup MX unit/ ME.
+
+%abbrev member-implies-max = lookup-implies-max.
 
 %abbrev max-member-implies-ge = max-lookup-implies-ge.
 
@@ -118,6 +124,10 @@
 %abbrev add-preserves-membership = update-preserves-membership.
 %abbrev add-preserves-member-converse = update-preserves-lookup-converse.
 %abbrev add-preserves-not-member-converse = update-preserves-not-member-converse.
+%abbrev add-preserves-bound-converse = update-preserves-bound-converse.
+
+
+
 %abbrev add-overwrites = update-overwrites.
 %abbrev add-member-has-no-effect 
 	: member S1 X -> add S1 X S2 -> eq S1 S2 -> type
@@ -125,6 +135,9 @@
 %abbrev add-idempotent = update-idempotent.
 %abbrev add-commutes = update-commutes.
 %abbrev add-commutes* = update-commutes*.
+%abbrev add-commutes-converse = update-commutes-converse.
+%abbrev not-member-add-commutes-converse* = 
+	not-member-update-commutes-converse*.
 %abbrev add-preserves-leq* = update-left-preserves-leq*.
 %abbrev not-member-add-preserves-disjoint = 
 	not-member-update-preserves-disjoint.
@@ -149,8 +162,6 @@
           leq M1 M2 -> type
 	= [LP] [F1] [F2] [U2] [L]
 	  not-member-update2-preserves-leq-converse LP F1 F2 U2 L.
-%abbrev member-implies-ge = lookup-implies-ge.
-%abbrev bound-member-implies-gt = bound-lookup-implies-gt.
 
 %% using "union"
 

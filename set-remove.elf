@@ -257,6 +257,20 @@ remove/ : leq C A -> disjoint B C -> union B C D -> leq A D -> remove A B C.
 %total { } (leq-implies-remove-all _ _).
 
 
+%theorem remove-all-implies-leq :
+	forall*	{A} {B}
+	forall	{R: remove A B set/0}
+	exists	{L: leq A B}
+	true.
+
+- : remove-all-implies-leq (remove/ _ _ BU0=D A<=D) A<=B
+    <- union-unique BU0=D union/R eq/ eq/ D=B
+    <- leq-respects-eq A<=D eq/ D=B A<=B.
+
+%worlds () (remove-all-implies-leq _ _).
+%total { } (remove-all-implies-leq _ _).
+
+
 %theorem remove-characterization:
 	forall*	{A} {B} {C} {D}
 	forall	{L: leq C A}
@@ -306,6 +320,21 @@ remove/ : leq C A -> disjoint B C -> union B C D -> leq A D -> remove A B C.
 
 %worlds () (remove-preserves-member _ _ _ _).
 %total { } (remove-preserves-member _ _ _ _).
+
+
+%theorem remove-preserves-member-converse :
+        forall* {A} {B} {C} {X}
+        forall  {M: member C X}
+                {R: remove A B C}
+        exists  {M: member A X}
+        true.
+
+- : remove-preserves-member-converse C->X A-B=C A->X
+    <- remove-implies-leq A-B=C C<=A
+    <- member-respects-leq C->X C<=A A->X.
+
+%worlds () (remove-preserves-member-converse _ _ _).
+%total { } (remove-preserves-member-converse _ _ _).
 
 
 %theorem remove-associates-union* :
@@ -858,3 +887,49 @@ remove/ : leq C A -> disjoint B C -> union B C D -> leq A D -> remove A B C.
 
 %worlds () (remove-idempotent _ _).
 %total { } (remove-idempotent _ _).
+
+
+%theorem remove-preserves-max :
+	forall* {A} {B} {C} {M}
+	forall	{D: bound A (s M)}
+		{R: remove A B C}
+		{N: not-member B M}
+	exists	{DP: bound C (s M)}
+	true.
+
+%theorem remove-preserves-max/L :
+	forall* {A} {B} {C} {M} {MP}
+	forall	{D: bound A (s M)}
+		{R: remove A B C}
+		{N: not-member B M}
+		{DX: bound C MP}
+	exists	{DP: bound C (s M)}
+	true.
+
+- : remove-preserves-max/L MAXA=M A-B=0 B-/>M bound/0 DP
+    <- remove-all-implies-leq A-B=0 A<=B
+    <- max-implies-member MAXA=M A->M
+    <- member-respects-leq A->M A<=B B->M
+    <- member-not-member-contradiction B->M B-/>M F
+    <- false-implies-bound F DP.
+
+- : remove-preserves-max/L MAXA=M A-B=C B-/>M MAXC=MP DP
+    <- max-implies-member MAXA=M A->M
+    <- remove-preserves-member A->M A-B=C B-/>M C->M
+    <- max-implies-member MAXC=MP C->MP
+    <- remove-preserves-member-converse C->MP A-B=C A->MP
+    <- max-member-implies-ge MAXA=M A->MP M>=MP
+    <- max-member-implies-ge MAXC=MP C->M MP>=M
+    <- ge-anti-symmetric MP>=M M>=MP MP=M
+    <- succ-preserves-eq MP=M MP+1=M+1
+    <- bound-respects-eq MAXC=MP eq/ MP+1=M+1 DP.
+
+%worlds () (remove-preserves-max/L _ _ _ _ _).
+%total { } (remove-preserves-max/L _ _ _ _ _).
+
+- : remove-preserves-max MAX1 R NM MAX2
+    <- bound-total B2
+    <- remove-preserves-max/L MAX1 R NM B2 MAX2.
+
+%worlds () (remove-preserves-max _ _ _ _).
+%total { } (remove-preserves-max _ _ _ _).

@@ -122,6 +122,24 @@
 %total { } (member-not-member-contradiction _ _ _).
 
 
+%theorem can-remove-member :
+	forall* {S} {N} {X}
+	forall	{SZ: size S (s N)}
+		{SM: member S X}
+	exists	{SP}
+		{SZP: size SP N}
+		{SA: add SP X S}
+		{NM: not-member SP X}
+	true.
+
+- : can-remove-member SZ M SP SZP SA NM
+    <- lookup-implies-not-member-update M SP NM SA
+    <- not-member-update-increases-size-converse SZ NM SA SZP.
+
+%worlds () (can-remove-member _ _ _ _ _ _).
+%total { } (can-remove-member _ _ _ _ _ _).
+
+
 %theorem add-preserves-member :
 	forall* {S} {N1} {N2} {SP}
 	forall	{SM: lookup S N1 unit/}
@@ -678,3 +696,24 @@ END_ELF
 
 %worlds () (can-remove-min _ _ _ _ _ _).
 %total { } (can-remove-min _ _ _ _ _ _).
+
+
+%theorem can-remove-max:
+	forall*	{S} {N1} {N2}
+	forall	{SZ: size S (s N1)}
+		{MN: max S N2}
+	exists	{SP}
+		{SZP: size SP N1}
+		{A: add SP N2 S}
+		{F: not-member SP N2}
+	true.
+
+- : can-remove-max SZ MN _ SZ1 A F
+    <- max-implies-lookup MN _ SL
+    <- can-remove SZ SL _ _ SZ1P EQs A F
+    <- succ-cancels EQs EQ
+    <- size-respects-eq SZ1P eq/ EQ SZ1.
+
+%worlds () (can-remove-max _ _ _ _ _ _).
+%total { } (can-remove-max _ _ _ _ _ _).
+
