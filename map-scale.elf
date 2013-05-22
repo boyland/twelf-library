@@ -344,7 +344,7 @@ scale/+ : scale S (map/+ N D M) (map/+ N DP MP)
 %theorem scale-affects-lookup-converse* :
 	forall* {S} {M1} {M2} {N} {D1} {D2}
 	forall {L1:lookup M2 N D2} {SC:scale S M1 M2}
-	       {DS:frv`scale S D1 D2} 
+	       {DS:data`scale S D1 D2} 
 	exists {L2:lookup M1 N D1}
 	true.
 
