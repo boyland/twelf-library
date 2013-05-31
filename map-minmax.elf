@@ -74,6 +74,16 @@ min/+ : min (map/+ N D M) N.
 %total (M) (max-implies-lookup M _ _).
 
 
+%theorem max-empty-contradiction:
+	forall*	{N}
+	forall	{M: max map/0 N}
+	exists	{F: void}
+	true.
+
+%worlds () (max-empty-contradiction _ _).
+%total { } (max-empty-contradiction _ _).
+
+
 %theorem lookup-implies-max :
 	forall*	{M} {N} {D}
 	forall	{L: lookup M N D}
@@ -283,7 +293,21 @@ BEGIN_ELF
 END_ELF
 %}%
 
-%abbrev max-preserves-leq* = leq-implies-bound-le.
+%theorem max-preserves-leq* :
+	forall*	{M1} {N1} {M2} {N2}
+	forall	{LE:leq M1 M2}
+		{X1:max M1 N1}
+		{X2:max M2 N2}
+	exists	{LE:nat`ge N2 N1}
+	true.
+
+- : max-preserves-leq* M1<=M2 MX1 MX2 N2>=N1
+    <- leq-implies-bound-le M1<=M2 MX1 MX2 LE
+    <- succ-preserves-ge-converse LE N2>=N1.
+
+%worlds () (max-preserves-leq* _ _ _ _).
+%total { } (max-preserves-leq* _ _ _ _).
+
 
 %theorem min-reverses-leq* :
 	forall*	{M1} {N1} {M2} {N2}
