@@ -354,7 +354,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 		{L2: lookup M2 N2 D2}
 	true.
 
-%worlds () (meta-reduces-lookup _ _ _).
+%worlds (WORLDS) (meta-reduces-lookup _ _ _).
 %total { } (meta-reduces-lookup _ _ _).
 %reduces X < Y (meta-reduces-lookup _ X Y).
 
@@ -377,7 +377,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- succ-cancels SN0=SNX N0=NX
     <- lookup-respects-eq LP eq/ N0=NX data`eq/ LPX.
 
-%worlds () (lookup/>-inversion _ _ _).
+%worlds (WORLDS) (lookup/>-inversion _ _ _).
 %total { } (lookup/>-inversion _ _ _).
 %reduces Y < X (lookup/>-inversion X _ Y).
 
@@ -452,7 +452,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 - : lookup-implies-ge (lookup/> _ P) (nat`ge/> GT)
     <- plus-implies-gt P nat`eq/ GT.
     
-%worlds () (lookup-implies-ge _ _).
+%worlds (WORLDS) (lookup-implies-ge _ _).
 %total { } (lookup-implies-ge _ _).
 
 %{%
@@ -517,7 +517,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- succ-cancels SEQ EQ
     <- fresh-respects-eq F1 eq/ EQ F.
 
-%worlds () (fresh/>-inversion _ _ _).
+%worlds (WORLDS) (fresh/>-inversion _ _ _).
 %total { } (fresh/>-inversion _ _ _).
 
 
@@ -1309,7 +1309,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 - : fresh-implies-unit-disjoint (fresh/> F P) (disjoint/< D P)
     <- fresh-implies-unit-disjoint F D.
 
-%worlds () (fresh-implies-unit-disjoint _ _).
+%worlds (WORLDS) (fresh-implies-unit-disjoint _ _).
 %total (F) (fresh-implies-unit-disjoint F _).
 
 
@@ -1489,7 +1489,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- plus-commutative P2s P2sc
     <- plus-left-preserves-gt* G1 P1 P2sc G.
 
-%worlds () (bound-lookup-implies-gt _ _ _).
+%worlds (WORLDS) (bound-lookup-implies-gt _ _ _).
 %total (B) (bound-lookup-implies-gt B _ _).
 
 
@@ -1586,7 +1586,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- plus-left-cancels N1+1+N2=N3 N1+1+N2P=N3 nat`eq/ nat`eq/ N2=N2P
     <- map/+-preserves-eq N2=N2P data`eq/ eq/ E.
 
-%worlds () (shift-cancels _ _ _ _ _).
+%worlds (WORLDS) (shift-cancels _ _ _ _ _).
 %total { } (shift-cancels _ _ _ _ _).
 
 
@@ -1670,7 +1670,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- shift-deterministic S2 S1 nat`eq/ eq/ EQ
     <- fresh-respects-eq FP2 EQ nat`eq/ FP1.
 
-%worlds () (shift-preserves-fresh* _ _ _ _).
+%worlds (WORLDS) (shift-preserves-fresh* _ _ _ _).
 %total { } (shift-preserves-fresh* _ _ _ _).
 
 
@@ -1827,7 +1827,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- shift-preserves-fresh* F1 PSC1 
 	(shift/+ P2) F2.
 
-%worlds () (removal-preserves-fresh _ _ _).
+%worlds (WORLDS) (removal-preserves-fresh _ _ _).
 %total { } (removal-preserves-fresh _ _ _).
 
 
@@ -2079,7 +2079,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 	exists	{F: void}
 	true.
 
-%worlds () (update-contradiction _ _).
+%worlds (WORLDS) (update-contradiction _ _).
 %total { } (update-contradiction _ _).
 
 
@@ -2717,7 +2717,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- nat`ne-symmetric NE NEs
     <- update-preserves-lookup L U NEs LP.
 
-%worlds () (fresh-update-preserves-lookup _ _ _ _).
+%worlds (WORLDS) (fresh-update-preserves-lookup _ _ _ _).
 %total { } (fresh-update-preserves-lookup _ _ _ _).
 
 
@@ -2760,7 +2760,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- succ-cancels SNP=SN NP=N 
     <- size-respects-eq S1P eq/ NP=N S1.
 
-%worlds () (fresh-update-increases-size-converse _ _ _ _).
+%worlds (WORLDS) (fresh-update-increases-size-converse _ _ _ _).
 %total { } (fresh-update-increases-size-converse _ _ _ _).
 
 
@@ -2857,7 +2857,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- plus-left-cancels-gt I+1+J=K I+1+L=M nat`eq/ K>M J>L
     <- update-preserves-bound B U J>L BP.
 
-%worlds () (update-preserves-bound _ _ _ _).
+%worlds (WORLDS) (update-preserves-bound _ _ _ _).
 %total (U) (update-preserves-bound _ U _ _).
 
 
@@ -2895,7 +2895,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- plus-left-cancels-ne I+1+J=K I+1+L+1=M+1 nat`eq/ K<>M+1 J<>L+1
     <- update-preserves-bound-converse BP U J<>L+1 B.
 
-%worlds () (update-preserves-bound-converse _ _ _ _).
+%worlds (WORLDS) (update-preserves-bound-converse _ _ _ _).
 %total (U) (update-preserves-bound-converse _ U _ _).
 
 
@@ -3284,7 +3284,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- fresh-update-cancels F0X U01X F0 U01 nat`eq/ eq/ DE M0X=M0
     <- update-respects-eq U02X M0X=M0 nat`eq/ data`eq/ eq/ U02.
 
-%worlds () (fresh-update-commutes-converse* _ _ _ _ _ _ _).
+%worlds (WORLDS) (fresh-update-commutes-converse* _ _ _ _ _ _ _).
 %total { } (fresh-update-commutes-converse* _ _ _ _ _ _ _).
 
 
@@ -3333,7 +3333,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- succ-cancels EQ EQP
     <- size-respects-eq SZPP eq/ EQP SZP.
 
-%worlds () (can-remove* _ _ _ _ _ _ _).
+%worlds (WORLDS) (can-remove* _ _ _ _ _ _ _).
 %total { } (can-remove* _ _ _ _ _ _ _).
 
 
@@ -3349,7 +3349,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- plus-swap-succ P PS
     <- plus-commutative PS PSC.
 
-%worlds () (shift-implies-update _ _).
+%worlds (WORLDS) (shift-implies-update _ _).
 %total { } (shift-implies-update _ _).
 
 
@@ -3367,5 +3367,5 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
     <- fresh-update-cancels FP UP F U nat`eq/ eq/ data`eq/ MEQ
     <- shift-respects-eq SP nat`eq/ eq/ MEQ S.
 
-%worlds () (fresh-update-implies-shift _ _ _).
+%worlds (WORLDS) (fresh-update-implies-shift _ _ _).
 %total { } (fresh-update-implies-shift _ _ _).
