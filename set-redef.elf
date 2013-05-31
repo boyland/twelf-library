@@ -156,12 +156,50 @@
           leq M1 M2 -> type
 	= [LP] [F1] [U1] [F2] [U2] [L]
 	  not-member-update-preserves-leq-converse LP F1 U1 F2 U2 L unit`eq/.
+% deprecated:
 %abbrev not-member-add2-preserves-leq-converse
 	: leq M1 M2P ->  not-member M1 N -> 
 	                 not-member M2 N -> add M2 N M2P ->
           leq M1 M2 -> type
 	= [LP] [F1] [F2] [U2] [L]
 	  not-member-update2-preserves-leq-converse LP F1 F2 U2 L.
+
+% the third argument in the last theorem is unecessary:
+%theorem irrelevant-add-preserves-leq-converse:
+	forall*	{M1} {M2P} {N} {M2}
+	forall	{L: leq M1 M2P}
+		{F: not-member M1 N}
+		{A: add M2 N M2P}
+	exists	{L: leq M1 M2}
+	true.
+
+%theorem irrelevant-add-preserves-leq-converse/L:
+	forall*	{M1} {M2P} {N} {M2} {B}
+	forall	{L: leq M1 M2P}
+		{F: not-member M1 N}
+		{M: member? M2 N B}
+		{A: add M2 N M2P}
+	exists	{L: leq M1 M2}
+	true.
+
+- : irrelevant-add-preserves-leq-converse/L LP F1 (member?/out F2) A L
+    <- not-member-update2-preserves-leq-converse LP F1 F2 A L.
+
+- : irrelevant-add-preserves-leq-converse/L LP F1 (member?/in M2) A L
+    <- member-implies-add M2 AP
+    <- add-unique A AP eq/ nat`eq/ EQ
+    <- leq-respects-eq LP eq/ EQ L.
+
+%worlds () (irrelevant-add-preserves-leq-converse/L _ _ _ _ _).
+%total { } (irrelevant-add-preserves-leq-converse/L _ _ _ _ _).
+
+- : irrelevant-add-preserves-leq-converse LP F1 A L
+    <- member?-total M?
+    <- irrelevant-add-preserves-leq-converse/L LP F1 M? A L.
+
+%worlds () (irrelevant-add-preserves-leq-converse _ _ _ _).
+%total { } (irrelevant-add-preserves-leq-converse _ _ _ _).
+
 
 %% using "union"
 
