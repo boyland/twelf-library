@@ -125,7 +125,7 @@
 %abbrev add-preserves-member-converse = update-preserves-lookup-converse.
 %abbrev add-preserves-not-member-converse = update-preserves-not-member-converse.
 %abbrev add-preserves-bound-converse = update-preserves-bound-converse.
-
+%abbrev add-preserves-disjoint-converse = update-preserves-disjoint-converse.
 
 
 %abbrev add-overwrites = update-overwrites.
