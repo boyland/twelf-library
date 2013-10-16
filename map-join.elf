@@ -1902,23 +1902,28 @@ END_ELF
 %total { } (join-left-affects-lookup _ _ _ _).
 
 
-%theorem fresh-join-right-preserves-lookup* :
+% TODO: "*" should be removed here.
+
+%theorem fresh-join-right-preserves-lookup :
 	forall* {M1} {M2} {M3} {N} {D}
 	forall {L1:lookup M1 N D} {F2:fresh M2 N}
                {A:join M1 M2 M3}
 	exists {L3:lookup M3 N D}
 	true.
 
-- : fresh-join-right-preserves-lookup* L _ join/R L.
+% deprecated
+%abbrev fresh-join-right-preserves-lookup* = fresh-join-right-preserves-lookup.
 
-- : fresh-join-right-preserves-lookup* (lookup/= nat`eq/) (fresh/< N2<N1) AX L3X
+- : fresh-join-right-preserves-lookup L _ join/R L.
+
+- : fresh-join-right-preserves-lookup (lookup/= nat`eq/) (fresh/< N2<N1) AX L3X
     <- gt-implies-plus N2<N1 N3 N3+1+N2=N1
     <- join/<-inversion AX N3+1+N2=N1 M3 A M=M223
     <- eq-symmetric M=M223 M223=M
     <- lookup-respects-eq (lookup/= nat`eq/) M223=M nat`eq/ data`eq/ L3X.
 
-- : fresh-join-right-preserves-lookup* (lookup/> L2 N4+1+N2=N) (fresh/< N<N1)
-                                       AX L3X
+- : fresh-join-right-preserves-lookup (lookup/> L2 N4+1+N2=N) (fresh/< N<N1)
+                                      AX L3X
     <- gt-implies-plus N<N1 N0 N0+1+N=N1
     <- plus-swap-succ N4+1+N2=N N4+N2+1=N
     <- plus-associative-converse N4+N2+1=N N0+1+N=N1 N3 N0+1+N4=N3 N3+N2+1=N1
@@ -1926,50 +1931,50 @@ END_ELF
     <- join/<-inversion AX N3+1+N2=N1 M3 A M=M223
     <- eq-symmetric M=M223 M223=M
     <- plus-implies-gt N0+1+N4=N3 nat`eq/ N3>N4
-    <- fresh-join-right-preserves-lookup* L2 (fresh/< N3>N4) A L3
+    <- fresh-join-right-preserves-lookup L2 (fresh/< N3>N4) A L3
     <- lookup-respects-eq (lookup/> L3 N4+1+N2=N) M223=M nat`eq/ data`eq/ L3X.
  
-- : fresh-join-right-preserves-lookup* 
+- : fresh-join-right-preserves-lookup
 	(lookup/= nat`eq/) (fresh/> F1 N0+1+N1=N2) 
 	AX L3X
     <- join/>-inversion AX N0+1+N1=N2 M3 A M=M113
     <- eq-symmetric M=M113 M113=M
-    <- fresh-join-right-preserves-lookup* (lookup/= nat`eq/) F1 A L3
+    <- fresh-join-right-preserves-lookup (lookup/= nat`eq/) F1 A L3
     <- lookup-respects-eq (lookup/> L3 N0+1+N1=N2) M113=M nat`eq/ data`eq/ L3X.
 
-- : fresh-join-right-preserves-lookup* (lookup/> L2 N5+1+N1=N)
-				       (fresh/> F1P N4+1+N1=N)
-                                       (join/= A _ nat`eq/) 
-                                       (lookup/> L3 N5+1+N1=N)
+- : fresh-join-right-preserves-lookup (lookup/> L2 N5+1+N1=N)
+				      (fresh/> F1P N4+1+N1=N)
+                                      (join/= A _ nat`eq/) 
+                                      (lookup/> L3 N5+1+N1=N)
     <- plus-right-cancels N4+1+N1=N N5+1+N1=N nat`eq/ nat`eq/ N4+1=N5+1
     <- succ-cancels N4+1=N5+1 N4=N5
     <- fresh-respects-eq F1P eq/ N4=N5 F1
-    <- fresh-join-right-preserves-lookup* L2 F1 A L3.
+    <- fresh-join-right-preserves-lookup L2 F1 A L3.
 
-- : fresh-join-right-preserves-lookup* (lookup/> L2 N5+1+N2=N)
-                                       (fresh/> F1 N4+1+N1=N)
-                                       (join/> A N0+1+N1=N2)
-                                       (lookup/> L3 N4+1+N1=N)
+- : fresh-join-right-preserves-lookup (lookup/> L2 N5+1+N2=N)
+                                      (fresh/> F1 N4+1+N1=N)
+                                      (join/> A N0+1+N1=N2)
+                                      (lookup/> L3 N4+1+N1=N)
     <- plus-swap-succ N0+1+N1=N2 N0+N1+1=N2
     <- plus-associative-converse N0+N1+1=N2 N5+1+N2=N N3 N5+1+N0=N3 N3+N1+1=N
     <- plus-swap-succ N4+1+N1=N N4+N1+1=N
     <- plus-right-cancels N3+N1+1=N N4+N1+1=N nat`eq/ nat`eq/ N3=N4
     <- plus-respects-eq N5+1+N0=N3 nat`eq/ nat`eq/ N3=N4 N5+1+N0=N4
-    <- fresh-join-right-preserves-lookup* (lookup/> L2 N5+1+N0=N4) F1 A L3.
+    <- fresh-join-right-preserves-lookup (lookup/> L2 N5+1+N0=N4) F1 A L3.
 
-- : fresh-join-right-preserves-lookup* (lookup/> L2 N5+1+N2=N)
-				       (fresh/> F1 N4+1+N1=N)
-                                       (join/< A N3+1+N2=N1)
-                                       (lookup/> L3 N5+1+N2=N)
+- : fresh-join-right-preserves-lookup (lookup/> L2 N5+1+N2=N)
+				      (fresh/> F1 N4+1+N1=N)
+                                      (join/< A N3+1+N2=N1)
+                                      (lookup/> L3 N5+1+N2=N)
     <- plus-swap-succ N3+1+N2=N1 N3+N2+1=N1
     <- plus-associative-converse N3+N2+1=N1 N4+1+N1=N N6 N4+1+N3=N6 N6+N2+1=N
     <- plus-swap-succ N5+1+N2=N N5+N2+1=N
     <- plus-right-cancels N6+N2+1=N N5+N2+1=N nat`eq/ nat`eq/ N6=N5
     <- plus-respects-eq N4+1+N3=N6 nat`eq/ nat`eq/ N6=N5 N4+1+N3=N5
-    <- fresh-join-right-preserves-lookup* L2 (fresh/> F1 N4+1+N3=N5) A L3.
+    <- fresh-join-right-preserves-lookup L2 (fresh/> F1 N4+1+N3=N5) A L3.
 
-%worlds (WORLDS) (fresh-join-right-preserves-lookup* _ _ _ _).
-%total (A) (fresh-join-right-preserves-lookup* _ _ A _).
+%worlds (WORLDS) (fresh-join-right-preserves-lookup _ _ _ _).
+%total (A) (fresh-join-right-preserves-lookup _ _ A _).
 
 
 %theorem fresh-join-right-preserves-lookup-converse :
@@ -2088,6 +2093,7 @@ END_ELF
 #endif
 %}%
 
+% TODO deprecate *
 %theorem join-preserves-fresh-converse* :
 	forall* {M1} {M2} {M3} {N}
 	forall {F3:fresh M3 N}
