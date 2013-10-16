@@ -195,6 +195,22 @@ many things about them.
 %total { } (and-total* _ _ _ _).
 
 
+%theorem or-respects-eq:
+	forall*	{B11} {B12} {B13}
+		{B21} {B22} {B23}
+	forall	{O1: or B11 B12 B13}
+		{E1: eq B11 B21}
+		{E2: eq B12 B22}
+		{E3: eq B13 B23}
+	exists	{O2: or B21 B22 B23}
+	true.
+
+- : or-respects-eq O _ _ _ O.
+
+%worlds () (or-respects-eq _ _ _ _ _).
+%total { } (or-respects-eq _ _ _ _ _).
+
+
 %theorem or-total* :
 	forall {B1} {B2} 
 	exists {B3} {A:or B1 B2 B3}
@@ -210,3 +226,35 @@ many things about them.
 
 %worlds () (or-total* _ _ _ _).
 %total { } (or-total* _ _ _ _).
+
+
+%theorem or-unique:
+	forall*	{B11} {B12} {B13} {B21} {B22} {B23}
+	forall	{O1: or B11 B12 B13}
+		{O2: or B21 B22 B23}
+		{E1: eq B11 B21}
+		{E2: eq B12 B22}
+	exists	{E3: eq B13 B23}
+	true.
+
+- : or-unique or/FF or/FF eq/ eq/ eq/.
+
+- : or-unique or/TX _ eq/ eq/ eq/.
+
+- : or-unique or/XT _ eq/ eq/ eq/.
+
+%worlds () (or-unique _ _ _ _ _).
+%total { } (or-unique _ _ _ _ _).
+
+
+%theorem or-left-identity:
+	forall	{X}
+	exists	{O: or false X X}
+	true.
+
+- : or-left-identity _ or/FF.
+
+- : or-left-identity _ or/XT.
+
+%worlds () (or-left-identity _ _).
+%total { } (or-left-identity _ _).
