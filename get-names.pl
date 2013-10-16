@@ -12,6 +12,10 @@ foreach $f (@ARGV) {
       }
       next;
     }
+    if (/%module (.*)/) {
+	$module = $1;
+	next;
+    }
     s/// if (/%theorem /);
     s/// if (/%abbrev /);
     next if (/^[# %\t]/);
@@ -20,7 +24,7 @@ foreach $f (@ARGV) {
     s/[: ].*//;
     next if (/\`/);
     s/(.*)/%abbrev $module$1 = $1./;
-    print $_;
+    print $_ unless ($module eq "<NONE>");
   }
   close (ELF);
 }
