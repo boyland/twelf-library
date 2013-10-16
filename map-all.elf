@@ -11,6 +11,8 @@
  *
  * NB: We define
  *   relation-respects-eq
+ * unless you define RELATION_RESPECTS_EQ
+ * in which case, we use, but do not define it.
  *
  * If you are using "leq", you must define MAP_ALL_LEQ
  */
@@ -41,6 +43,9 @@ allrelation/U :
 
 %%% Extra Theorems about relation
 
+%{%
+#ifndef RELATION_RESPECTS_EQ
+%}%
 
 %theorem relation-respects-eq :
 	forall*	{N1} {D1} {X1}
@@ -54,9 +59,12 @@ allrelation/U :
 
 - : relation-respects-eq R _ _ _ R.
 
-%worlds () (relation-respects-eq _ _ _ _ _).
+%worlds (WORLDS) (relation-respects-eq _ _ _ _ _).
 %total { } (relation-respects-eq _ _ _ _ _).
 
+%{%
+#endif
+%}%
 
 
 %%% Theorems about allrelation
@@ -68,7 +76,7 @@ allrelation/U :
 	exists	{A: allrelation M X}
 	true.
 
-%worlds () (false-implies-allrelation _ _).
+%worlds (WORLDS) (false-implies-allrelation _ _).
 %total { } (false-implies-allrelation _ _).
 
 
@@ -82,7 +90,7 @@ allrelation/U :
 
 - : allrelation-respects-eq A _ _ A.
 
-%worlds () (allrelation-respects-eq _ _ _ _).
+%worlds (WORLDS) (allrelation-respects-eq _ _ _ _).
 %total { } (allrelation-respects-eq _ _ _ _).
 
 
@@ -124,7 +132,7 @@ allrelation/U :
     <- nat`eq?-total EQ?
     <- allrelation/U-inversion/L A0 R0 F0 U0 F U EQ? A1 R.
 
-%worlds () (allrelation/U-inversion _ _ _ _ _)
+%worlds (WORLDS) (allrelation/U-inversion _ _ _ _ _)
            (allrelation/U-inversion/L _ _ _ _ _ _ _ _ _).
 %total (A B) 
 	   (allrelation/U-inversion A _ _ _ _)
@@ -142,7 +150,7 @@ allrelation/U :
 - : fresh-update-preserves-allrelation-converse A2 F U A1
     <- allrelation/U-inversion A2 F U A1 _.
 
-%worlds () (fresh-update-preserves-allrelation-converse _ _ _ _).
+%worlds (WORLDS) (fresh-update-preserves-allrelation-converse _ _ _ _).
 %total { } (fresh-update-preserves-allrelation-converse _ _ _ _).
 
 
@@ -179,7 +187,7 @@ allrelation/U :
     <- nat`eq?-total EQ?
     <- allrelation-lookup-implies-relation/L A1 R1 U1 L EQ? R.
 
-%worlds () (allrelation-lookup-implies-relation _ _ _)
+%worlds (WORLDS) (allrelation-lookup-implies-relation _ _ _)
            (allrelation-lookup-implies-relation/L _ _ _ _ _ _).
 %total (A B) 
 	   (allrelation-lookup-implies-relation A _ _)
@@ -212,14 +220,14 @@ allrelation/U :
     <- allrelation/U-inversion A F U1 A1 R1
     <- update-overwrites U1 U nat`eq/ U2.
  
-%worlds () (relation-update-preserves-allrelation/L _ _ _ _ _).
+%worlds (WORLDS) (relation-update-preserves-allrelation/L _ _ _ _ _).
 %total { } (relation-update-preserves-allrelation/L _ _ _ _ _).
 
 - : relation-update-preserves-allrelation A R U AP
     <- domain?-total D?
     <- relation-update-preserves-allrelation/L A R D? U AP.
 
-%worlds () (relation-update-preserves-allrelation _ _ _ _).
+%worlds (WORLDS) (relation-update-preserves-allrelation _ _ _ _).
 %total { } (relation-update-preserves-allrelation _ _ _ _).
 
 %{%
@@ -241,7 +249,7 @@ allrelation/U :
     <- allrelation-respects-leq A1 XL A2
     <- relation-respects-leq R1 XL R2.
 
-%worlds () (allrelation-respects-leq _ _ _).
+%worlds (WORLDS) (allrelation-respects-leq _ _ _).
 %total (A) (allrelation-respects-leq A _ _).
 
 %{%
