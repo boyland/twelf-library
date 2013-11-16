@@ -16,6 +16,16 @@ GE/> : GE X Y
 
 
 
+GE? : TYPE -> TYPE -> bool -> type.
+
+
+GE?/yes : GE? X Y true
+    <- GE X Y.
+
+GE?/no : GE? X Y false
+    <- GT Y X.
+
+
 
 %%%% Theorems
 
@@ -109,3 +119,40 @@ END_ELF
 
 %worlds () (GT-transitive-GE X1>X2 X2>=X3 %{=>}% X1>X3).
 %total {} (GT-transitive-GE _ _ _).
+
+
+
+%%% Theorems about GE?
+
+
+%theorem GE?-total*:
+	forall	{N1} {N2}
+	exists	{B}
+		{G: GE? N1 N2 B}
+	true.
+
+%abbrev GE?-total = GE?-total* _ _ _.
+
+%theorem GE?-total/L :
+	forall*	{N1} {N2} {C}
+	forall	{C: COMP N1 N2 C}
+	exists	{B}
+		{G: GE? N1 N2 B}
+	true.
+
+- : GE?-total/L (COMP/=) _ (GE?/yes (GE/= EQ/)).
+
+- : GE?-total/L (COMP/> N1>N2) _ (GE?/yes (GE/> N1>N2)).
+
+- : GE?-total/L (COMP/< N1<N2) _ (GE?/no N1<N2).
+
+%worlds () (GE?-total/L _ _ _).
+%total { } (GE?-total/L _ _ _).
+
+- : GE?-total G
+    <- COMP-total CMP
+    <- GE?-total/L CMP _ G.
+
+%worlds () (GE?-total* _ _ _ _).
+%total { } (GE?-total* _ _ _ _).
+
