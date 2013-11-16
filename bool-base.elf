@@ -155,13 +155,11 @@ END_ELF
 
 
 
-%%% Theorems about not, and, or
+%%%% Theorems about not, and, or
 
-%{%
-These boolean connectives are not as useful
-as they might seem.  Currently I do not prove
-many things about them.
-%}%
+
+
+%%% Totality
 
 
 %theorem not-total*:
@@ -195,6 +193,27 @@ many things about them.
 %total { } (and-total* _ _ _ _).
 
 
+%theorem or-total* :
+	forall {B1} {B2} 
+	exists {B3} {A:or B1 B2 B3}
+	true.
+
+%abbrev or-total = or-total* _ _ _.
+
+- : or-total or/TX.
+
+- : or-total or/XT.
+
+- : or-total or/FF.
+
+%worlds () (or-total* _ _ _ _).
+%total { } (or-total* _ _ _ _).
+
+
+
+%%% Respect equality
+
+
 %theorem or-respects-eq:
 	forall*	{B11} {B12} {B13}
 		{B21} {B22} {B23}
@@ -211,21 +230,38 @@ many things about them.
 %total { } (or-respects-eq _ _ _ _ _).
 
 
-%theorem or-total* :
-	forall {B1} {B2} 
-	exists {B3} {A:or B1 B2 B3}
+%theorem and-respects-eq:
+	forall*	{B11} {B12} {B13}
+		{B21} {B22} {B23}
+	forall	{O1: and B11 B12 B13}
+		{E1: eq B11 B21}
+		{E2: eq B12 B22}
+		{E3: eq B13 B23}
+	exists	{O2: and B21 B22 B23}
 	true.
 
-%abbrev or-total = or-total* _ _ _.
+- : and-respects-eq O _ _ _ O.
 
-- : or-total or/TX.
+%worlds () (and-respects-eq _ _ _ _ _).
+%total { } (and-respects-eq _ _ _ _ _).
 
-- : or-total or/XT.
 
-- : or-total or/FF.
+%theorem not-respects-eq:
+	forall*	{B11} {B12}
+		{B21} {B22}
+	forall	{O1: not B11 B12}
+		{E1: eq B11 B21}
+		{E2: eq B12 B22}
+	exists	{O2: not B21 B22}
+	true.
 
-%worlds () (or-total* _ _ _ _).
-%total { } (or-total* _ _ _ _).
+- : not-respects-eq O _ _ O.
+
+%worlds () (not-respects-eq _ _ _ _).
+%total { } (not-respects-eq _ _ _ _).
+
+
+%%% Uniqueness
 
 
 %theorem or-unique:
@@ -247,6 +283,45 @@ many things about them.
 %total { } (or-unique _ _ _ _ _).
 
 
+%theorem and-unique:
+	forall*	{B11} {B12} {B13} {B21} {B22} {B23}
+	forall	{O1: and B11 B12 B13}
+		{O2: and B21 B22 B23}
+		{E1: eq B11 B21}
+		{E2: eq B12 B22}
+	exists	{E3: eq B13 B23}
+	true.
+
+- : and-unique and/TT and/TT eq/ eq/ eq/.
+
+- : and-unique and/FX _ eq/ eq/ eq/.
+
+- : and-unique and/XF _ eq/ eq/ eq/.
+
+%worlds () (and-unique _ _ _ _ _).
+%total { } (and-unique _ _ _ _ _).
+
+
+%theorem not-unique:
+	forall*	{B11} {B12} {B21} {B22}
+	forall	{O1: not B11 B12}
+		{O2: not B21 B22}
+		{E1: eq B11 B21}
+	exists	{E3: eq B12 B22}
+	true.
+
+- : not-unique not/T not/T eq/ eq/.
+
+- : not-unique not/F not/F eq/ eq/.
+
+%worlds () (not-unique _ _ _ _).
+%total { } (not-unique _ _ _ _).
+
+
+
+%%% Identity
+
+
 %theorem or-left-identity:
 	forall	{X}
 	exists	{O: or false X X}
@@ -258,3 +333,26 @@ many things about them.
 
 %worlds () (or-left-identity _ _).
 %total { } (or-left-identity _ _).
+
+
+%theorem and-left-identity:
+	forall	{X}
+	exists	{O: and true X X}
+	true.
+
+- : and-left-identity _ and/TT.
+
+- : and-left-identity _ and/XF.
+
+%worlds () (and-left-identity _ _).
+%total { } (and-left-identity _ _).
+
+
+%theorem not-anti-reflexive:
+	forall*	{X}
+	forall	{N: not X X}
+	exists	{F: void}
+	true.
+
+%worlds () (not-anti-reflexive _ _).
+%total { } (not-anti-reflexive _ _).
