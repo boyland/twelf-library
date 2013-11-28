@@ -156,3 +156,33 @@ END_ELF
 %worlds () (GE?-total* _ _ _ _).
 %total { } (GE?-total* _ _ _ _).
 
+
+%theorem GE?-unique:
+	forall*	{N11} {N12} {B1}
+		{N21} {N22} {B2}
+	forall	{G1: GE? N11 N12 B1}
+		{G2: GE? N21 N22 B2}
+		{E1: EQ N11 N21}
+		{E2: EQ N12 N22}
+	exists	{BE: bool`eq B1 B2}
+	true.
+
+- : GE?-unique _ _ EQ/ EQ/ bool`eq/.
+
+- : GE?-unique
+	(GE?/yes N1>=N2) 
+	(GE?/no N2>N1) EQ/ EQ/ BEQ
+    <- GE-transitive-GT N1>=N2 N2>N1 N1>N1
+    <- GT-anti-reflexive N1>N1 F
+    <- bool`false-implies-eq F BEQ.
+
+- : GE?-unique
+	(GE?/no N2>N1)
+	(GE?/yes N1>=N2)  EQ/ EQ/ BEQ 
+    <- GE-transitive-GT N1>=N2 N2>N1 N1>N1
+    <- GT-anti-reflexive N1>N1 F
+    <- bool`false-implies-eq F BEQ.
+
+%worlds () (GE?-unique _ _ _ _ _).
+%total { } (GE?-unique _ _ _ _ _).
+

@@ -64,7 +64,7 @@ GN = ./get-names.pl
 	${GN} $* $$$$.elf | ${CAT} $$$$.elf - > $*.elf; \
 	rm $$$$.elf
 
-bool.elf : ${BSRC} EQ.i RELN.i
+bool.elf : ${BSRC} EQ.i RELN.i OPN-assoc.i
 
 nat.elf : ${NATSRC} ${OPSRC}
 
