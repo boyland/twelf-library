@@ -99,6 +99,17 @@ max/< : GT X2 X1 -> max X1 X2 X2.
 %abbrev min-total = min-total* _ _ _.
 
 
+%theorem min-idempotent:
+	forall	{X}
+	exists	{M: min X X X}
+	true.	
+
+- : min-idempotent _ min/=.
+
+%worlds () (min-idempotent _ _).
+%total { } (min-idempotent _ _).
+
+
 %theorem min-deterministic :
 	forall* {X1} {X2} {X3}
 		{Y1} {Y2} {Y3}
@@ -418,6 +429,17 @@ END_ELF
 
 
 %abbrev max-total = max-total* _ _ _.
+
+
+%theorem max-idempotent:
+	forall	{X}
+	exists	{M: max X X X}
+	true.	
+
+- : max-idempotent _ max/=.
+
+%worlds () (max-idempotent _ _).
+%total { } (max-idempotent _ _).
 
 
 %theorem max-deterministic :

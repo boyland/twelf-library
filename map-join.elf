@@ -2654,6 +2654,46 @@ For example C13 ^ C14 because C13 <= C3 and C14 <= C4 and C3^C4
 %total (J) (bound-commute-join* _ _ _ J _).
 
 
+%theorem size-commute-disjoint-join*:
+	forall* {M1} {M2} {M3} {N1} {N2} {N3}
+	forall	{B1: size M1 N1}
+		{B2: size M2 N2}
+		{B3: size M3 N3}
+		{DJ: disjoint M1 M2}
+		{J: join M1 M2 M3}
+	exists	{MX: nat`plus N1 N2 N3}
+	true.
+
+- : size-commute-disjoint-join* (size/0) B2 B3 _ join/L P
+    <- size-unique B2 B3 eq/ N2=N3
+    <- nat`plus-respects-eq plus/z nat`eq/ nat`eq/ N2=N3 P.
+
+- : size-commute-disjoint-join* B1 (size/0) B3 _ join/R P
+    <- size-unique B1 B3 eq/ N1=N3
+    <- plus-right-identity N1 N1+0=N1
+    <- nat`plus-respects-eq N1+0=N1 nat`eq/ nat`eq/ N1=N3 P.
+
+- : size-commute-disjoint-join* _ _ _ DSJ
+	(join/= J _ nat`eq/) P
+    <- disjoint/=-contradiction DSJ nat`eq/ F
+    <- nat`false-implies-plus F P.
+
+- : size-commute-disjoint-join*
+	(size/+ S1) (size/+ S2) (size/+ S3) DSJ
+	(join/< J1 P1) (plus/s PP1)
+    <- disjoint/<-inversion DSJ P1 DSJ1
+    <- size-commute-disjoint-join* S1 (size/+ S2) S3 DSJ1 J1 PP1.
+
+- : size-commute-disjoint-join*
+	(size/+ S1) (size/+ S2) (size/+ S3) DSJ
+	(join/> J1 P1) PP
+    <- disjoint/>-inversion DSJ P1 DSJ1
+    <- size-commute-disjoint-join* (size/+ S1) S2 S3 DSJ1 J1 PP1
+    <- plus-right-increase PP1 PP.
+
+%worlds (WORLDS) (size-commute-disjoint-join* _ _ _ _ _ _).
+%total (J) (size-commute-disjoint-join* _ _ _ _ J _).
+
 %{%
 #ifdef MAP_LEQ
 #ifdef DATA_JOIN_IMPLIES_LEQ
