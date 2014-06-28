@@ -469,12 +469,6 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 %total (J) (disjoint-join-commutative _ J _).
 
 
-%theorem join-associative :
-	forall* {M1} {M2} {M3} {M4} {M7}
-	forall {A12:join M1 M2 M3} {A34:join M3 M4 M7}
-	exists {M6} {A24:join M2 M4 M6} {A16:join M1 M6 M7}
-	true.
-
 %theorem join-empty-implies-empty :
 	forall* {M1} {M2}
 	forall {A:join M1 M2 map/0}
