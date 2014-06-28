@@ -14,6 +14,7 @@
 %abbrev data`join-deterministic = rat`add-deterministic.
 %abbrev data`join-total* = rat`add-total*.
 %abbrev data`join-commutative = rat`add-commutative.
+%abbrev data`join-associative-converse = rat`add-associative-converse.
 %abbrev data`join-associative = rat`add-associative.
 %abbrev data`join-left-cancels = rat`add-left-cancels.
 %abbrev data`join-no-right-identity = rat`add-no-right-identity.
@@ -91,6 +92,19 @@
 %abbrev data`scale-distributes-over-join* = rat`mul-left-distributes-over-add*.
 
 %abbrev pred = [N] [Q] rat`grt (rat`whole N) Q.
+
+%theorem data`join-is-lub:
+	forall*	{D1} {D2} {D3} {D4}
+	forall	{D1+D2=D3: data`join D1 D2 D3}
+		{D1<=D4: data`leq D1 D4} 
+		{D2<=D4: data`leq D2 D4}
+	exists	{D3<=D4: data`leq D3 D4}
+	true.
+
+% actually false
+
+%worlds () (data`join-is-lub _ _ _ _).
+%trustme %total { } (data`join-is-lub _ _ _ _).
 
 %theorem data`join-right-distributes-over-meet :
 	forall* {M1} {M2} {M3} {M4} {M7}

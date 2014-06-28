@@ -254,4 +254,108 @@ allrelation/U :
 
 %{%
 #endif
+
+#ifdef DATA_JOIN_PRESERVES_RELATION
 %}%
+
+%theorem join-preserves-allrelation: 
+	forall* {M1} {M2} {M} {X}
+	forall 	{A1: allrelation M1 X}
+    		{A2: allrelation M2 X}
+    		{J: join M1 M2 M}
+    	exists {A: allrelation M X}
+    	true.
+
+%theorem join-preserves-allrelation/L: 
+	forall* {M1} {M2} {M} {X}
+    	forall	{N} {Z: size M N}
+    		{A1: allrelation M1 X}
+    		{A2: allrelation M2 X}
+    		{J: join M1 M2 M}
+    	exists  {A: allrelation M X}
+    	true.
+
+- : join-preserves-allrelation/L _ _ allrelation/0 A join/L A.
+
+- : join-preserves-allrelation/L _ _ A allrelation/0 join/R A.
+
+%theorem join-preserves-allrelation/LL: 
+	forall* {M1} {M2} {M} {MP} {X} {K} {D} {B1} {B2}
+    	forall  {N} {Z: size M N}
+    		{A1: allrelation M1 X}
+    		{A2: allrelation M2 X}
+    		{J: join M1 M2 M}
+    		{F: fresh MP K}
+    		{U: update MP K D M}
+    		{D1?: domain? M1 K B1}
+    		{D2?: domain? M2 K B2}
+    	exists	{A: allrelation M X}
+    	true.
+
+- : join-preserves-allrelation/LL (s N) Z A1 A2 J F (Ux:update MP K Dx M)
+    (domain?/in L1) (domain?/in L2) (allrelation/U AP P F Uy)
+    <- join-joins-lookup L1 L2 J Dy DJ Ly
+    <- lookup-implies-fresh-update L1 _ F1 U1
+    <- lookup-implies-fresh-update L2 _ F2 U2
+    <- update-implies-lookup Ux Lx
+    <- lookup-unique Lx Ly eq/ nat`eq/ X=Y
+    <- update-respects-eq Ux eq/ nat`eq/ X=Y eq/ Uy
+    <- fresh-update-preserves-join-converse* F1 U1 F2 U2 J F Uy DJ JP
+    <- allrelation/U-inversion A1 F1 U1 A1P P1
+    <- allrelation/U-inversion A2 F2 U2 A2P P2
+    <- data`join-preserves-relation P1 P2 DJ P
+    <- fresh-update-increases-size-converse Z F Ux ZP
+    <- join-preserves-allrelation/L _ ZP A1P A2P JP AP.
+
+- : join-preserves-allrelation/LL (s N) Z A1 A2 J F U
+    (domain?/in _) (domain?/out F2)
+    (allrelation/U AP P1 F U)
+    <- update-implies-lookup U L
+    <- fresh-join-right-preserves-lookup-converse L F2 J L1
+    <- lookup-implies-fresh-update L1 _ F1 U1
+    <- allrelation/U-inversion A1 F1 U1 A1P P1
+    <- fresh-update-left-preserves-join-converse* F1 U1 F2 J F U J1
+    <- fresh-update-increases-size-converse Z F U Z1
+    <- join-preserves-allrelation/L _ Z1 A1P A2 J1 AP.
+
+- : join-preserves-allrelation/LL (s N) Z A1 A2 J F U
+    (domain?/out F1) (domain?/in _)
+    (allrelation/U AP P2 F U)
+    <- update-implies-lookup U L
+    <- fresh-join-left-preserves-lookup-converse F1 L J L2
+    <- lookup-implies-fresh-update L2 _ F2 U2
+    <- allrelation/U-inversion A2 F2 U2 A2P P2
+    <- fresh-update-right-preserves-join-converse* F1 F2 U2 J F U J2
+    <- fresh-update-increases-size-converse Z F U Z1
+    <- join-preserves-allrelation/L _ Z1 A1 A2P J2 AP.
+
+- : join-preserves-allrelation/LL _ _ _ _ J _ U
+    (domain?/out F1) (domain?/out F2) A
+    <- join-preserves-fresh* F1 F2 J F
+    <- update-implies-lookup U L
+    <- fresh-lookup-not-equal F L N<>N
+    <- nat`ne-anti-reflexive N<>N V
+    <- false-implies-allrelation V A.
+
+- : join-preserves-allrelation/L (s N) Z A1 A2 J A
+    <- lookup-implies-fresh-update (lookup/= nat`eq/) _ F U
+    <- domain?-total D1?
+    <- domain?-total D2?
+    <- join-preserves-allrelation/LL (s N) Z A1 A2 J F U D1? D2? A.
+
+%worlds () (join-preserves-allrelation/L _ _ _ _ _ _)
+       (join-preserves-allrelation/LL _ _ _ _ _ _ _ _ _ _).
+%total (N1 N2) (join-preserves-allrelation/LL N1 _ _ _ _ _ _ _ _ _)
+       (join-preserves-allrelation/L N2 _ _ _ _  _).
+
+- : join-preserves-allrelation A1 A2 J A
+    <- size-total Z
+    <- join-preserves-allrelation/L _ Z A1 A2 J A.
+
+%worlds () (join-preserves-allrelation _ _ _ _).
+%total {} (join-preserves-allrelation _ _ _ _).
+
+%{%
+#endif /* DATA_JOIN_PRESERVES_RELATION */
+%}%
+

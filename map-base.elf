@@ -473,6 +473,41 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (lookup-ne-implies-ne _ _ _ _ _).
 %total { } (lookup-ne-implies-ne _ _ _ _ _).
 
+
+%theorem lookup-ne-implies-index-ne: 
+	forall* {M} {N1} {D1} {N2} {D2}
+    	forall	{L1: lookup M N1 D1}
+    		{L2: lookup M N2 D2}
+    		{ND: data`ne D1 D2}
+    	exists	{NN: nat`ne N1 N2}
+    	true.
+
+%theorem lookup-ne-implies-index-ne/L:
+	forall* {M} {N1} {N2} {X1} {X2} {B}
+    	forall	{L1: lookup M N1 X1}
+    		{L2: lookup M N2 X2}
+    		{ND: data`ne X1 X2}
+    		{EQ?: nat`eq? N1 N2 B}
+    	exists	{NN: nat`ne N1 N2}
+    	true.
+
+- : lookup-ne-implies-index-ne/L _ _ _ (nat`eq?/no NN) NN.
+
+- : lookup-ne-implies-index-ne/L L1 L2 ND (nat`eq?/yes) NN
+    <- lookup-unique L1 L2 eq/ nat`eq/ DE
+    <- data`eq-ne-implies-false DE ND F
+    <- nat`false-implies-ne F NN.
+
+%worlds () (lookup-ne-implies-index-ne/L _ _ _ _ _).
+%total {} (lookup-ne-implies-index-ne/L _ _ _ _ _).
+
+- : lookup-ne-implies-index-ne L1 L2 ND NN
+    <- nat`eq?-total E?
+    <- lookup-ne-implies-index-ne/L L1 L2 ND E? NN.
+
+%worlds () (lookup-ne-implies-index-ne _ _ _ _).
+%total {} (lookup-ne-implies-index-ne _ _ _ _).
+
 %{%
 #endif
 %}%
@@ -2073,6 +2108,47 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %reduces UP < U (update/>-inversion U _ _ UP _).
 
 
+% the resulting map rather than the initial map is addressed
+%theorem update/>-inversion* :
+	forall* {N1} {D1} {M1} {N2} {D2} {M} {N0}
+	forall {U:update M N2 D2 (map/+ N1 D1 M1)} {P:plus (s N0) N1 N2}
+	exists {M0} {UP:update M0 N0 D2 M1} {E:eq (map/+ N1 D1 M0) M}
+	true.
+
+- : update/>-inversion* (update/0:update _ N D _) P map/0 UP EQ
+    <- plus-implies-gt P nat`eq/ GT
+    <- gt-anti-reflexive GT F
+    <- false-implies-update F UP
+    <- false-implies-eq F EQ
+    <- meta-reduces-update F UP (update/0:update _ N D _).
+
+- : update/>-inversion* (update/= nat`eq/:update (map/+ N1 D1 M1) _ D _) P 
+	map/0 UP EQ
+    <- plus-implies-gt P nat`eq/ GT
+    <- gt-anti-reflexive GT F
+    <- false-implies-update F UP
+    <- false-implies-eq F EQ
+    <- meta-reduces-update F UP
+	(update/= nat`eq/:update (map/+ N1 D1 M1) _ D _).
+
+- : update/>-inversion* (update/< P1: update (map/+ N1 D1 M1) N D _) P map/0 
+	UP EQ
+    <- plus-implies-gt P nat`eq/ GT
+    <- gt-anti-reflexive GT F
+    <- false-implies-update F UP
+    <- false-implies-eq F EQ
+    <- meta-reduces-update F UP (update/< P1: update (map/+ N1 D1 M1) N D _).
+
+- : update/>-inversion* (update/> UP1 P1) P _ UP eq/
+    <- plus-right-cancels P1 P nat`eq/ nat`eq/ SN1=SN
+    <- succ-cancels SN1=SN N1=N
+    <- update-respects-eq UP1 eq/ N1=N data`eq/ eq/ UP.
+
+%worlds (WORLDS) (update/>-inversion* _ _ _ _ _).
+%total { } (update/>-inversion* _ _ _ _ _).
+%reduces UP < U (update/>-inversion* U _ _ UP _).
+
+
 %theorem update-contradiction :
 	forall* {M} {N} {D}
 	forall	{U: update M N D map/0}
@@ -2671,6 +2747,7 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (shift-preserves-update-converse* _ _ _ _ _).
 %total { } (shift-preserves-update-converse* _ _ _ _ _).
 
+
 %theorem update-commutes-shift-converse :
 	forall* {M2} {N2} {D} {M2P} {N0} {M1P}
         forall {U2:update M2 N2 D M2P}
@@ -2704,6 +2781,25 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 %worlds (WORLDS) (update-commutes-shift-converse _ _ _ _ _ _ _).
 %total { } (update-commutes-shift-converse _ _ _ _ _ _ _).
+
+
+%theorem update-commutes-shift-converse* :
+	forall* {M2} {N2} {D} {M2P} {N0} {M1P} {N1}
+        forall {U2:update M2 N2 D M2P}
+               {SS:shift N0 M1P M2P}
+               {P:plus (s N0) N1 N2}
+        exists {M1}
+               {S:shift N0 M1 M2}
+	       {U1:update M1 N1 D M1P}
+	true.
+
+- : update-commutes-shift-converse* U SHP P _ SH UP
+    <- update-commutes-shift-converse U SHP _ _ PP SH UPP
+    <- plus-left-cancels PP P nat`eq/ nat`eq/ EQ
+    <- update-respects-eq UPP eq/ EQ data`eq/ eq/ UP.
+
+%worlds (WORLDS) (update-commutes-shift-converse* _ _ _ _ _ _).
+%total { } (update-commutes-shift-converse* _ _ _ _ _ _).
 
 
 %theorem fresh-update-preserves-lookup :
@@ -3354,18 +3450,19 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 
 
 %theorem fresh-update-implies-shift:
-	forall* {M} {N} {D} {M1}
+	forall* {M} {N} {D1} {M1} {D2}
 	forall	{F: fresh M N}
-		{U: update M N D (map/+ N D M1)}
+		{U: update M N D1 (map/+ N D2 M1)}
 	exists	{S: shift N M1 M}
+		{E: data`eq D2 D1}
 	true.
 
-- : fresh-update-implies-shift F U S
+- : fresh-update-implies-shift F U S DEQ
     <- shift-total SP
     <- shift-implies-update SP UP
     <- shift-implies-fresh SP FP
-    <- fresh-update-cancels FP UP F U nat`eq/ eq/ data`eq/ MEQ
+    <- fresh-update-cancels FP UP F U nat`eq/ eq/ DEQ MEQ
     <- shift-respects-eq SP nat`eq/ eq/ MEQ S.
 
-%worlds (WORLDS) (fresh-update-implies-shift _ _ _).
-%total { } (fresh-update-implies-shift _ _ _).
+%worlds (WORLDS) (fresh-update-implies-shift _ _ _ _).
+%total { } (fresh-update-implies-shift _ _ _ _).
