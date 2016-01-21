@@ -614,7 +614,7 @@ END_ELF
 %total { } (and-associative _ _ _ _ _).
 
 %{%
-#define OP(X,Y) X/\Y
+#define OP(X,Y) X##and##Y
 #define OPN and
 #define EQ eq
 BEGIN_ELF
@@ -665,7 +665,7 @@ END_ELF
 %total { } (or-associative _ _ _ _ _).
 
 %{%
-#define OP(X,Y) X\/Y
+#define OP(X,Y) X##and##Y
 #define OPN or
 #define EQ eq
 BEGIN_ELF
