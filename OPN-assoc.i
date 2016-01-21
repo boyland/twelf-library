@@ -11,7 +11,7 @@
 
 - : OPN-associative* OP(X1,X2)=X3 OP(X3,X4)=X7 OP(X2,X4)=X6 OP(X1,X6)=X7
     <- OPN-associative OP(X1,X2)=X3 OP(X3,X4)=X7 Y6 OP(X2,X4)=Y6 OP(X1,Y6)=X7
-    <- OPN-deterministic OP(X2,X4)=Y6 OP(X2,X4)=X6 EQ/ EQ/ Y6=X6
+    <- OPN-unique OP(X2,X4)=Y6 OP(X2,X4)=X6 EQ/ EQ/ Y6=X6
     <- OPN-respects-EQ OP(X1,Y6)=X7 EQ/ Y6=X6 EQ/ OP(X1,X6)=X7.
 
 %worlds () (OPN-associative* _ _ _ _).
@@ -43,7 +43,7 @@
 
 - : OPN-associative-converse* OP(X2,X4)=X6 OP(X1,X6)=X7 OP(X1,X2)=X3 OP(X3,X4)=X7
     <- OPN-associative-converse OP(X2,X4)=X6 OP(X1,X6)=X7 X3P OP(X1,X2)=X3P OP(X3P,X4)=X7
-    <- OPN-deterministic OP(X1,X2)=X3P OP(X1,X2)=X3 EQ/ EQ/ X3P=X3
+    <- OPN-unique OP(X1,X2)=X3P OP(X1,X2)=X3 EQ/ EQ/ X3P=X3
     <- OPN-respects-EQ OP(X3P,X4)=X7 X3P=X3 EQ/ EQ/ OP(X3,X4)=X7.
 
 %worlds () (OPN-associative-converse* OP(X2,X4)=X6 OP(X1,X6)=X7 OP(X1,X2)=X3 %{=>}% OP(X3,X4)=X7).

@@ -11,6 +11,70 @@ BEGIN_ELF
 END_ELF
 %}%
 
+%theorem meta-min1:
+	forall	{N1} {N2} {N3}
+		{M: min N1 N2 N3}
+	true.
+
+- : meta-min1 _ _ _ M
+    <- min-implies-ge M GE1 GE2
+    <- meta-ge _ _ GE1
+    <- meta-ge _ _ GE2.
+
+%worlds () (meta-min1 _ _ _ _).
+%total { } (meta-min1 _ _ _ _).
+%reduces N3 <= N2 (meta-min1 N1 N2 N3 _).
+%reduces N3 <= N1 (meta-min1 N1 N2 N3 _).
+
+
+%theorem meta-min2:
+	forall	{N1} {N2} {N3}
+		{M: min N1 N2 N3}
+	true.
+
+- : meta-min2 _ _ _ M
+    <- min-implies-ge M GE1 GE2
+    <- meta-ge _ _ GE1
+    <- meta-ge _ _ GE2.
+
+%worlds () (meta-min2 _ _ _ _).
+%total { } (meta-min2 _ _ _ _).
+%reduces N3 <= N1 (meta-min2 N1 N2 N3 _).
+%reduces N3 <= N2 (meta-min2 N1 N2 N3 _).
+
+
+%theorem meta-max1:
+	forall	{N1} {N2} {N3}
+		{M: max N1 N2 N3}
+	true.
+
+- : meta-max1 _ _ _ M
+    <- max-implies-ge M GE1 GE2
+    <- meta-ge _ _ GE1
+    <- meta-ge _ _ GE2.
+
+%worlds () (meta-max1 _ _ _ _).
+%total { } (meta-max1 _ _ _ _).
+%reduces N2 <= N3 (meta-max1 N1 N2 N3 _).
+%reduces N1 <= N3 (meta-max1 N1 N2 N3 _).
+
+
+%theorem meta-max2:
+	forall	{N1} {N2} {N3}
+		{M: max N1 N2 N3}
+	true.
+
+- : meta-max2 _ _ _ M
+    <- max-implies-ge M GE1 GE2
+    <- meta-ge _ _ GE1
+    <- meta-ge _ _ GE2.
+
+%worlds () (meta-max2 _ _ _ _).
+%total { } (meta-max2 _ _ _ _).
+%reduces N1 <= N3 (meta-max2 N1 N2 N3 _).
+%reduces N2 <= N3 (meta-max2 N1 N2 N3 _).
+
+
 %theorem succ-preserves-min :
 	forall* {N1} {N2} {N3}
 	forall	{M: min N1 N2 N3}
@@ -81,6 +145,46 @@ END_ELF
 
 %worlds () (succ-preserves-max-converse _ _).
 %total { } (succ-preserves-max-converse _ _).
+
+
+%theorem min-preserves-gt*:
+	forall*	{N1} {N2} {N3} {N1P} {N2P} {N3P}
+	forall	{GT1: gt N1 N1P}
+		{GT2: gt N2 N2P}
+		{MIN: min N1 N2 N3}
+		{MXP: min N1P N2P N3P}
+	exists	{GT3: gt N3 N3P}
+	true.
+
+- : min-preserves-gt* GT1 GT2 MX MXP GT3
+    <- gt-implies-ge-succ GT1 GE1
+    <- gt-implies-ge-succ GT2 GE2
+    <- succ-preserves-min MXP MXPs
+    <- min-preserves-ge* GE1 GE2 MX MXPs GE3
+    <- ge-succ-implies-gt GE3 GT3.
+
+%worlds () (min-preserves-gt* _ _ _ _ _).
+%total { } (min-preserves-gt* _ _ _ _ _).
+
+
+%theorem max-preserves-gt*:
+	forall*	{N1} {N2} {N3} {N1P} {N2P} {N3P}
+	forall	{GT1: gt N1 N1P}
+		{GT2: gt N2 N2P}
+		{MAX: max N1 N2 N3}
+		{MXP: max N1P N2P N3P}
+	exists	{GT3: gt N3 N3P}
+	true.
+
+- : max-preserves-gt* GT1 GT2 MX MXP GT3
+    <- gt-implies-ge-succ GT1 GE1
+    <- gt-implies-ge-succ GT2 GE2
+    <- succ-preserves-max MXP MXPs
+    <- max-preserves-ge* GE1 GE2 MX MXPs GE3
+    <- ge-succ-implies-gt GE3 GT3.
+
+%worlds () (max-preserves-gt* _ _ _ _ _).
+%total { } (max-preserves-gt* _ _ _ _ _).
 
 
 %theorem plus-left-preserves-min :

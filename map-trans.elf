@@ -13,7 +13,7 @@
  *   trans-left-preserves-leq* (if additionally MAP_TRANS_LEQ is set)
  *
  * NB: We define
- *   relation-respects-eq
+ *   trans-respects-eq
  *
  * If you are using "unique", you must define MAP_TRANS_UNIQUE
  * If you are using "total", you must define MAP_TRANS_TOTAL

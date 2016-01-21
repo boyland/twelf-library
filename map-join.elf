@@ -182,6 +182,74 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 %total {} (join/>-inversion _ _ _ _ _).
 %reduces JP < J (join/>-inversion J _ _ JP _).
 
+
+%theorem false-implies-join-reduces:
+	forall*	{M1} {M2} {M3} {M4} {M5} {M6}
+	forall	{F: void}
+		{J1: join M1 M2 M3}
+		{J2: join M4 M5 M6}
+	true.
+
+%worlds () (false-implies-join-reduces _ _ _).
+%total { } (false-implies-join-reduces _ _ _).
+%reduces J2 < J1 (false-implies-join-reduces _ J1 J2).
+
+
+%theorem join/<-inversion*:
+	forall*	{N1} {D1} {M1}
+		{N2} {D2} {M2}
+		{N3} {D3} {M3}
+	forall	{J: join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N3 D3 M3)}
+		{NE: nat`ne N2 N3}
+	exists	{N0}
+		{EQN: nat`eq N1 N3}
+		{EQD: data`eq D1 D3}
+		{P: plus (s N0) N3 N2}
+		{J0: join M1 (map/+ N0 D2 M2) M3}
+	true.
+
+- : join/<-inversion* (join/< J0 P) _ _ nat`eq/ data`eq/ P J0.
+
+- : join/<-inversion* J NE nat`z EQN EQD P J0
+    <- nat`eq-ne-implies-false nat`eq/ NE F
+    <- nat`false-implies-eq F EQN
+    <- data`false-implies-eq F EQD
+    <- nat`false-implies-plus F P
+    <- false-implies-join F J0
+    <- false-implies-join-reduces F J J0.
+
+%worlds (WORLDS) (join/<-inversion* _ _ _ _ _ _ _).
+%total { } (join/<-inversion* _ _ _ _ _ _ _).
+%reduces JP < J (join/<-inversion* J _ _ _ _ _ JP).
+
+
+%theorem join/>-inversion*:
+	forall*	{N1} {D1} {M1}
+		{N2} {D2} {M2}
+		{N3} {D3} {M3}
+	forall	{J: join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N3 D3 M3)}
+		{NE: nat`ne N1 N3}
+	exists	{N0}
+		{EQN: nat`eq N2 N3}
+		{EQD: data`eq D2 D3}
+		{P: plus (s N0) N3 N1}
+		{J0: join (map/+ N0 D1 M1) M2 M3}
+	true.
+
+- : join/>-inversion* (join/> J0 P) _ _ nat`eq/ data`eq/ P J0.
+
+- : join/>-inversion* J NE nat`z EQN EQD P J0
+    <- nat`eq-ne-implies-false nat`eq/ NE F
+    <- nat`false-implies-eq F EQN
+    <- data`false-implies-eq F EQD
+    <- nat`false-implies-plus F P
+    <- false-implies-join F J0
+    <- false-implies-join-reduces F J J0.
+
+%worlds (WORLDS) (join/>-inversion* _ _ _ _ _ _ _).
+%total { } (join/>-inversion* _ _ _ _ _ _ _).
+%reduces JP < J (join/>-inversion* J _ _ _ _ _ JP).
+
 %{%
 #ifdef DATA_JOIN_DETERMINISTIC
 %}%
@@ -2612,6 +2680,52 @@ For example C13 ^ C14 because C13 <= C3 and C14 <= C4 and C3^C4
 %total (F) (fresh-update-implies-unit-join F _ _).
 
 
+%theorem lookup-update-left-implies-unit-join:
+	forall*	{M1} {N} {D1} {D2} {D3} {M3}
+	forall	{L: lookup M1 N D1}
+		{D: data`join D1 D2 D3}
+		{U: update M1 N D3 M3}
+	exists	{J: join M1 (map/+ N D2 map/0) M3}
+	true.
+
+- : lookup-update-left-implies-unit-join
+	(lookup/= nat`eq/) DJ U JP
+    <- update/=-inversion U nat`eq/ EQ3
+    <- join-respects-eq (join/= join/R DJ nat`eq/) eq/ eq/ EQ3 JP.
+
+- : lookup-update-left-implies-unit-join
+	(lookup/> L0 P) DJ U JP
+    <- update/>-inversion U P _ U0 EQ3
+    <- lookup-update-left-implies-unit-join L0 DJ U0 J0P
+    <- join-respects-eq (join/< J0P P) eq/ eq/ EQ3 JP.
+
+%worlds (WORLDS) (lookup-update-left-implies-unit-join _ _ _ _).
+%total (L) (lookup-update-left-implies-unit-join L _ _ _).
+
+
+%theorem lookup-update-right-implies-unit-join:
+	forall*	{M2} {N} {D1} {D2} {D3} {M3}
+	forall	{L: lookup M2 N D2}
+		{D: data`join D1 D2 D3}
+		{U: update M2 N D3 M3}
+	exists	{J: join (map/+ N D1 map/0) M2 M3}
+	true.
+
+- : lookup-update-right-implies-unit-join
+	(lookup/= nat`eq/) DJ U JP
+    <- update/=-inversion U nat`eq/ EQ3
+    <- join-respects-eq (join/= join/L DJ nat`eq/) eq/ eq/ EQ3 JP.
+
+- : lookup-update-right-implies-unit-join
+	(lookup/> L0 P) DJ U JP
+    <- update/>-inversion U P _ U0 EQ3
+    <- lookup-update-right-implies-unit-join L0 DJ U0 J0P
+    <- join-respects-eq (join/> J0P P) eq/ eq/ EQ3 JP.
+
+%worlds (WORLDS) (lookup-update-right-implies-unit-join _ _ _ _).
+%total (L) (lookup-update-right-implies-unit-join L _ _ _).
+
+
 %theorem fresh-unit-join-implies-update:
 	forall*	{M} {N} {D} {MP}
 	forall	{F: fresh M N}
@@ -2639,6 +2753,852 @@ For example C13 ^ C14 because C13 <= C3 and C14 <= C4 and C3^C4
 
 %worlds () (fresh-unit-join-implies-update _ _ _).
 %total (J) (fresh-unit-join-implies-update _ J _).
+
+
+%theorem join-commute-update-left*:
+	forall*	{M1} {M2} {M3} {N} {D} {M1P} {M3P}
+	forall	{J: join M1 M2 M3}
+		{U1: update M1 N D M1P}
+		{F2: fresh M2 N}
+		{U3: update M3 N D M3P}
+	exists	{J: join M1P M2 M3P}
+	true.
+
+- : join-commute-update-left*
+	join/L update/0 F2 U3 JP
+    <- fresh-update-implies-unit-join F2 U3 JPc
+    <- fresh-implies-unit-disjoint F2 DJ
+    <- disjoint-join-commutative DJ JPc JP.
+
+- : join-commute-update-left*
+	join/R U1 fresh/0 U1P J
+    <- update-unique U1P U1 eq/ nat`eq/ data`eq/ EQ
+    <- join-respects-eq join/R EQ eq/ eq/ J.
+
+- : join-commute-update-left*
+	(join/= J0 DJ nat`eq/) U1 F2
+	(update/< P) J
+    <- update/<-inversion U1 P EQ1
+    <- join-respects-eq (join/< (join/= J0 DJ nat`eq/) P) EQ1 eq/ eq/ J.
+
+- : join-commute-update-left*
+	(join/= J0 DJ nat`eq/) U1 F2
+	(update/= nat`eq/) J
+    <- fresh-contradiction F2 F
+    <- false-implies-join F J.
+
+- : join-commute-update-left*
+	(join/= J0 DJ nat`eq/) U1 F2
+	(update/> U30 P) J
+    <- update/>-inversion U1 P _ U10 EQ1
+    <- fresh/>-inversion F2 P F20
+    <- join-commute-update-left* J0 U10 F20 U30 J0P
+    <- join-respects-eq (join/= J0P DJ nat`eq/) EQ1 eq/ eq/ J.
+
+- : join-commute-update-left*
+	(join/< J0 P0) U1 F2
+	(update/< P1) J
+    <- update/<-inversion U1 P1 EQ1
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- plus-commutative P0 P0c
+    <- plus-associative P1sc P0c D2 P3c P2sc
+    <- plus-swap-succ P2sc P2c
+    <- plus-commutative P2c P2
+    <- plus-commutative P3c P3
+    <- join-respects-eq (join/< (join/< J0 P3) P2) EQ1 eq/ eq/ J.
+
+- : join-commute-update-left*
+	(join/< J0 P0) U1 F2
+	(update/= nat`eq/) J
+    <- update/=-inversion U1 nat`eq/ EQ1
+    <- join-respects-eq (join/< J0 P0) EQ1 eq/ eq/ J.
+    
+- : join-commute-update-left*
+	(join/< J0 P0) U1 F2
+	(update/> U30 P1) J
+    <- update/>-inversion U1 P1 _ U10 EQ1
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- shift-preserves-fresh-converse* F2 (shift/+ P0sc) P1sc F20
+    <- join-commute-update-left* J0 U10 F20 U30 J0P
+    <- join-respects-eq (join/< J0P P0) EQ1 eq/ eq/ J.
+
+- : join-commute-update-left*
+	(join/> _ _) _ F2
+	(update/= nat`eq/) J
+    <- fresh-contradiction F2 F
+    <- false-implies-join F J.
+
+- : join-commute-update-left*
+	(join/> J0 P0) U1 F2
+	(update/< P2) JP
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- plus-commutative P0 P0c
+    <- plus-associative P2sc P0c D1 P3c P1sc
+    <- plus-swap-succ P1sc P1c
+    <- plus-commutative P1c P1
+    <- plus-commutative P3c P3
+    <- update/<-inversion U1 P1 EQ1
+    <- join-respects-eq (join/< (join/> J0 P3) P2) EQ1 eq/ eq/ JP.
+
+- : join-commute-update-left*
+	(join/> J0 P0) U1 F2
+	(update/> U30 P2) J
+    <- fresh/>-inversion F2 P2 F20
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- shift-preserves-update-converse U1 (shift/+ P0sc) P2sc _ SH1 U10
+    <- join-commute-update-left* J0 U10 F20 U30 J0P
+    <- shift-left-preserves-join J0P SH1 J.
+
+%worlds (WORLDS) (join-commute-update-left* _ _ _ _ _).
+%total (J) (join-commute-update-left* J _ _ _ _).
+
+
+%theorem join-commute-update-left:
+	forall*	{M1} {M2} {M3} {N} {D} {M1P}
+	forall	{J: join M1 M2 M3}
+		{U1: update M1 N D M1P}
+		{F2: fresh M2 N}
+	exists	{M3P}
+		{U3: update M3 N D M3P}
+		{J: join M1P M2 M3P}
+	true.
+
+- : join-commute-update-left J U1 F2 _ U3 JP
+    <- update-total U3
+    <- join-commute-update-left* J U1 F2 U3 JP.
+
+%worlds (WORLDS) (join-commute-update-left _ _ _ _ _ _).
+%total { } (join-commute-update-left _ _ _ _ _ _).
+
+
+%theorem join-commute-update-right*:
+	forall*	{M1} {M2} {M3} {N} {D} {M2P} {M3P}
+	forall	{J: join M1 M2 M3}
+		{F1: fresh M1 N}
+		{U2: update M2 N D M2P}
+		{U3: update M3 N D M3P}
+	exists	{J: join M1 M2P M3P}
+	true.
+
+- : join-commute-update-right*
+	join/L fresh/0 U2 U2P J
+    <- update-unique U2P U2 eq/ nat`eq/ data`eq/ EQ
+    <- join-respects-eq join/L eq/ EQ eq/ J.
+
+- : join-commute-update-right*
+	join/R F1 update/0 U1 J
+    <- fresh-update-implies-unit-join F1 U1 J.
+
+- : join-commute-update-right*
+	(join/= J0 DJ nat`eq/) F1 U2
+	(update/< P) J
+    <- update/<-inversion U2 P EQ2
+    <- join-respects-eq (join/> (join/= J0 DJ nat`eq/) P) eq/ EQ2 eq/ J.
+
+- : join-commute-update-right*
+	(join/= J0 DJ nat`eq/) F1 U2
+	(update/= nat`eq/) J
+    <- fresh-contradiction F1 F
+    <- false-implies-join F J.
+
+- : join-commute-update-right*
+	(join/= J0 DJ nat`eq/) F1 U2
+	(update/> U30 P) J
+    <- update/>-inversion U2 P _ U20 EQ2
+    <- fresh/>-inversion F1 P F10
+    <- join-commute-update-right* J0 F10 U20 U30 J0P
+    <- join-respects-eq (join/= J0P DJ nat`eq/) eq/ EQ2 eq/ J.
+
+- : join-commute-update-right*
+	(join/> J0 P0) F1 U2
+	(update/< P2) J
+    <- update/<-inversion U2 P2 EQ2
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- plus-commutative P0 P0c
+    <- plus-associative P2sc P0c D1 P3c P1sc
+    <- plus-swap-succ P1sc P1c
+    <- plus-commutative P1c P1
+    <- plus-commutative P3c P3
+    <- join-respects-eq (join/> (join/> J0 P3) P1) eq/ EQ2 eq/ J.
+
+- : join-commute-update-right*
+	(join/> J0 P0) F1 U2
+	(update/= nat`eq/) J
+    <- update/=-inversion U2 nat`eq/ EQ2
+    <- join-respects-eq (join/> J0 P0) eq/ EQ2 eq/ J.
+    
+- : join-commute-update-right*
+	(join/> J0 P0) F1 U2
+	(update/> U30 P2) J
+    <- update/>-inversion U2 P2 _ U20 EQ2
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- shift-preserves-fresh-converse* F1 (shift/+ P0sc) P2sc F10
+    <- join-commute-update-right* J0 F10 U20 U30 J0P
+    <- join-respects-eq (join/> J0P P0) eq/ EQ2 eq/ J.
+
+- : join-commute-update-right*
+	(join/< _ _) F1 _
+	(update/= nat`eq/) J
+    <- fresh-contradiction F1 F
+    <- false-implies-join F J.
+
+- : join-commute-update-right*
+	(join/< J0 P0) F1 U2
+	(update/< P1) JP
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- plus-commutative P0 P0c
+    <- plus-associative P1sc P0c D2 P3c P2sc
+    <- plus-swap-succ P2sc P2c
+    <- plus-commutative P2c P2
+    <- plus-commutative P3c P3
+    <- update/<-inversion U2 P2 EQ2
+    <- join-respects-eq (join/> (join/< J0 P3) P1) eq/ EQ2 eq/ JP.
+
+- : join-commute-update-right*
+	(join/< J0 P0) F1 U2
+	(update/> U30 P1) J
+    <- fresh/>-inversion F1 P1 F10
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- shift-preserves-update-converse U2 (shift/+ P0sc) P1sc _ SH2 U20
+    <- join-commute-update-right* J0 F10 U20 U30 J0P
+    <- shift-right-preserves-join J0P SH2 J.
+
+%worlds (WORLDS) (join-commute-update-right* _ _ _ _ _).
+%total (J) (join-commute-update-right* J _ _ _ _).
+
+
+%theorem join-commute-update-right:
+	forall*	{M1} {M2} {M3} {N} {D} {M2P}
+	forall	{J: join M1 M2 M3}
+		{F1: fresh M1 N}
+		{U2: update M2 N D M2P}
+	exists	{M3P}
+		{U3: update M3 N D M3P}
+		{J: join M1 M2P M3P}
+	true.
+
+- : join-commute-update-right J F1 U2 _ U3 JP
+    <- update-total U3
+    <- join-commute-update-right* J F1 U2 U3 JP.
+
+%worlds (WORLDS) (join-commute-update-right _ _ _ _ _ _).
+%total { } (join-commute-update-right _ _ _ _ _ _).
+
+
+%theorem join-commute-update*:
+	forall*	{M1} {M2} {M3} {N} {D1} {M1P} {D2} {D3} {M2P} {M3P}
+	forall	{J: join M1 M2 M3}
+		{DJ: data`join D1 D2 D3}
+		{U1: update M1 N D1 M1P}
+		{U2: update M2 N D2 M2P}
+		{U3: update M3 N D3 M3P}
+	exists	{JP: join M1P M2P M3P}
+	true.
+
+- : join-commute-update* join/L DJ update/0 U2 U3 JP
+    <- update-implies-lookup U2 L2
+    <- update-overwrites-converse U3 U2 U23
+    <- lookup-update-right-implies-unit-join L2 DJ U23 JP.
+
+- : join-commute-update* join/R DJ U1 update/0 U3 JP
+    <- update-implies-lookup U1 L1
+    <- update-overwrites-converse U3 U1 U13
+    <- lookup-update-left-implies-unit-join L1 DJ U13 JP.
+
+- : join-commute-update* (join/= J0 DJ0 nat`eq/) DJ U1 U2 (update/< P) JP
+    <- update/<-inversion U1 P EQ1
+    <- update/<-inversion U2 P EQ2
+    <- join-respects-eq 
+	(join/= (join/= J0 DJ0 nat`eq/) DJ nat`eq/) EQ1 EQ2 eq/ JP.
+
+- : join-commute-update* (join/= J0 _ nat`eq/) DJ U1 U2 (update/= nat`eq/) JP
+    <- update/=-inversion U1 nat`eq/ EQ1
+    <- update/=-inversion U2 nat`eq/ EQ2
+    <- join-respects-eq (join/= J0 DJ nat`eq/) EQ1 EQ2 eq/ JP.
+
+- : join-commute-update* (join/= J0 DJ0 nat`eq/) DJ U1 U2 (update/> U30 P) JP
+    <- update/>-inversion U1 P _ U10 EQ1
+    <- update/>-inversion U2 P _ U20 EQ2
+    <- join-commute-update* J0 DJ U10 U20 U30 J0P
+    <- join-respects-eq (join/= J0P DJ0 nat`eq/) EQ1 EQ2 eq/ JP.
+
+- : join-commute-update* (join/< J0 P0) DJ U1 U2 (update/< P1) JP
+    <- update/<-inversion U1 P1 EQ1
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- plus-commutative P0 P0c
+    <- plus-associative P1sc P0c D2 P3c P2sc
+    <- plus-swap-succ P2sc P2c
+    <- plus-commutative P2c P2
+    <- plus-commutative P3c P3
+    <- update/<-inversion U2 P2 EQ2
+    <- join-respects-eq (join/= (join/< J0 P3) DJ nat`eq/) EQ1 EQ2 eq/ JP.
+
+- : join-commute-update* (join/< J0 P0) DJ U1 U2 (update/= nat`eq/) JP
+    <- update/=-inversion U1 nat`eq/ EQ1
+    <- update/<-inversion U2 P0 EQ2
+    <- join-respects-eq (join/= J0 DJ nat`eq/) EQ1 EQ2 eq/ JP.
+
+- : join-commute-update* (join/< J0 P0) DJ U1 U2 (update/> U30 P1) JP
+    <- update/>-inversion U1 P1 _ U10 EQ1
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P1s P1sc
+    <- shift-preserves-update-converse U2 (shift/+ P0sc) P1sc _ SH2 U20
+    <- join-commute-update* J0 DJ U10 U20 U30 J0P
+    <- shift-right-preserves-join J0P SH2 JPP
+    <- join-respects-eq JPP EQ1 eq/ eq/ JP.
+
+- : join-commute-update* (join/> J0 P0) DJ U1 U2 (update/< P2) JP
+    <- update/<-inversion U2 P2 EQ2
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- plus-commutative P0 P0c
+    <- plus-associative P2sc P0c D1 P3c P1sc
+    <- plus-swap-succ P1sc P1c
+    <- plus-commutative P1c P1
+    <- plus-commutative P3c P3
+    <- update/<-inversion U1 P1 EQ1
+    <- join-respects-eq (join/= (join/> J0 P3) DJ nat`eq/) EQ1 EQ2 eq/ JP.
+
+- : join-commute-update* (join/> J0 P0) DJ U1 U2 (update/= nat`eq/) JP
+    <- update/<-inversion U1 P0 EQ1
+    <- update/=-inversion U2 nat`eq/ EQ2
+    <- join-respects-eq (join/= J0 DJ nat`eq/) EQ1 EQ2 eq/ JP.
+
+- : join-commute-update* (join/> J0 P0) DJ U1 U2 (update/> U30 P2) JP
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P2s P2sc
+    <- shift-preserves-update-converse U1 (shift/+ P0sc) P2sc _ SH1 U10
+    <- update/>-inversion U2 P2 _ U20 EQ2
+    <- join-commute-update* J0 DJ U10 U20 U30 J0P
+    <- shift-left-preserves-join J0P SH1 JPP
+    <- join-respects-eq JPP eq/ EQ2 eq/ JP.
+
+%worlds (WORLDS) (join-commute-update* _ _ _ _ _ _).
+%total (J) (join-commute-update* J _ _ _ _ _).
+
+
+%theorem join-commute-update:
+	forall*	{M1} {M2} {M3} {N} {D1} {M1P} {D2} {D3} {M2P}
+	forall	{J: join M1 M2 M3}
+		{DJ: data`join D1 D2 D3}
+		{U1: update M1 N D1 M1P}
+		{U2: update M2 N D2 M2P}
+	exists	{M3P}
+		{U3: update M3 N D3 M3P}
+		{JP: join M1P M2P M3P}
+	true.
+
+- : join-commute-update J DJ U1 U2 _ U3 JP
+    <- update-total U3
+    <- join-commute-update* J DJ U1 U2 U3 JP.
+
+%worlds (WORLDS) (join-commute-update _ _ _ _ _ _ _).
+%total { } (join-commute-update _ _ _ _ _ _ _).
+
+
+%theorem join-preserves-fresh-update-left: 
+	forall* {M1} {M1S} {M2S} {MS} {N} {D} 
+	forall	{J: join M1S M2S MS}
+		{F1: fresh M1S N}
+    		{U1: update M1S N D M1}
+    		{F2: fresh M2S N}
+    	exists 	{M} 
+		{F: fresh MS N}
+    		{U: update MS N D M}
+    		{J: join M1 M2S M}
+    	true.
+
+- : join-preserves-fresh-update-left J F1 U1 F2 _ F3 U3 JP
+    <- join-commute-update-left J U1 F2 _ U3 JP
+    <- join-preserves-fresh* F1 F2 J F3.
+
+%worlds (WORLDS) (join-preserves-fresh-update-left _ _ _ _ _ _ _ _).
+%total {} (join-preserves-fresh-update-left _ _ _ _ _ _ _ _).
+
+
+%theorem fresh-update-left-preserves-join-converse :
+	forall* {M1} {M1P} {M2} {M} {N} {D}
+	forall	{F1: fresh M1P N}
+    		{U1: update M1P N D M1}
+    		{F2: fresh M2 N}
+    		{J: join M1 M2 M}
+ 	exists  {MP} 
+		{F: fresh MP N}
+		{U: update MP N D M}
+		{J: join M1P M2 MP}
+	true.
+
+%theorem fresh-update-left-preserves-join-converse/L :
+	forall* {N1} {D1} {M1} {M1P} 
+		{N2} {D2} {M2} 
+		{N3} {D3} {M3} {N} {D} {B}
+	forall	{F1: fresh M1P N}
+    		{U1: update M1P N D (map/+ N1 D1 M1)}
+    		{F2: fresh (map/+ N2 D2 M2) N}
+    		{J: join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N3 D3 M3)}
+		{GE1: nat`ge? N N1 B}
+ 	exists  {MP} 
+		{F: fresh MP N}
+		{U: update MP N D (map/+ N3 D3 M3)}
+		{J: join M1P (map/+ N2 D2 M2) MP}
+	true.
+
+- : fresh-update-left-preserves-join-converse/L F1P U1 _ _
+	(nat`ge?/no GT) map/0 F3 U3 J3
+    <- update-implies-lookup U1 L1
+    <- fresh-lookup-not-equal (fresh/< GT) L1 NE
+    <- nat`eq-ne-implies-false nat`eq/ NE F
+    <- false-implies-fresh F F3
+    <- false-implies-update F U3
+    <- false-implies-join F J3.
+
+- : fresh-update-left-preserves-join-converse/L F1P U1 F2
+	(join/= J0 DA nat`eq/) (nat`ge?/yes (nat`ge/= nat`eq/)) map/0 F3 U3 J3
+    <- fresh-lookup-not-equal F2 (lookup/= nat`eq/) NE
+    <- nat`eq-ne-implies-false nat`eq/ NE F
+    <- false-implies-fresh F F3
+    <- false-implies-update F U3
+    <- false-implies-join F J3.
+
+- : fresh-update-left-preserves-join-converse/L F1P U1 F2
+	(join/= J0 DA nat`eq/) (nat`ge?/yes (nat`ge/> GT)) _
+	(fresh/> F30 P) (update/> U30 P) J
+    <- nat`gt-implies-plus GT _ P
+    <- fresh-lookup-not-equal F2 (lookup/= nat`eq/) NE
+    <- update/>-inversion* U1 P _ U10 (EQ1: eq _ M1)
+    <- eq-symmetric EQ1 EQ1s
+    <- fresh-respects-eq F1P EQ1s nat`eq/ F1PP
+    <- fresh/>-inversion F1PP P F1P0
+    <- fresh/>-inversion F2 P F20
+    <- fresh-update-left-preserves-join-converse F1P0 U10 F20 J0 _ F30 U30 J0P
+    <- join-respects-eq (join/= J0P DA nat`eq/) EQ1 eq/ eq/ J.
+
+- : fresh-update-left-preserves-join-converse/L F1P U1 _
+	(join/< J0 P) (nat`ge?/yes (nat`ge/= nat`eq/)) _ F3 U3P J3
+    <- fresh-update-implies-shift F1P U1 SH1 D1=D2
+    <- plus-swap-succ P Ps
+    <- plus-commutative Ps Psc
+    <- shift-preserves-join J0 SH1 (shift/+ Psc) _ SH3 J3
+    <- shift-implies-fresh SH3 F3
+    <- shift-implies-update SH3 U3
+    <- update-respects-eq U3 eq/ nat`eq/ D1=D2 eq/ U3P.
+
+- : fresh-update-left-preserves-join-converse/L F1P (U1:update M N D _) F2
+	(join/< J0 (P0: plus (s D0) N1 N2))
+	(nat`ge?/yes (nat`ge/> (N>N1:gt N N1)) ) _
+	(fresh/> F30 P1) 
+	(update/> U30 P1)
+	J3
+    <- gt-implies-plus N>N1 D1 P1
+    <- update/>-inversion* U1 P1 _ U10 EQ1
+    <- eq-symmetric EQ1 EQ1s
+    <- fresh-respects-eq F1P EQ1s nat`eq/ F1PP
+    <- fresh/>-inversion F1PP P1 F1P0
+    <- plus-swap-succ P0 P0s
+    <- plus-swap-succ P1 P1s
+    <- plus-commutative P0s P0sc
+    <- plus-commutative P1s P1sc
+    <- shift-preserves-fresh-converse* F2 (shift/+ P0sc) P1sc F20
+    <- fresh-update-left-preserves-join-converse F1P0 U10 (F20:fresh _ D1) J0 _
+	 F30 U30 J0P
+    <- join-respects-eq (join/< J0P P0) EQ1 eq/ eq/ J3.
+
+- : fresh-update-left-preserves-join-converse/L F1P (U1:update M N _ _) F2
+	(join/> J0 (P0: plus (s D0) N2 N1))
+	(nat`ge?/yes N>=N1) _
+	(fresh/> F30 P2) (update/> U30 P2) J3
+    <- ge-implies-plus (N>=N1:nat`ge N N1) D1 P1
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc 
+    <- plus-commutative P1 P1c
+    <- plus-associative P0sc P1c D2 D0+D1=D2 P2sc
+    <- plus-swap-succ P2sc P2c
+    <- plus-commutative P2c P2
+    <- update-commutes-shift-converse* U1 (shift/+ P0sc) P2sc _ SH U10
+    <- shift-preserves-fresh-converse* F1P SH P2sc F1P0
+    <- fresh/>-inversion F2 P2 F20
+    <- fresh-update-left-preserves-join-converse F1P0 U10 (F20:fresh _ D2) J0 _
+	 F30 U30 J0P
+    <- shift-left-preserves-join J0P SH J3.
+
+- : fresh-update-left-preserves-join-converse F1P U1 _
+	join/R _ F1P U1 join/R.
+
+- : fresh-update-left-preserves-join-converse F1P U1 F2 J _ F3 U3 J3
+    <- nat`ge?-total GE?
+    <- fresh-update-left-preserves-join-converse/L F1P U1 F2 J GE? _ F3 U3 J3.
+
+%worlds (WORLDS) 
+	(fresh-update-left-preserves-join-converse _ _ _ _ _ _ _ _)
+	(fresh-update-left-preserves-join-converse/L _ _ _ _ _ _ _ _ _).
+%total (J1 J2)
+	(fresh-update-left-preserves-join-converse/L _ _ _ J1 _ _ _ _ _)
+	(fresh-update-left-preserves-join-converse _ _ _ J2 _ _ _ _).
+
+
+%theorem fresh-update-left-preserves-join-converse* :
+	forall* {M1} {M1P} {M2} {M} {MP} {N} {D} 
+	forall	{F1: fresh M1P N}
+		{U1: update M1P N D M1}
+		{F2: fresh M2 N}
+		{J: join M1 M2 M}
+		{F: fresh MP N}
+		{U: update MP N D M}
+	exists	{J: join M1P M2 MP}
+	true.
+
+- : fresh-update-left-preserves-join-converse*
+    N!<M1P M1P+N+D=M1 N!<M2 M1+M2=M N!<MP MP+N+D=M M1P+M2=MP
+    <- fresh-update-left-preserves-join-converse
+      N!<M1P M1P+N+D=M1 N!<M2 M1+M2=M MQ N!<MQ MQ+N+D=M M1P+M2=MQ
+    <- fresh-update-cancels N!<MQ MQ+N+D=M N!<MP MP+N+D=M nat`eq/ eq/ _ ME
+    <- join-respects-eq M1P+M2=MQ eq/ eq/ ME M1P+M2=MP.
+
+%worlds (WORLDS) (fresh-update-left-preserves-join-converse* _ _ _ _ _ _ _).
+%total {} (fresh-update-left-preserves-join-converse* _ _ _ _ _ _ _).
+
+
+%theorem fresh-update-right-preserves-join-converse :
+	forall* {M1} {M2P} {M2} {M} {N} {D}
+	forall	{F1: fresh M1 N}
+    		{F2: fresh M2P N}
+    		{U2: update M2P N D M2}
+    		{J: join M1 M2 M}
+ 	exists  {MP} 
+		{F: fresh MP N}
+		{U: update MP N D M}
+		{J: join M1 M2P MP}
+	true.
+
+%theorem fresh-update-right-preserves-join-converse/L :
+	forall* {N1} {D1} {M1} {M2P} 
+		{N2} {D2} {M2} {M} {N} {D} {B}
+	forall	{F1: fresh (map/+ N1 D1 M1) N}
+    		{F2: fresh M2P N}
+    		{U2: update M2P N D (map/+ N2 D2 M2)}
+    		{J: join (map/+ N1 D1 M1) (map/+ N2 D2 M2) M}
+		{GE1: nat`ge? N N2 B}
+ 	exists  {MP} 
+		{F: fresh MP N}
+		{U: update MP N D M}
+		{J: join (map/+ N1 D1 M1) M2P MP}
+	true.
+
+- : fresh-update-right-preserves-join-converse/L F1 F2P U2 _
+	(nat`ge?/no GT) map/0 F3 U3 J3
+    <- update-implies-lookup U2 L2
+    <- fresh-lookup-not-equal (fresh/< GT) L2 NE
+    <- nat`eq-ne-implies-false nat`eq/ NE F
+    <- false-implies-fresh F F3
+    <- false-implies-update F U3
+    <- false-implies-join F J3.
+
+- : fresh-update-right-preserves-join-converse/L F1 F2P U2
+	(join/= J0 DA nat`eq/) (nat`ge?/yes (nat`ge/= nat`eq/)) map/0 F3 U3 J3
+    <- fresh-lookup-not-equal F1 (lookup/= nat`eq/) NE
+    <- nat`eq-ne-implies-false nat`eq/ NE F
+    <- false-implies-fresh F F3
+    <- false-implies-update F U3
+    <- false-implies-join F J3.
+
+- : fresh-update-right-preserves-join-converse/L F1 F2P U2
+	(join/= J0 DA nat`eq/) (nat`ge?/yes (nat`ge/> GT)) _
+	(fresh/> F30 P) (update/> U30 P) J
+    <- nat`gt-implies-plus GT _ P
+    <- fresh-lookup-not-equal F1 (lookup/= nat`eq/) NE
+    <- update/>-inversion* U2 P M22 U20 EQ2
+    <- eq-symmetric EQ2 EQ2s
+    <- fresh-respects-eq F2P EQ2s nat`eq/ F2PP
+    <- fresh/>-inversion F2PP P F2P0
+    <- fresh/>-inversion F1 P F10
+    <- fresh-update-right-preserves-join-converse F10 F2P0 U20 J0 M0 F30 U30 J0P
+    <- join-respects-eq (join/= J0P DA nat`eq/) eq/ EQ2 eq/ J.
+
+- : fresh-update-right-preserves-join-converse/L _ F2P U2
+	(join/> J0 P) (nat`ge?/yes (nat`ge/= nat`eq/)) _ F3 U3P J3
+    <- fresh-update-implies-shift F2P U2 SH2 D1=D2
+    <- plus-swap-succ P Ps
+    <- plus-commutative Ps Psc
+    <- shift-preserves-join J0 (shift/+ Psc) SH2 _ SH3 J3
+    <- shift-implies-fresh SH3 F3
+    <- shift-implies-update SH3 U3
+    <- update-respects-eq U3 eq/ nat`eq/ D1=D2 eq/ U3P.
+
+- : fresh-update-right-preserves-join-converse/L F1 F2P (U2:update M N D _)
+	(join/> J0 (P0: plus (s D0) N2 N1))
+	(nat`ge?/yes (nat`ge/> (N>N2:gt N N2)) ) _
+	(fresh/> F30 P2) 
+	(update/> U30 P2)
+	J3
+    <- gt-implies-plus N>N2 D2 P2
+    <- update/>-inversion* U2 P2 _ U20 EQ2
+    <- eq-symmetric EQ2 EQ2s
+    <- fresh-respects-eq F2P EQ2s nat`eq/ F2PP
+    <- fresh/>-inversion F2PP P2 F2P0
+    <- plus-swap-succ P0 P0s
+    <- plus-swap-succ P2 P2s
+    <- plus-commutative P0s P0sc
+    <- plus-commutative P2s P2sc
+    <- shift-preserves-fresh-converse* F1 (shift/+ P0sc) P2sc F10
+    <- fresh-update-right-preserves-join-converse F10 F2P0 U20 J0 _
+	 F30 U30 J0P
+    <- join-respects-eq (join/> J0P P0) eq/ EQ2 eq/ J3.
+
+- : fresh-update-right-preserves-join-converse/L F1 F2P (U2:update M N _ _)
+	(join/< J0 (P0: plus (s D0) N1 N2))
+	(nat`ge?/yes N>=N2) _
+	(fresh/> F30 P1) (update/> U30 P1) J3
+    <- ge-implies-plus (N>=N2:nat`ge N N2) D2 P2
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc 
+    <- plus-commutative P2 P2c
+    <- plus-associative P0sc P2c D1 D0+D2=D1 P1sc
+    <- plus-swap-succ P1sc P1c
+    <- plus-commutative P1c P1
+    <- update-commutes-shift-converse* U2 (shift/+ P0sc) P1sc _ SH U20
+    <- shift-preserves-fresh-converse* F2P SH P1sc F2P0
+    <- fresh/>-inversion F1 P1 F10
+    <- fresh-update-right-preserves-join-converse F10 F2P0 U20 J0 _
+	 F30 U30 J0P
+    <- shift-right-preserves-join J0P SH J3.
+
+- : fresh-update-right-preserves-join-converse F1 F2P U2
+	join/L _ F2P U2 join/L.
+
+- : fresh-update-right-preserves-join-converse F1 F2P U2 J _ F3 U3 J3
+    <- nat`ge?-total GE?
+    <- fresh-update-right-preserves-join-converse/L F1 F2P U2 J GE? _ F3 U3 J3.
+
+%worlds (WORLDS) 
+	(fresh-update-right-preserves-join-converse _ _ _ _ _ _ _ _)
+	(fresh-update-right-preserves-join-converse/L _ _ _ _ _ _ _ _ _).
+%total (J1 J2)
+	(fresh-update-right-preserves-join-converse/L _ _ _ J1 _ _ _ _ _)
+	(fresh-update-right-preserves-join-converse _ _ _ J2 _ _ _ _).
+
+
+%theorem fresh-update-right-preserves-join-converse* :
+	forall* {M1} {M2P} {M2} {M} {N} {D} {MP}
+	forall	{F1: fresh M1 N}
+    		{F2: fresh M2P N}
+    		{U2: update M2P N D M2}
+    		{J: join M1 M2 M}
+		{F: fresh MP N}
+		{U: update MP N D M}
+	exists	{J: join M1 M2P MP}
+	true.
+
+- : fresh-update-right-preserves-join-converse* F1 F2P U2 J F U JP
+    <- fresh-update-right-preserves-join-converse F1 F2P U2 J _ FP UP JPP
+    <- fresh-update-cancels FP UP F U nat`eq/ eq/ _ ME
+    <- join-respects-eq JPP eq/ eq/ ME JP.
+
+%worlds (WORLDS) (fresh-update-right-preserves-join-converse* _ _ _ _ _ _ _).
+%total {} (fresh-update-right-preserves-join-converse* _ _ _ _ _ _ _).
+
+
+%theorem fresh-update-preserves-join-converse :
+	forall* {M1P} {M1} {M2P} {M2} {M} {N} {D1} {D2}
+	forall	{F1: fresh M1P N}
+		{U1: update M1P N D1 M1}
+    		{F2: fresh M2P N}
+    		{U2: update M2P N D2 M2}
+    		{J: join M1 M2 M}
+ 	exists  {MP} {D}
+		{F: fresh MP N}
+		{U: update MP N D M}
+		{J: data`join D1 D2 D}
+		{J: join M1P M2P MP}
+	true.
+
+%theorem fresh-update-preserves-join-converse/L :
+	forall* {N1} {D1} {M1} {M1P} 
+		{N2} {D2} {M2} {M2P} {M} {N} {D1P} {D2P} {B1} {B2}
+	forall	{F1: fresh M1P N}
+		{U1: update M1P N D1P (map/+ N1 D1 M1)}
+    		{F2: fresh M2P N}
+    		{U2: update M2P N D2P (map/+ N2 D2 M2)}
+    		{J: join (map/+ N1 D1 M1) (map/+ N2 D2 M2) M}
+		{GE1: nat`ge? N N1 B1}
+		{GE2: nat`ge? N N2 B2}
+ 	exists  {MP} {D}
+		{F: fresh MP N}
+		{U: update MP N D M}
+		{J: data`join D1P D2P D}
+		{J: join M1P M2P MP}
+	true.
+
+%theorem false-implies-data:
+	forall	{F: void}
+	exists	{D: data}
+	true.
+
+%worlds (WORLDS) (false-implies-data _ _).
+%total { } (false-implies-data _ _).
+
+- : fresh-update-preserves-join-converse/L F1P U1 F2P U2 _
+	(nat`ge?/no GT) _ map/0 D F3 U3 DJ J3
+    <- update-implies-lookup U1 L1
+    <- fresh-lookup-not-equal (fresh/< GT) L1 NE
+    <- nat`eq-ne-implies-false nat`eq/ NE F
+    <- false-implies-data F D
+    <- false-implies-fresh F F3
+    <- false-implies-update F U3
+    <- data`false-implies-join F DJ
+    <- false-implies-join F J3.
+
+- : fresh-update-preserves-join-converse/L F1P U1 F2P U2 _
+	_ (nat`ge?/no GT) map/0 D F3 U3 DJ J3
+    <- update-implies-lookup U2 L2
+    <- fresh-lookup-not-equal (fresh/< GT) L2 NE
+    <- nat`eq-ne-implies-false nat`eq/ NE F
+    <- false-implies-data F D
+    <- false-implies-fresh F F3
+    <- false-implies-update F U3
+    <- data`false-implies-join F DJ
+    <- false-implies-join F J3.
+
+- : fresh-update-preserves-join-converse/L F1P U1 F2P U2 
+	(join/= J0 DJ0 nat`eq/) (nat`ge?/yes (nat`ge/= nat`eq/)) _ _ _ 
+	F3 U3 DJ J3
+    <- fresh-update-implies-shift F1P U1 SH1 EQ1
+    <- fresh-update-implies-shift F2P U2 SH2 EQ2
+    <- shift-preserves-join J0 SH1 SH2 _ SH3 J3
+    <- shift-implies-fresh SH3 F3
+    <- shift-implies-update SH3 U3
+    <- data`join-respects-eq DJ0 EQ1 EQ2 data`eq/ DJ.
+
+- : fresh-update-preserves-join-converse/L F1P U1 F2P U2 
+	(join/= J0 DJ0 nat`eq/) (nat`ge?/yes (nat`ge/> GT)) _ _ _ 
+	(fresh/> F30 P) (update/> U30 P)
+	DJ J3
+    <- gt-implies-plus GT _ P
+    <- update/>-inversion* U1 P _ U10 EQ1
+    <- update/>-inversion* U2 P _ U20 EQ2
+    <- eq-symmetric EQ1 EQ1s
+    <- eq-symmetric EQ2 EQ2s
+    <- fresh-respects-eq F1P EQ1s nat`eq/ F1PP
+    <- fresh-respects-eq F2P EQ2s nat`eq/ F2PP
+    <- fresh/>-inversion F1PP P F1P0
+    <- fresh/>-inversion F2PP P F2P0
+    <- fresh-update-preserves-join-converse F1P0 U10 F2P0 U20 J0 _ _
+	F30 U30 DJ J30
+    <- join-respects-eq (join/= J30 DJ0 nat`eq/) EQ1 EQ2 eq/ J3.
+
+- : fresh-update-preserves-join-converse/L F1P U1 F2P U2 
+	(join/< J0 (P0:plus (s D0) N1 N2)) _ (nat`ge?/yes (N>=N2:nat`ge N N2)) 
+	_ _ 
+	(fresh/> F30 P1) 
+	(update/> U30 P1) DJ J3
+    <- ge-implies-plus (N>=N2:nat`ge N N2) D2 P2
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc 
+    <- plus-commutative P2 P2c
+    <- plus-associative P0sc P2c D1 D0+D2=D1 P1sc
+    <- plus-swap-succ P1sc P1c
+    <- plus-commutative P1c P1
+    <- update/>-inversion* U1 P1 _ U10 EQ1
+    <- eq-symmetric EQ1 EQ1s
+    <- fresh-respects-eq F1P EQ1s nat`eq/ F1PP
+    <- fresh/>-inversion F1PP P1 F1P0
+    <- update-commutes-shift-converse* U2 (shift/+ P0sc) P1sc _ SH2 U20
+    <- shift-preserves-fresh-converse* F2P SH2 P1sc F2P0
+    <- fresh-update-preserves-join-converse F1P0 U10 F2P0 U20 J0 _ _
+	F30 U30 DJ J30
+    <- shift-right-preserves-join J30 SH2 J3P
+    <- join-respects-eq J3P EQ1 eq/ eq/ J3.
+
+- : fresh-update-preserves-join-converse/L F1P U1 F2P U2 
+	(join/> J0 (P0:plus (s D0) N2 N1)) (nat`ge?/yes (N>=N1:nat`ge N N1)) _
+	_ _ 
+	(fresh/> F30 P2) 
+	(update/> U30 P2) DJ J3
+    <- ge-implies-plus (N>=N1:nat`ge N N1) D1 P1
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc 
+    <- plus-commutative P1 P1c
+    <- plus-associative P0sc P1c D2 D0+D1=D2 P2sc
+    <- plus-swap-succ P2sc P2c
+    <- plus-commutative P2c P2
+    <- update-commutes-shift-converse* U1 (shift/+ P0sc) P2sc _ SH1 U10
+    <- shift-preserves-fresh-converse* F1P SH1 P2sc F1P0
+    <- update/>-inversion* U2 P2 _ U20 EQ2
+    <- eq-symmetric EQ2 EQ2s
+    <- fresh-respects-eq F2P EQ2s nat`eq/ F2PP
+    <- fresh/>-inversion F2PP P2 F2P0
+    <- fresh-update-preserves-join-converse F1P0 U10 F2P0 U20 J0 _ _
+	F30 U30 DJ J30
+    <- shift-left-preserves-join J30 SH1 J3P
+    <- join-respects-eq J3P eq/ EQ2 eq/ J3.
+
+- : fresh-update-preserves-join-converse F1P U1 F2P U2 J _ _ FP UP DJ JP
+    <- nat`ge?-total GE1
+    <- nat`ge?-total GE2
+    <- fresh-update-preserves-join-converse/L F1P U1 F2P U2 J GE1 GE2 _ _ 
+	FP UP DJ JP.
+
+%worlds (WORLDS)
+	(fresh-update-preserves-join-converse/L _ _ _ _ _ _ _ _ _ _ _ _ _)
+	(fresh-update-preserves-join-converse _ _ _ _ _ _ _ _ _ _ _).
+
+%total (J1 J2)
+	(fresh-update-preserves-join-converse/L _ _ _ _ J1 _ _ _ _ _ _ _ _)
+	(fresh-update-preserves-join-converse _ _ _ _ J2 _ _ _ _ _ _).
+
+
+%theorem data-eq-symmetric:
+	forall*	{D1} {D2}
+	forall	{DE: data`eq D1 D2}
+	exists	{DE: data`eq D2 D1}
+	true.
+
+- : data-eq-symmetric data`eq/ data`eq/.
+
+%worlds (WORLDS) (data-eq-symmetric _ _).
+%total { } (data-eq-symmetric _ _).
+
+%theorem fresh-update-preserves-join-converse* :
+	forall* {M1P} {M1} {M2P} {M2} {M} {N} {D1} {D2} {MP} {D}
+	forall	{F1: fresh M1P N}
+		{U1: update M1P N D1 M1}
+    		{F2: fresh M2P N}
+    		{U2: update M2P N D2 M2}
+    		{J: join M1 M2 M}
+		{F: fresh MP N}
+		{U: update MP N D M}
+	exists	{J: data`join D1 D2 D}
+		{J: join M1P M2P MP}
+	true.
+
+- : fresh-update-preserves-join-converse* F1P U1 F2P U2 J F3 U3 DJ J3
+    <- fresh-update-preserves-join-converse F1P U1 F2P U2 J _ _ F3P U3P DJP J3P
+    <- fresh-update-cancels F3P U3P F3 U3 nat`eq/ eq/ DE E
+    <- data`join-respects-eq DJP data`eq/ data`eq/ DE DJ
+    <- join-respects-eq J3P eq/ eq/ E J3.
+
+%worlds (WORLDS) (fresh-update-preserves-join-converse* _ _ _ _ _ _ _ _ _).
+%total { } (fresh-update-preserves-join-converse* _ _ _ _ _ _ _ _ _).
 
 
 %theorem bound-commute-join* :
@@ -2693,6 +3653,46 @@ For example C13 ^ C14 because C13 <= C3 and C14 <= C4 and C3^C4
 %worlds (WORLDS) (bound-commute-join* _ _ _ _ _).
 %total (J) (bound-commute-join* _ _ _ J _).
 
+
+%theorem size-commute-disjoint-join*:
+	forall* {M1} {M2} {M3} {N1} {N2} {N3}
+	forall	{B1: size M1 N1}
+		{B2: size M2 N2}
+		{B3: size M3 N3}
+		{DJ: disjoint M1 M2}
+		{J: join M1 M2 M3}
+	exists	{MX: nat`plus N1 N2 N3}
+	true.
+
+- : size-commute-disjoint-join* (size/0) B2 B3 _ join/L P
+    <- size-unique B2 B3 eq/ N2=N3
+    <- nat`plus-respects-eq plus/z nat`eq/ nat`eq/ N2=N3 P.
+
+- : size-commute-disjoint-join* B1 (size/0) B3 _ join/R P
+    <- size-unique B1 B3 eq/ N1=N3
+    <- plus-right-identity N1 N1+0=N1
+    <- nat`plus-respects-eq N1+0=N1 nat`eq/ nat`eq/ N1=N3 P.
+
+- : size-commute-disjoint-join* _ _ _ DSJ
+	(join/= J _ nat`eq/) P
+    <- disjoint/=-contradiction DSJ nat`eq/ F
+    <- nat`false-implies-plus F P.
+
+- : size-commute-disjoint-join*
+	(size/+ S1) (size/+ S2) (size/+ S3) DSJ
+	(join/< J1 P1) (plus/s PP1)
+    <- disjoint/<-inversion DSJ P1 DSJ1
+    <- size-commute-disjoint-join* S1 (size/+ S2) S3 DSJ1 J1 PP1.
+
+- : size-commute-disjoint-join*
+	(size/+ S1) (size/+ S2) (size/+ S3) DSJ
+	(join/> J1 P1) PP
+    <- disjoint/>-inversion DSJ P1 DSJ1
+    <- size-commute-disjoint-join* (size/+ S1) S2 S3 DSJ1 J1 PP1
+    <- plus-right-increase PP1 PP.
+
+%worlds (WORLDS) (size-commute-disjoint-join* _ _ _ _ _ _).
+%total (J) (size-commute-disjoint-join* _ _ _ _ J _).
 
 %{%
 #ifdef MAP_LEQ
@@ -3202,5 +4202,144 @@ END_ELF
 #undef OP_CANCELS
 
 #endif /* DATA_JOIN_PRESERVES_LEQ */
+/* but still MAP_LEQ */
+%}%
+
+%theorem disjoint-join-left-preserves-leq-converse:
+	forall* {M1} {M2} {M3} {M}
+    	forall	{M3<=M: leq M3 M}
+		{M1UM2=M: join M1 M2 M}
+    		{M2^M3: disjoint M1 M3}
+	exists	{M3<=M1: leq M3 M2}
+ 	true.
+
+- : disjoint-join-left-preserves-leq-converse
+	leq/0 _ _ leq/0.
+
+- : disjoint-join-left-preserves-leq-converse
+	L join/L _ L.
+
+- : disjoint-join-left-preserves-leq-converse
+	L join/R D LP
+    <- disjoint-respects-geq* D L M3^M3
+    <- disjoint-anti-reflexive M3^M3 Z=M3
+    <- leq-respects-eq leq/0 Z=M3 eq/ LP.
+
+- : disjoint-join-left-preserves-leq-converse
+	(leq/= L0 D3<=D nat`eq/) J DJ
+	(leq/= L0P D3<=D2 N=N2)
+    <- disjoint-symmetric DJ DJs
+    <- disjoint-lookup-implies-fresh (lookup/= nat`eq/) DJs F1
+    <- fresh-lookup-not-equal F1 (lookup/= nat`eq/) N<>N1
+    <- nat`ne-symmetric N<>N1 N1<>N
+    <- join/>-inversion* J N1<>N _ N2=N D2=D P J0
+    <- disjoint/>-inversion DJ P DJ0
+    <- disjoint-join-left-preserves-leq-converse L0 J0 DJ0 L0P
+    <- data-eq-symmetric D2=D D=D2
+    <- data`leq-respects-eq D3<=D data`eq/ D=D2 D3<=D2
+    <- nat`eq-symmetric N2=N N=N2.
+	
+- : disjoint-join-left-preserves-leq-converse
+	(leq/> L0 P3)
+	(join/= J0 D1+D2=D nat`eq/) DJ
+	(leq/> L0P P3)
+    <- disjoint/<-inversion DJ P3 DJ0
+    <- disjoint-join-left-preserves-leq-converse L0 J0 DJ0 L0P.
+
+- : disjoint-join-left-preserves-leq-converse
+	(leq/> L0 P3)
+	(join/> J0 P0) DJ
+	(leq/> L0P P3)
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P3 P3s
+    <- plus-commutative P3s P3sc
+    <- shift-preserves-disjoint-converse DJ (shift/+ P0sc) (shift/+ P3sc) DJ0
+    <- disjoint-join-left-preserves-leq-converse L0 J0 DJ0 L0P.
+
+- : disjoint-join-left-preserves-leq-converse
+	(leq/> L0 P3)
+	(join/< J0 P0) DJ
+	LP
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P3 P3s
+    <- plus-commutative P3s P3sc
+    <- disjoint/<-inversion DJ P3 DJ0
+    <- disjoint-join-left-preserves-leq-converse L0 J0 DJ0 L0P
+    <- shift-preserves-leq* L0P (shift/+ P3sc) (shift/+ P0sc) LP.
+
+%worlds (WORLDS) (disjoint-join-left-preserves-leq-converse _ _ _ _).
+%total (J) (disjoint-join-left-preserves-leq-converse _ J _ _).
+
+
+%theorem disjoint-join-right-preserves-leq-converse:
+	forall* {M1} {M2} {M3} {M}
+    	forall	{M3<=M: leq M3 M}
+		{M1UM2=M: join M1 M2 M}
+    		{M2^M3: disjoint M2 M3}
+	exists	{M3<=M1: leq M3 M1}
+ 	true.
+
+- : disjoint-join-right-preserves-leq-converse
+	leq/0 _ _ leq/0.
+
+- : disjoint-join-right-preserves-leq-converse
+	L join/R _ L.
+
+- : disjoint-join-right-preserves-leq-converse
+	L join/L D LP
+    <- disjoint-respects-geq* D L M3^M3
+    <- disjoint-anti-reflexive M3^M3 Z=M3
+    <- leq-respects-eq leq/0 Z=M3 eq/ LP.
+
+- : disjoint-join-right-preserves-leq-converse
+	(leq/= L0 D3<=D nat`eq/) J DJ
+	(leq/= L0P D3<=D1 N=N1)
+    <- disjoint-symmetric DJ DJs
+    <- disjoint-lookup-implies-fresh (lookup/= nat`eq/) DJs F2
+    <- fresh-lookup-not-equal F2 (lookup/= nat`eq/) N<>N2
+    <- nat`ne-symmetric N<>N2 N2<>N
+    <- join/<-inversion* J N2<>N _ N1=N D1=D P J0
+    <- disjoint/>-inversion DJ P DJ0
+    <- disjoint-join-right-preserves-leq-converse L0 J0 DJ0 L0P
+    <- data-eq-symmetric D1=D D=D1
+    <- data`leq-respects-eq D3<=D data`eq/ D=D1 D3<=D1
+    <- nat`eq-symmetric N1=N N=N1.
+	
+- : disjoint-join-right-preserves-leq-converse
+	(leq/> L0 P3)
+	(join/= J0 D1+D2=D nat`eq/) DJ
+	(leq/> L0P P3)
+    <- disjoint/<-inversion DJ P3 DJ0
+    <- disjoint-join-right-preserves-leq-converse L0 J0 DJ0 L0P.
+
+- : disjoint-join-right-preserves-leq-converse
+	(leq/> L0 P3)
+	(join/< J0 P0) DJ
+	(leq/> L0P P3)
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P3 P3s
+    <- plus-commutative P3s P3sc
+    <- shift-preserves-disjoint-converse DJ (shift/+ P0sc) (shift/+ P3sc) DJ0
+    <- disjoint-join-right-preserves-leq-converse L0 J0 DJ0 L0P.
+
+- : disjoint-join-right-preserves-leq-converse
+	(leq/> L0 P3)
+	(join/> J0 P0) DJ
+	LP
+    <- plus-swap-succ P0 P0s
+    <- plus-commutative P0s P0sc
+    <- plus-swap-succ P3 P3s
+    <- plus-commutative P3s P3sc
+    <- disjoint/<-inversion DJ P3 DJ0
+    <- disjoint-join-right-preserves-leq-converse L0 J0 DJ0 L0P
+    <- shift-preserves-leq* L0P (shift/+ P3sc) (shift/+ P0sc) LP.
+
+%worlds (WORLDS) (disjoint-join-right-preserves-leq-converse _ _ _ _).
+%total (J) (disjoint-join-right-preserves-leq-converse _ J _ _).
+
+%{%
 #endif /* MAP_LEQ */
 %}%

@@ -39,6 +39,28 @@ ne/FT : ne false true.
 %abbrev eq?/no = [NE:ne B1 B2] NE.
 
 
+leq? : bool -> bool -> bool -> type.
+
+%abbrev leq : bool -> bool -> type = [b1] [b2] leq? b1 b2 true.
+
+%abbrev nle : bool -> bool -> type = [b1] [b2] leq? b1 b2 false.
+
+%abbrev imp = leq. % implies is the same as <=.  Too bad about the arrow.
+
+
+leq/= : leq B B.
+
+leq/FT : leq false true.
+
+nle/TF : nle true false.
+
+
+%abbrev leq?/yes = [l: leq B1 B2] l.
+
+%abbrev leq?/no = [n:nle B1 B2] n.
+
+
+
 not : bool -> bool -> type.
 
 not/T : not true false.
@@ -98,7 +120,6 @@ BEGIN_ELF
 END_ELF
 #undef RELN
 #undef REL
-#undef EQ
 %}%
 
 
@@ -142,7 +163,7 @@ END_ELF
 
 %theorem eq?-total* :
 	forall {B1} {B2}
-	exists {B} {EQ?:eq? B1 B2 B}
+	exists {B} {EQL?:eq? B1 B2 B}
 	true.
 
 - : eq?-total* true true _ (eq?/yes).
@@ -161,13 +182,190 @@ END_ELF
 
 
 
-%%% Theorems about not, and, or
+%%%% Theorems about leq, nle, leq?
+
+
+
+%%% theorems about leq
 
 %{%
-These boolean connectives are not as useful
-as they might seem.  Currently I do not prove
-many things about them.
+#define RELN leq
+#define REL(X,Y) X<=Y
+BEGIN_ELF
+#include "RELN.i"
+END_ELF
+#undef RELN
+#undef REL
 %}%
+
+
+%theorem leq-reflexive:
+	forall	{B}
+	exists	{E: leq B B}
+	true.
+
+- : leq-reflexive _ leq/=.
+
+%worlds () (leq-reflexive _ _).
+%total { } (leq-reflexive _ _).
+
+
+%theorem leq-anti-symmetric:
+	forall*	{B1} {B2}
+	forall	{L: leq B1 B2}
+		{G: leq B2 B1}
+	exists	{E: eq B1 B2}
+	true.
+
+- : leq-anti-symmetric leq/= leq/= eq/.
+
+%worlds () (leq-anti-symmetric _ _ _).
+%total { } (leq-anti-symmetric _ _ _).
+
+
+%theorem leq-transitive:
+	forall*	{B1} {B2} {B3}
+	forall	{L12: leq B1 B2}
+		{L23: leq B2 B3}
+	exists	{L13: leq B1 B3}
+	true.
+
+- : leq-transitive _ _ leq/=.
+
+- : leq-transitive _ _ leq/FT.
+
+%worlds () (leq-transitive _ _ _).
+%total { } (leq-transitive _ _ _).
+
+
+%theorem eq-implies-leq:
+	forall*	{B1} {B2}
+	forall	{BE: eq B1 B2}
+	exists	{BL: leq B1 B2}
+	true.
+
+- : eq-implies-leq eq/ leq/=.
+
+%worlds () (eq-implies-leq _ _).
+%total { } (eq-implies-leq _ _).
+
+
+%theorem false-leq-anything:
+	forall	{B}
+	exists	{L: leq false B}
+	true.
+
+- : false-leq-anything _ leq/=.
+
+- : false-leq-anything _ leq/FT.
+
+%worlds () (false-leq-anything _ _).
+%total { } (false-leq-anything _ _).
+
+
+%theorem anything-leq-true:
+	forall	{B}
+	exists	{L: leq B true}
+	true.
+
+- : anything-leq-true _ leq/=.
+
+- : anything-leq-true _ leq/FT.
+
+%worlds () (anything-leq-true _ _).
+%total { } (anything-leq-true _ _).
+
+
+
+%%% theorems about nle
+
+%{%
+#define RELN nle
+#define REL(X,Y) X>Y
+BEGIN_ELF
+#include "RELN.i"
+END_ELF
+#undef RELN
+#undef REL
+%}%
+
+
+%theorem nle-anti-reflexive:
+	forall*	{B}
+	forall	{N: nle B B}
+	exists	{F: void}
+	true.
+
+%worlds () (nle-anti-reflexive _ _).
+%total { } (nle-anti-reflexive _ _).
+
+
+%theorem nle-anti-symmetric:
+	forall*	{B1} {B2}
+	forall	{L: nle B1 B2}
+		{G: nle B2 B1}
+	exists	{F: void}
+	true.
+
+%worlds () (nle-anti-symmetric _ _ _).
+%total { } (nle-anti-symmetric _ _ _).
+
+
+%theorem nle-anti-transitive:
+	forall*	{B1} {B2} {B3}
+	forall	{L12: nle B1 B2}
+		{L23: nle B2 B3}
+	exists	{F: void}
+	true.
+
+%worlds () (nle-anti-transitive _ _ _).
+%total { } (nle-anti-transitive _ _ _).
+
+
+
+%%% Theorems about leq?
+
+
+%theorem leq?-total*:
+	forall	{B1} {B2}
+	exists	{B3}
+		{L: leq? B1 B2 B3}
+	true.
+
+%abbrev leq?-total = leq?-total* _ _ _.
+
+- : leq?-total leq/=.
+
+- : leq?-total leq/FT.
+
+- : leq?-total nle/TF.
+
+%worlds () (leq?-total* _ _ _ _).
+%total { } (leq?-total* _ _ _ _).
+
+
+%theorem leq?-unique:
+	forall*	{B11} {B12} {B13} 
+		{B21} {B22} {B23}
+	forall	{L1: leq? B11 B12 B13}
+		{L2: leq? B21 B22 B23}
+		{E1: eq B11 B21}
+		{E2: eq B12 B22}
+	exists	{E3: eq B13 B23}
+	true.
+
+- : leq?-unique L L eq/ eq/ eq/.
+
+%worlds () (leq?-unique _ _ _ _ _).
+%total { } (leq?-unique _ _ _ _ _).
+
+
+
+%%%% Theorems about not, and, or
+
+
+
+%%% Totality
 
 
 %theorem not-total*:
@@ -201,6 +399,27 @@ many things about them.
 %total { } (and-total* _ _ _ _).
 
 
+%theorem or-total* :
+	forall {B1} {B2} 
+	exists {B3} {A:or B1 B2 B3}
+	true.
+
+%abbrev or-total = or-total* _ _ _.
+
+- : or-total or/TX.
+
+- : or-total or/XT.
+
+- : or-total or/FF.
+
+%worlds () (or-total* _ _ _ _).
+%total { } (or-total* _ _ _ _).
+
+
+
+%%% Respect equality
+
+
 %theorem or-respects-eq:
 	forall*	{B11} {B12} {B13}
 		{B21} {B22} {B23}
@@ -217,21 +436,38 @@ many things about them.
 %total { } (or-respects-eq _ _ _ _ _).
 
 
-%theorem or-total* :
-	forall {B1} {B2} 
-	exists {B3} {A:or B1 B2 B3}
+%theorem and-respects-eq:
+	forall*	{B11} {B12} {B13}
+		{B21} {B22} {B23}
+	forall	{O1: and B11 B12 B13}
+		{E1: eq B11 B21}
+		{E2: eq B12 B22}
+		{E3: eq B13 B23}
+	exists	{O2: and B21 B22 B23}
 	true.
 
-%abbrev or-total = or-total* _ _ _.
+- : and-respects-eq O _ _ _ O.
 
-- : or-total or/TX.
+%worlds () (and-respects-eq _ _ _ _ _).
+%total { } (and-respects-eq _ _ _ _ _).
 
-- : or-total or/XT.
 
-- : or-total or/FF.
+%theorem not-respects-eq:
+	forall*	{B11} {B12}
+		{B21} {B22}
+	forall	{O1: not B11 B12}
+		{E1: eq B11 B21}
+		{E2: eq B12 B22}
+	exists	{O2: not B21 B22}
+	true.
 
-%worlds () (or-total* _ _ _ _).
-%total { } (or-total* _ _ _ _).
+- : not-respects-eq O _ _ O.
+
+%worlds () (not-respects-eq _ _ _ _).
+%total { } (not-respects-eq _ _ _ _).
+
+
+%%% Uniqueness
 
 
 %theorem or-unique:
@@ -253,6 +489,45 @@ many things about them.
 %total { } (or-unique _ _ _ _ _).
 
 
+%theorem and-unique:
+	forall*	{B11} {B12} {B13} {B21} {B22} {B23}
+	forall	{O1: and B11 B12 B13}
+		{O2: and B21 B22 B23}
+		{E1: eq B11 B21}
+		{E2: eq B12 B22}
+	exists	{E3: eq B13 B23}
+	true.
+
+- : and-unique and/TT and/TT eq/ eq/ eq/.
+
+- : and-unique and/FX _ eq/ eq/ eq/.
+
+- : and-unique and/XF _ eq/ eq/ eq/.
+
+%worlds () (and-unique _ _ _ _ _).
+%total { } (and-unique _ _ _ _ _).
+
+
+%theorem not-unique:
+	forall*	{B11} {B12} {B21} {B22}
+	forall	{O1: not B11 B12}
+		{O2: not B21 B22}
+		{E1: eq B11 B21}
+	exists	{E3: eq B12 B22}
+	true.
+
+- : not-unique not/T not/T eq/ eq/.
+
+- : not-unique not/F not/F eq/ eq/.
+
+%worlds () (not-unique _ _ _ _).
+%total { } (not-unique _ _ _ _).
+
+
+
+%%% Identity
+
+
 %theorem or-left-identity:
 	forall	{X}
 	exists	{O: or false X X}
@@ -264,3 +539,186 @@ many things about them.
 
 %worlds () (or-left-identity _ _).
 %total { } (or-left-identity _ _).
+
+
+%theorem and-left-identity:
+	forall	{X}
+	exists	{O: and true X X}
+	true.
+
+- : and-left-identity _ and/TT.
+
+- : and-left-identity _ and/XF.
+
+%worlds () (and-left-identity _ _).
+%total { } (and-left-identity _ _).
+
+
+%theorem and-right-identity:
+	forall	{X}
+	exists	{O: and X true X}
+	true.
+
+- : and-right-identity _ and/TT.
+
+- : and-right-identity _ and/FX.
+
+%worlds () (and-right-identity _ _).
+%total { } (and-right-identity _ _).
+
+
+%theorem not-anti-reflexive:
+	forall*	{X}
+	forall	{N: not X X}
+	exists	{F: void}
+	true.
+
+%worlds () (not-anti-reflexive _ _).
+%total { } (not-anti-reflexive _ _).
+
+
+
+%%% Commutativity and associativity
+
+
+%theorem and-commutative:
+	forall*	{B1} {B2} {B3}
+	forall	{A1: and B1 B2 B3}
+	exists	{A2: and B2 B1 B3}
+	true.
+
+- : and-commutative and/TT and/TT.
+
+- : and-commutative and/FX and/XF.
+
+- : and-commutative and/XF and/FX.
+
+%worlds () (and-commutative _ _).
+%total { } (and-commutative _ _).
+
+
+%theorem and-associative:
+	forall*	{B1} {B2} {B3} {B4} {B7}
+	forall	{A12: and B1 B2 B3}
+		{A34: and B3 B4 B7}
+	exists	{B6}
+		{A24: and B2 B4 B6}
+		{A16: and B1 B6 B7}
+	true.
+
+- : and-associative _ and/XF _ and/XF and/XF.
+
+- : and-associative _ and/TT _ and/TT and/TT.
+
+- : and-associative _ and/FX _ and/TT and/FX.
+
+- : and-associative _ and/FX _ and/FX and/XF.
+
+- : and-associative _ and/FX _ and/XF and/FX.
+
+%worlds () (and-associative _ _ _ _ _).
+%total { } (and-associative _ _ _ _ _).
+
+%{%
+#define OP(X,Y) X/\Y
+#define OPN and
+#define EQ eq
+BEGIN_ELF
+#include "OPN-assoc.i"
+END_ELF
+#undef OP
+#undef OPN
+#undef EQ
+%}%
+
+
+%theorem or-commutative:
+	forall*	{B1} {B2} {B3}
+	forall	{A1: or B1 B2 B3}
+	exists	{A2: or B2 B1 B3}
+	true.
+
+- : or-commutative or/FF or/FF.
+
+- : or-commutative or/TX or/XT.
+
+- : or-commutative or/XT or/TX.
+
+%worlds () (or-commutative _ _).
+%total { } (or-commutative _ _).
+
+
+%theorem or-associative:
+	forall*	{B1} {B2} {B3} {B4} {B7}
+	forall	{A12: or B1 B2 B3}
+		{A34: or B3 B4 B7}
+	exists	{B6}
+		{A24: or B2 B4 B6}
+		{A16: or B1 B6 B7}
+	true.
+
+- : or-associative _ or/XT _ or/XT or/XT.
+
+- : or-associative _ or/FF _ or/FF or/FF.
+
+- : or-associative _ or/TX _ or/FF or/TX.
+
+- : or-associative _ or/TX _ or/TX or/XT.
+
+- : or-associative _ or/TX _ or/XT or/TX.
+
+%worlds () (or-associative _ _ _ _ _).
+%total { } (or-associative _ _ _ _ _).
+
+%{%
+#define OP(X,Y) X\/Y
+#define OPN or
+#define EQ eq
+BEGIN_ELF
+#include "OPN-assoc.i"
+END_ELF
+#undef OP
+#undef OPN
+#undef EQ
+%}%
+
+
+%%% Theorems connecting and/or/not with leq
+
+
+%theorem and-implies-geq:
+	forall*	{B1} {B2} {B3}
+	forall	{A: and B1 B2 B3}
+	exists	{G1: leq B3 B1}
+		{G2: leq B3 B2}
+	true.
+
+- : and-implies-geq and/TT leq/= leq/=.
+
+- : and-implies-geq and/FX leq/= L
+    <- false-leq-anything _ L.
+
+- : and-implies-geq and/XF L leq/=
+    <- false-leq-anything _ L.
+
+%worlds () (and-implies-geq _ _ _).
+%total { } (and-implies-geq _ _ _).
+
+
+%theorem or-implies-leq:
+	forall*	{B1} {B2} {B3}
+	forall	{A: or B1 B2 B3}
+	exists	{G1: leq B1 B3}
+		{G2: leq B2 B3}
+	true.
+
+- : or-implies-leq or/FF leq/= leq/=.
+
+- : or-implies-leq or/TX leq/= L
+    <- anything-leq-true _ L.
+
+- : or-implies-leq or/XT L leq/=
+    <- anything-leq-true _ L.
+
+%worlds () (or-implies-leq _ _ _).
+%total { } (or-implies-leq _ _ _).

@@ -158,6 +158,22 @@ END_ELF
 %total { } (ge-zero-always _ _).
 
 
+%theorem gt-implies-ge-one:
+	forall*	{N1} {N2}
+	forall	{G: gt N1 N2}
+	exists	{G: ge N1 (s z)}
+	true.
+
+- : gt-implies-ge-one N1>N2 N1>=1
+    <- ge-zero-always N2 N2>=0
+    <- succ-preserves-ge N2>=0 N2+1>=1
+    <- gt-implies-ge-succ N1>N2 N1>=N2+1
+    <- ge-transitive N1>=N2+1 N2+1>=1 N1>=1.
+
+%worlds () (gt-implies-ge-one _ _).
+%total { } (gt-implies-ge-one _ _).
+
+
 %theorem nonzero-times-implies-ge :
 	forall* {N0} {N1} {N2}
 	forall {P:times (s N0) N1 N2}
