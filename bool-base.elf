@@ -87,12 +87,6 @@ or/XT: or B true true.
 or/FF: or false false false.
 
 
-leq : bool -> bool -> type.
-
-leq/TT: leq true true.
-
-leq/Fx : leq false _.
-
 
 
 
