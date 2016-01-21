@@ -1312,6 +1312,36 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (can-construct-unit-disjoint _ _).
 
 
+%theorem unit-disjoint-implies-fresh
+  : forall* {M} {D} {N}
+    forall {A: disjoint M (map/+ N D map/0)}
+    exists {F: fresh M N}
+    true.
+
+%theorem unit-disjoint-implies-fresh/L
+  : forall* {M} {N} {D}
+    forall {A: disjoint M (map/+ N D map/0)}
+    {B} {F: domain? M N B}
+    exists {F: fresh M N}
+    true.
+
+- : unit-disjoint-implies-fresh/L M^N true (domain?/in M->N) N!<M
+    <- disjoint-lookup-contradiction M^N M->N (lookup/= nat`eq/) V
+    <- false-implies-fresh V N!<M.
+
+- : unit-disjoint-implies-fresh/L M^N false (domain?/out N!<M) N!<M.
+
+- : unit-disjoint-implies-fresh A F
+    <- domain?-total DM?
+    <- unit-disjoint-implies-fresh/L A _ DM? F.
+
+%worlds () (unit-disjoint-implies-fresh/L _ _ _ _).
+%total (B) (unit-disjoint-implies-fresh/L _ B _ _).
+
+%worlds () (unit-disjoint-implies-fresh _ _).
+%total { } (unit-disjoint-implies-fresh _ _).
+
+
 %theorem ne-implies-disjoint :
 	forall* {N1} {D1} {N2} {D2}
 	forall	{NE:nat`ne N1 N2}
