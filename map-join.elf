@@ -766,6 +766,46 @@ join/> : join (map/+ N1 D1 M1) (map/+ N2 D2 M2) (map/+ N2 D2 M3)
 %total { } (disjoint-join-left-cancels _ _ _ _ _ _ _).
 
 
+%theorem size-commute-disjoint-join*:
+	forall*	{M1} {N1} {M2} {N2} {M3} {N3}
+	forall	{SZ1: size M1 N1}
+		{SZ2: size M2 N2}
+		{SZ3: size M3 N3}
+		{DIS: disjoint M1 M2}
+		{J12: join M1 M2 M3}
+	exists	{PLS: plus N1 N2 N3}
+	true.
+
+- : size-commute-disjoint-join* (size/0) SZ2 SZ3 _
+	(join/L) P
+    <- size-unique SZ2 SZ3 eq/ NEQ
+    <- plus-respects-eq plus/z nat`eq/ nat`eq/ NEQ P.
+
+- : size-commute-disjoint-join* SZ1 (size/0) SZ3 _
+	(join/R) P
+    <- size-unique SZ1 SZ3 eq/ NEQ
+    <- plus-right-identity N1 P1
+    <- plus-respects-eq P1 nat`eq/ nat`eq/ NEQ P.
+
+- : size-commute-disjoint-join* (size/+ SZ1) (size/+ SZ2) (size/+ SZ3) D1
+	(join/< J PsXYZ) (plus/s P)
+    <- disjoint/<-inversion D1 PsXYZ D
+    <- size-commute-disjoint-join* SZ1 (size/+ SZ2) SZ3 D J P.
+
+- : size-commute-disjoint-join* (size/+ SZ1) (size/+ SZ2) (size/+ SZ3) D1
+	(join/> J PsXYZ) P1
+    <- disjoint/>-inversion D1 PsXYZ D
+    <- size-commute-disjoint-join* (size/+ SZ1) SZ2 SZ3 D J P
+    <- plus-right-increase P P1.
+
+- : size-commute-disjoint-join* _ _ _ D (join/= _ _ EQ) P
+    <- disjoint/=-contradiction D EQ F
+    <- false-implies-plus F P.
+
+%worlds () (size-commute-disjoint-join* _ _ _ _ _ _).
+%total (J) (size-commute-disjoint-join* _ _ _ _ J _).
+
+
 %theorem shift-left-preserves-join :
 	forall* {N} {D} {M1} {M2} {M3} {SM1}
 	forall {A:join M1 M2 M3} {S1:shift N M1 SM1}
