@@ -1471,6 +1471,32 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (shift-preserves-size-converse _ _ _).
 
 
+%theorem size/0-inversion:
+	forall*	{M}
+	forall	{SZ: size M z}
+	exists	{EQ: eq M map/0}
+	true.
+
+- : size/0-inversion size/0 eq/.
+
+%worlds (WORLDS) (size/0-inversion _ _).
+%total { } (size/0-inversion _ _).
+
+
+%theorem size/+-inversion:
+	forall*	{M} {N}
+	forall	{SZ: size M (s N)}
+	exists	{I} {D} {MP}
+		{EQ: eq M (map/+ I D MP)}
+		{SZP: size MP N}
+	true.
+
+- : size/+-inversion (size/+ SZP) _ _ _ eq/ SZP.
+
+%worlds (WORLDS) (size/+-inversion _ _ _ _ _ _).
+%total { } (size/+-inversion _ _ _ _ _ _).
+
+
 
 %%% Theorems about bound
 
@@ -3024,6 +3050,69 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %worlds (WORLDS) (update-preserves-bound-converse _ _ _ _).
 %total (U) (update-preserves-bound-converse _ U _ _).
 
+
+%theorem update-max-preserves-bound:
+	forall*	{M1} {N1} {N} {D} {M2}
+	forall	{B1: bound M1 N1}
+		{U: update M1 N D M2}
+	exists	{N2}
+		{M: nat`max N1 (s N) N2}
+		{B2: bound M2 N2}
+	true.
+
+- : update-max-preserves-bound bound/0
+	(update/0) _ (max/< SN>0)
+	(bound/+ N+1+0=SN bound/0)
+    <- plus-right-identity (s N) N+1+0=SN
+    <- succ-implies-gt-zero N SN>0.
+
+- : update-max-preserves-bound (bound/+ P B1)
+	(update/= nat`eq/) _ MX
+	(bound/+ P B1)
+    <- plus-commutative P Pc
+    <- plus-implies-ge Pc B>=SN1
+    <- ge-implies-max B>=SN1 MX.
+
+- : update-max-preserves-bound (bound/+ P1 B)
+	(update/< P3) B1 MX
+	(bound/+ P11 (bound/+ P12 B))
+    <- plus-swap-succ P1 P1s
+    <- plus-swap-succ P3 P3s
+    <- plus-commutative P3s P3sc
+    <- plus-associative P3sc P1s D P12s P11
+    <- plus-swap-succ-converse P12s P12
+    <- plus-commutative P11 P11c
+    <- plus-implies-ge P11c B1>=SN
+    <- ge-implies-max B1>=SN MX.
+
+- : update-max-preserves-bound (bound/+ P1 B1)
+	(update/> U1 P) _ MX
+	(bound/+ P2 B2)
+    <- update-max-preserves-bound B1 U1 _ MX1 B2
+    <- plus-total P2
+    <- plus-swap-succ P Ps
+    <- plus-commutative (plus/s Ps) Pssc
+    <- plus-left-preserves-max MX1 P1 Pssc P2 MX.
+
+%worlds () (update-max-preserves-bound _ _ _ _ _).
+%total (U) (update-max-preserves-bound _ U _ _ _).
+
+
+%theorem update-max-preserves-bound*:
+	forall*	{M1} {N1} {N} {D} {M2} {N2}
+	forall	{B1: bound M1 N1}
+		{U: update M1 N D M2}
+		{M: nat`max N1 (s N) N2}
+	exists	{B2: bound M2 N2}
+	true.
+
+- : update-max-preserves-bound* B1 U M B2
+    <- update-max-preserves-bound B1 U _ MP B2P
+    <- nat`max-unique MP M nat`eq/ nat`eq/ N2P=N2
+    <- bound-respects-eq B2P eq/ N2P=N2 B2.
+
+%worlds () (update-max-preserves-bound* _ _ _ _).
+%total { } (update-max-preserves-bound* _ _ _ _).
 
 
 %theorem update-overwrites :

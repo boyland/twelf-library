@@ -54,6 +54,10 @@ leq/FT : leq false true.
 
 nle/TF : nle true false.
 
+%abbrev imp/FT = leq/FT.
+
+%abbrev imp/= = leq/=.
+
 
 %abbrev leq?/yes = [l: leq B1 B2] l.
 
@@ -231,6 +235,8 @@ END_ELF
 %worlds () (leq-transitive _ _ _).
 %total { } (leq-transitive _ _ _).
 
+%abbrev imp-transitive = leq-transitive.
+
 
 %theorem eq-implies-leq:
 	forall*	{B1} {B2}
@@ -256,6 +262,8 @@ END_ELF
 %worlds () (false-leq-anything _ _).
 %total { } (false-leq-anything _ _).
 
+%abbrev false-imp-anything = false-leq-anything.
+
 
 %theorem anything-leq-true:
 	forall	{B}
@@ -268,6 +276,8 @@ END_ELF
 
 %worlds () (anything-leq-true _ _).
 %total { } (anything-leq-true _ _).
+
+%abbrev anything-imp-true = anything-leq-true.
 
 
 

@@ -414,6 +414,46 @@ END_ELF
 %total { } (add-member-preserves-leq _ _ _ _).
 
 
+%theorem add-not-member-preserves-leq-converse:
+	forall*	{S} {N} {S1} {S2}
+	forall	{SL: leq S S2}
+		{SA: add S1 N S2}
+		{NM: not-member S N}
+	exists	{SL: leq S S1}
+	true.
+ 
+%theorem add-not-member-preserves-leq-converse/L:
+	forall*	{S} {N} {S1} {S2} {B}
+	forall	{SL: leq S S2}
+		{SA: add S1 N S2}
+		{NM: not-member S N}
+		{SL: leq? S S1 B}
+	exists	{SL: leq S S1}
+	true.
+
+- : add-not-member-preserves-leq-converse/L _ _ _ SL SL.
+
+- : add-not-member-preserves-leq-converse/L S<=S2 S1+N=S2 S-/>N
+	(nle/< S->M S1-/>M) LEQ
+    <- not-member-member-not-equal S-/>N S->M N<>M
+    <- nat`ne-symmetric N<>M M<>N
+    <- member-respects-leq S->M S<=S2 S2->M
+    <- add-preserves-member-converse S2->M S1+N=S2 M<>N S1->M
+    <- not-member-member-not-equal S1-/>M S1->M M<>M
+    <- nat`ne-anti-reflexive M<>M F
+    <- false-implies-leq F LEQ.
+	
+%worlds () (add-not-member-preserves-leq-converse/L _ _ _ _ _).
+%total { } (add-not-member-preserves-leq-converse/L _ _ _ _ _).
+
+- : add-not-member-preserves-leq-converse L2 A NM L1
+    <- leq?-total L?
+    <- add-not-member-preserves-leq-converse/L L2 A NM L? L1.
+
+%worlds () (add-not-member-preserves-leq-converse _ _ _ _).
+%total { } (add-not-member-preserves-leq-converse _ _ _ _).
+
+
 %theorem unit-union-implies-add :
 	forall*	{S1} {X} {S2}
 	forall	{U: union S1 (set/1 X) S2}
@@ -544,6 +584,28 @@ END_ELF
 
 %worlds () (union-preserves-disjoint-converse _ _ _ _).
 %total { } (union-preserves-disjoint-converse _ _ _ _).
+
+
+%theorem not-member-add-preserves-union-converse*:
+	forall*	{M1} {M1P} {M2} {M2P} {M} {MP} {N}
+	forall	{NM1: not-member M1P N}
+		{SA1: add M1P N M1}
+		{NM2: not-member M2P N}
+		{SA2: add M2P N M2}
+		{U: union M1 M2 M}
+		{NM: not-member MP N}
+		{SA: add MP N M}
+	exists	{UP: union M1P M2P MP}
+	true.
+
+- : not-member-add-preserves-union-converse* NM1 A1 NM2 A2 U NM A UP
+    <- not-member-update-preserves-union-converse NM1 A1 NM2 A2 U _ _ NMX AX
+       unit`union/ UPX
+    <- not-member-add-cancels NMX AX NM A nat`eq/ eq/ MPX=MP
+    <- union-respects-eq UPX eq/ eq/ MPX=MP UP.
+
+%worlds () (not-member-add-preserves-union-converse* _ _ _ _ _ _ _ _).
+%total { } (not-member-add-preserves-union-converse* _ _ _ _ _ _ _ _).
 
 
 

@@ -2161,13 +2161,15 @@ END_ELF
 #endif
 %}%
 
-% TODO deprecate *
-%theorem join-preserves-fresh-converse* :
+%theorem join-preserves-fresh-converse :
 	forall* {M1} {M2} {M3} {N}
 	forall {F3:fresh M3 N}
                {A:join M1 M2 M3}
 	exists {F1:fresh M1 N} {F2:fresh M2 N}
 	true.
+
+% deprecated
+%abbrev join-preserves-fresh-converse* = join-preserves-fresh-converse.
 
 %theorem join-preserves-fresh-converse/L :
 	forall* {M1} {M2} {M3} {N} {B1} {B2}
@@ -2211,8 +2213,8 @@ END_ELF
 %worlds (WORLDS) (join-preserves-fresh-converse/L _ _ _ _ _ _).
 %total { } (join-preserves-fresh-converse/L _ _ _ _ _ _).
 
-%worlds (WORLDS) (join-preserves-fresh-converse* _ _ _ _).
-%total { } (join-preserves-fresh-converse* _ _ _ _).
+%worlds (WORLDS) (join-preserves-fresh-converse _ _ _ _).
+%total { } (join-preserves-fresh-converse _ _ _ _).
 
 
 %theorem disjoint-join-cross-comparable :

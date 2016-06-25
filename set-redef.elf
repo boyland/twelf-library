@@ -45,6 +45,7 @@
 %abbrev add : set -> nat -> set -> type = [S1] [N] [S2] update S1 N unit/ S2.
 
 
+
 %%% Theorem renamings.
 
 %% using "member"
@@ -52,6 +53,7 @@
 %abbrev false-implies-member = false-implies-lookup.
 %abbrev fresh-member-implies-ne = fresh-lookup-not-equal.
 %abbrev in-implies-member = in-implies-lookup.
+%abbrev member-contradiction = lookup-contradiction.
 
 %abbrev member-respects-eq = 
     [L:member M N] [EM:eq M MP] [EN:nat`eq N NP] [LP:member MP NP] 
@@ -116,6 +118,7 @@
 %abbrev add-unique = add-deterministic.
 %abbrev add-total* = update-total*.
 %abbrev add-total = update-total.
+%abbrev add-contradiction = update-contradiction.
 %abbrev member-implies-add = lookup-implies-update.
 %abbrev member-implies-not-member-add = lookup-implies-not-member-update.
 %abbrev add-implies-member = update-implies-lookup.
@@ -144,6 +147,8 @@
 %abbrev not-member-add-increases-size = not-member-update-increases-size.
 %abbrev not-member-add-increases-size-converse = 
 	not-member-update-increases-size-converse.
+%abbrev add-max-preserves-bound = update-max-preserves-bound.
+%abbrev add-max-preserves-bound* = update-max-preserves-bound*.
 %abbrev not-member-add-cancels
 	: not-member M1 N1 -> add M1 N1 M1P ->
 	  not-member M2 N2 -> add M2 N2 M2P -> 
@@ -203,5 +208,14 @@
 
 %% using "union"
 
-% nothing yet
+% on demand
+%abbrev not-member-add-left-preserves-union-converse* =
+        not-member-update-left-preserves-union-converse*.
+%abbrev not-member-add-right-preserves-union-converse* =
+        not-member-update-right-preserves-union-converse*.
+
+%abbrev not-member-unit-union-implies-add =
+        not-member-unit-union-implies-update.
+
+
 

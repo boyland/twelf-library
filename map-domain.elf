@@ -526,6 +526,30 @@ domain/+ : domain M S ->
 %worlds () (domain-commute-fresh-update-converse _ _ _ _ _ _).
 %total { } (domain-commute-fresh-update-converse _ _ _ _ _ _).
 
+
+%theorem overwrite-preserves-domain:
+	forall* {M1} {S} {X} {D} {M2}
+	forall	{D1: domain M1 S}
+		{L1: domain? M1 X true}
+		{U1: update M1 X D M2}
+	exists	{D2: domain M2 S}
+	true.
+
+- : overwrite-preserves-domain D1 (domain?/in ML1) M1+X/D2=M2 D2
+    <- domain-total D2P
+    <- lookup-implies-update ML1 M1+X/D1=M1
+    <- update-overwrites-converse M1+X/D1=M1 M1+X/D2=M2 M2+X/D1=M1
+    <- update-commute-domain M1+X/D2=M2 D1 D2P S1+X=S2
+    <- update-commute-domain M2+X/D1=M1 D2P D1 S2+X=S1
+    <- set`add-implies-leq S1+X=S2 S1<=S2
+    <- set`add-implies-leq S2+X=S1 S2<=S1
+    <- set`leq-anti-symmetric S2<=S1 S1<=S2 S2=S1
+    <- domain-respects-eq D2P eq/ S2=S1 D2.
+
+%worlds () (overwrite-preserves-domain _ _ _ _).
+%total { } (overwrite-preserves-domain _ _ _ _).
+
+
 %{%
 #ifdef MAP_LEQ
 %}%

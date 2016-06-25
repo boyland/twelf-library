@@ -332,6 +332,18 @@ END_ELF
 %worlds () (succ-preserves-ne-converse M+1<>N+1 %{=>}% M<>N).
 %total {} (succ-preserves-ne-converse _ _).
 
+
+%theorem succ-implies-ne-zero:
+	forall	{M}
+	exists	{NE: ne (s M) z}
+	true.
+
+- : succ-implies-ne-zero _ (ne/> D)
+    <- succ-implies-gt-zero _ D.
+
+%worlds () (succ-implies-ne-zero _ _).
+%total { } (succ-implies-ne-zero _ _).
+
 %{%
 #define OP_CANCELS 1
 #define OP_TOTAL 1

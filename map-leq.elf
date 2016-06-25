@@ -3,6 +3,7 @@
  /* We assume the existence of
   * data`leq
   * data`false-implies-leq
+  * data`leq-respects-eq
   * data`leq-reflexive
   * data`leq-anti-symmetric
   * data`leq-transitive
@@ -292,6 +293,7 @@ nle/= : lookup M1 N D1 -> lookup M2 N D2 -> data`nle D1 D2 -> nle M1 M2.
 %abbrev map/+-preserves-nle = map/+-preserves-leq?.
 
 
+% NB: The equality here seem inconvenient to the client.
 %theorem lookup-respects-leq :
 	forall* {M} {N} {D} {MP}
 	forall {L:lookup M N D} {ME:leq M MP}
