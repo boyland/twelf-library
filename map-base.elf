@@ -2557,6 +2557,22 @@ update/> : update (map/+ N1 D1 F1) N2 D2 (map/+ N1 D1 F2)
 %total { } (update-preserves-fresh-converse _ _ _).
 
 
+%theorem update-preserves-fresh-converse-ne:
+	forall* {M1} {N1} {N2} {D} {M2}
+	forall {F1:fresh M2 N1} {U:update M1 N2 D M2}
+	exists {F2:fresh M1 N1}
+	       {NE: nat`ne N1 N2}
+	true.
+
+- : update-preserves-fresh-converse-ne F2 U F1 NE
+    <- update-preserves-fresh-converse F2 U F1
+    <- update-implies-lookup U L
+    <- fresh-lookup-not-equal F2 L NE.
+
+%worlds (WORLDS) (update-preserves-fresh-converse-ne _ _ _ _).
+%total { } (update-preserves-fresh-converse-ne _ _ _ _).
+
+
 %theorem update-is-cause-of-change :
 	forall* {M1} {N1} {N2} {M2} {D1} {D2}
 	forall {F:fresh M1 N1}

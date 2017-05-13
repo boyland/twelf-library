@@ -103,6 +103,8 @@
 
 %abbrev min-member-implies-ge = min-lookup-implies-ge.
 
+%abbrev ne-implies-unit-set-not-member = ne-implies-unit-map-not-member.
+
 
 %% using "add"
 
@@ -125,8 +127,10 @@
 % should not need NE : %abbrev add-preserves-member = update-preserves-lookup.
 %abbrev add-preserves-not-member = update-preserves-not-member.
 %abbrev add-preserves-membership = update-preserves-membership.
+%abbrev add-preserves-membership-converse = update-preserves-membership-converse.
 %abbrev add-preserves-member-converse = update-preserves-lookup-converse.
 %abbrev add-preserves-not-member-converse = update-preserves-not-member-converse.
+%abbrev add-preserves-not-member-converse-ne = update-preserves-not-member-converse-ne.
 %abbrev add-preserves-bound-converse = update-preserves-bound-converse.
 %abbrev add-preserves-disjoint-converse = update-preserves-disjoint-converse.
 
