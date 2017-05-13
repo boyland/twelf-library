@@ -910,7 +910,7 @@ nle/= : lookup M1 N D1 -> lookup M2 N D2 -> data`nle D1 D2 -> nle M1 M2.
 	forall* {M1} {M2} {N} {D2} {M2P}
 	forall	{LP:leq M1 M2P}
 		{F1:fresh M1 N}
-		{F2:fresh M2 N}
+		{F2:fresh M2 N} % This should not be needed
 		{U2:update M2 N D2 M2P}
 	exists	{L:leq M1 M2} 
 	true.
