@@ -874,6 +874,21 @@ remove/ : leq C A -> disjoint B C -> union B C D -> leq A D -> remove A B C.
 %total { } (not-member-add-implies-remove _ _ _).
 
 
+%theorem remove-member-implies-not-member:
+	forall*	{A} {B} {C} {X}
+	forall	{R: remove A B C}
+		{M: member B X}
+	exists	{NM: not-member C X}
+	true.
+
+- : remove-member-implies-not-member R M NM
+    <- remove-implies-disjoint R D
+    <- disjoint-member-implies-not-member M D NM.
+
+%worlds () (remove-member-implies-not-member _ _ _).
+%total { } (remove-member-implies-not-member _ _ _).
+
+
 %theorem remove-idempotent :
 	forall*	{A} {B} {C}
 	forall	{R:remove A B C}
