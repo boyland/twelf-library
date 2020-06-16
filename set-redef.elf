@@ -44,6 +44,7 @@
 
 %abbrev add : set -> nat -> set -> type = [S1] [N] [S2] update S1 N unit/ S2.
 
+%abbrev add/0 = update/0.
 
 
 %%% Theorem renamings.
